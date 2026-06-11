@@ -1,0 +1,36 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android" android:autoMirrored="true" android:height="44dp" android:viewportHeight="44" android:viewportWidth="44" android:width="44dp">
+      
+    <path android:pathData="M8.8,0L35.2,0A8.8,8.8 0,0 1,44 8.8L44,35.2A8.8,8.8 0,0 1,35.2 44L8.8,44A8.8,8.8 0,0 1,0 35.2L0,8.8A8.8,8.8 0,0 1,8.8 0z">
+            
+        <aapt:attr name="android:fillColor">
+                  
+            <gradient android:endX="22" android:endY="44" android:startX="22" android:startY="0" android:type="linear">
+                        
+                <item android:color="#FFFFDE4A" android:offset="0"/>
+                        
+                <item android:color="#FFFED315" android:offset="1"/>
+                      
+            </gradient>
+                
+        </aapt:attr>
+          
+    </path>
+      
+    <path android:fillColor="#ffffff" android:pathData="M10.386,12.507L13.59,15.712C12.278,17.465 11.5,19.642 11.5,22C11.5,27.799 16.201,32.5 22,32.5C27.799,32.5 32.5,27.799 32.5,22C32.5,16.201 27.799,11.5 22,11.5C19.642,11.5 17.465,12.278 15.712,13.59L12.507,10.386C15.093,8.27 18.398,7 22,7C30.284,7 37,13.716 37,22C37,30.284 30.284,37 22,37C13.716,37 7,30.284 7,22C7,18.398 8.27,15.093 10.386,12.507ZM15.743,17.864L22,24.121L24.121,22L17.864,15.743C19.049,14.957 20.471,14.5 22,14.5C26.142,14.5 29.5,17.858 29.5,22C29.5,26.142 26.142,29.5 22,29.5C17.858,29.5 14.5,26.142 14.5,22C14.5,20.471 14.957,19.049 15.743,17.864Z"/>
+    
+</vector>

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:layout_marginTop="50dp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:id="@+id/iv_app_icon"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@mipmap/ic_launcher" />
+
+            <TextView
+                android:id="@+id/tv_app_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="App Lock"
+                android:textSize="16sp"
+                android:textColor="#333333" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/enter_pin_to_use"
+            android:textColor="@color/title_color"
+            android:textSize="16sp"
+            android:layout_marginBottom="24dp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginBottom="20dp">
+            <View
+                android:id="@+id/circle1"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/circle_unselected" />
+            <View
+                android:id="@+id/circle2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/circle_unselected" />
+            <View
+                android:id="@+id/circle3"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/circle_unselected" />
+            <View
+                android:id="@+id/circle4"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/circle_unselected" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_error_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:visibility="gone"
+            android:text="@string/pin_no_match"
+            android:textColor="#EC521A"
+            android:textSize="16sp"
+            android:layout_marginBottom="20dp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btn_1"
+                    style="@style/NumButton"
+                    android:text="1" />
+                <Button
+                    android:id="@+id/btn_2"
+                    style="@style/NumButton"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginRight="40dp"
+                    android:text="2" />
+                <Button
+                    android:id="@+id/btn_3"
+                    style="@style/NumButton"
+                    android:text="3" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btn_4"
+                    style="@style/NumButton"
+                    android:text="4" />
+                <Button
+                    android:id="@+id/btn_5"
+                    style="@style/NumButton"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginRight="40dp"
+                    android:text="5" />
+                <Button
+                    android:id="@+id/btn_6"
+                    style="@style/NumButton"
+                    android:text="6" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btn_7"
+                    style="@style/NumButton"
+                    android:text="7" />
+                <Button
+                    android:id="@+id/btn_8"
+                    style="@style/NumButton"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginRight="40dp"
+                    android:text="8" />
+                <Button
+                    android:id="@+id/btn_9"
+                    style="@style/NumButton"
+                    android:text="9" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <View
+                    android:layout_width="70dp"
+                    android:layout_height="70dp" />
+                <Button
+                    android:id="@+id/btn_0"
+                    style="@style/NumButton"
+                    android:layout_marginLeft="40dp"
+                    android:layout_marginRight="40dp"
+                    android:text="0" />
+                <Button
+                    android:id="@+id/btn_delete"
+                    style="@style/NumButton"
+                    android:text="×" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Cancel"
+            android:textColor="#666666"
+            android:textSize="14sp"
+            android:padding="12dp" />
+</LinearLayout>

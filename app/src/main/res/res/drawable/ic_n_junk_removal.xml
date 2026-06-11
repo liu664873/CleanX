@@ -1,0 +1,38 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android" android:autoMirrored="true" android:height="44dp" android:viewportHeight="44" android:viewportWidth="44" android:width="44dp">
+      
+    <path android:pathData="M8.8,0L35.2,0A8.8,8.8 0,0 1,44 8.8L44,35.2A8.8,8.8 0,0 1,35.2 44L8.8,44A8.8,8.8 0,0 1,0 35.2L0,8.8A8.8,8.8 0,0 1,8.8 0z">
+            
+        <aapt:attr name="android:fillColor">
+                  
+            <gradient android:endX="22" android:endY="44" android:startX="22" android:startY="0" android:type="linear">
+                        
+                <item android:color="#FFFF6145" android:offset="0"/>
+                        
+                <item android:color="#FFFE4015" android:offset="1"/>
+                      
+            </gradient>
+                
+        </aapt:attr>
+          
+    </path>
+      
+    <path android:fillColor="#ffffff" android:pathData="M9.063,8.5C7.509,8.5 6.25,9.76 6.25,11.313V12.438C6.25,13.991 7.51,15.25 9.063,15.25H34.938C36.49,15.25 37.75,13.99 37.75,12.438V11.313C37.75,9.759 36.49,8.5 34.938,8.5H9.063Z"/>
+      
+    <path android:fillColor="#ffffff" android:fillType="evenOdd" android:pathData="M8.625,17.5L9.435,31.264C9.502,32.409 10.005,33.486 10.839,34.273C11.674,35.06 12.777,35.499 13.925,35.5H30.06C31.208,35.5 32.312,35.062 33.147,34.274C33.982,33.487 34.485,32.41 34.553,31.264L35.364,17.5H8.625ZM17.824,21.767C18.035,21.557 18.321,21.438 18.619,21.438C18.918,21.438 19.204,21.557 19.414,21.767L21.994,24.347L24.574,21.767C24.677,21.657 24.802,21.568 24.94,21.507C25.078,21.445 25.227,21.412 25.378,21.41C25.529,21.407 25.679,21.435 25.819,21.491C25.959,21.548 26.086,21.632 26.193,21.739C26.3,21.846 26.384,21.973 26.441,22.113C26.497,22.253 26.525,22.403 26.522,22.554C26.52,22.705 26.487,22.854 26.425,22.992C26.364,23.13 26.275,23.254 26.164,23.358L23.584,25.938L26.164,28.517C26.275,28.621 26.364,28.745 26.425,28.883C26.487,29.021 26.52,29.17 26.522,29.321C26.525,29.472 26.497,29.622 26.441,29.762C26.384,29.902 26.3,30.029 26.193,30.136C26.086,30.243 25.959,30.327 25.819,30.384C25.679,30.44 25.529,30.468 25.378,30.465C25.227,30.463 25.078,30.43 24.94,30.368C24.802,30.307 24.677,30.218 24.574,30.108L21.994,27.528L19.414,30.108C19.312,30.218 19.187,30.307 19.049,30.368C18.911,30.43 18.762,30.463 18.611,30.465C18.46,30.468 18.31,30.44 18.17,30.384C18.03,30.327 17.903,30.243 17.796,30.136C17.689,30.029 17.605,29.902 17.548,29.762C17.492,29.622 17.464,29.472 17.467,29.321C17.469,29.17 17.502,29.021 17.564,28.883C17.625,28.745 17.714,28.621 17.824,28.517L20.404,25.938L17.824,23.358C17.614,23.147 17.496,22.861 17.496,22.563C17.496,22.264 17.614,21.978 17.824,21.767Z"/>
+    
+</vector>

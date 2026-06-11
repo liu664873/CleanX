@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main-path Japanese localization. Missing keys fall back to English. -->
+    <string name="back">戻る</string>
+    <string name="cancel">キャンセル</string>
+    <string name="allow">許可</string>
+    <string name="ok">OK</string>
+    <string name="confirm">確認</string>
+    <string name="grant">許可</string>
+    <string name="delete">削除</string>
+    <string name="remove">削除</string>
+    <string name="retry">再試行</string>
+    <string name="settings">設定</string>
+    <string name="clean_now">今すぐクリーン</string>
+    <string name="scan_now">今すぐスキャン</string>
+    <string name="nav_home">ホーム</string>
+    <string name="nav_settings">設定</string>
+    <string name="nav_photos">写真</string>
+    <string name="nav_videos">動画</string>
+    <string name="nav_audios">音声</string>
+    <string name="nav_documents">ドキュメント</string>
+    <string name="home_tab_home">ホーム</string>
+    <string name="home_tab_file_manager">ファイル</string>
+    <string name="home_tab_toolbox">ツール</string>
+    <string name="home_storage_label">ストレージ:</string>
+    <string name="home_remove_junk">不要ファイルを削除</string>
+    <string name="home_virus_title">ウイルス</string>
+    <string name="home_virus_desc">ウイルス、危険なアプリ、\nリスクのあるファイルを深くスキャン</string>
+    <string name="home_toolbox_title">ツール</string>
+    <string name="home_device_model">端末モデル</string>
+    <string name="home_system_version">システムバージョン</string>
+    <string name="home_battery_status">バッテリー状態</string>
+    <string name="home_health">状態</string>
+    <string name="junk_removal">不要ファイル削除</string>
+    
+    
+    
+    
+    
+    
+    <string name="clean_result_done">クリーン完了！</string>
+    
+    <string name="permission_is_required">権限が必要です</string>
+    <string name="permission_storage_desc">不要ファイルをスキャンして削除するには、ファイルとメディアへのアクセスを許可してください。</string>
+    <string name="permission_hint_junk_deleted">不要ファイルのみ削除されます。</string>
+    <string name="permission_hint_no_personal">個人情報は収集されません。</string>
+    <string name="file_select_all">すべて選択</string>
+    <string name="file_unselect_all">すべて解除</string>
+    <string name="file_delete">削除</string>
+    <string name="file_items">項目</string>
+    <string name="file_all">すべて</string>
+    <string name="file_photos">写真</string>
+    <string name="file_download">ダウンロード</string>
+    <string name="file_other">その他</string>
+    <string name="file_got_it">了解</string>
+    <string name="file_scanning_photos">写真をスキャン中...</string>
+    <string name="file_scanning_videos">動画をスキャン中...</string>
+    <string name="file_deleting_files">ファイルを削除中...</string>
+    <string name="anti_virus">ウイルス対策</string>
+    <string name="virus">ウイルス</string>
+    <string name="privacy">プライバシー</string>
+    <string name="battery_info">バッテリー情報</string>
+    <string name="app_usage">アプリ使用状況</string>
+    <string name="network_usage">ネットワーク使用量</string>
+    <string name="network_speed">ネットワーク速度</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="hours_spent">使用時間</string>
+    <string name="times_opened">起動回数</string>
+    <string name="stop">停止</string>
+    <!-- App Lock -->
+    <string name="app_lock">アプリロック</string>
+    <string name="nav_app_lock">アプリロック</string>
+    <string name="setting">設定</string>
+    <string name="enable">有効にする</string>
+    <string name="haptic_feedback">触覚フィードバック</string>
+    <string name="lock_selected_apps">選択したアプリをロック</string>
+    <string name="create_your_pin">PINを作成</string>
+    <string name="enter_pin_to_use">使用するにはPINを入力</string>
+    <string name="re_enter_pin_to_proceed">続行するにはPINを再入力</string>
+    <string name="pin_no_match">PINが一致しません。もう一度お試しください。</string>
+    <string name="change_pin">PINを変更</string>
+    <string name="enter_current_pin_to_verify">確認のため現在のPINを入力</string>
+    <string name="enter_your_new_pin">新しいPINを入力</string>
+    <string name="pin_updated_successfully">PINを更新しました</string>
+    <string name="app_lock_no_apps">利用可能なアプリがありません</string>
+    <string name="app_lock_no_search_results">一致するアプリがありません</string>
+    <string name="lock_all_apps">すべてのアプリをロック</string>
+    <string name="locked_apps">ロック中のアプリ</string>
+    <string name="my_apps">マイアプリ</string>
+    <string name="search_app">アプリを検索</string>
+    <string name="please_enter_app_name">アプリ名を入力してください</string>
+    <string name="turn_on_auto_lock">自動ロックをオン</string>
+    <string name="turn_on_auto_lock_hint">インストール後の新しいアプリを自動的にロックします。</string>
+    <string name="app_lock_usage_permission_title">使用状況データの権限が必要です</string>
+    <string name="app_lock_usage_permission_desc">Quick Clean PROを見つけて権限をオンにしてください。</string>
+    <string name="app_lock_usage_permission_grant">使用状況データへのアクセスを許可</string>
+    <string name="app_lock_overlay_permission_message">この機能を使用するには必要な権限を許可してください。</string>
+    <string name="app_lock_overlay_permission_title">フローティングウィンドウ権限が必要です</string>
+    <string name="app_lock_overlay_permission_desc">Quick Clean PROを見つけて権限をオンにしてください。</string>
+    <string name="app_lock_overlay_permission_grant">他のアプリの上に表示を許可</string>
+    <string name="manage_permission">権限を管理</string>
+    <string name="allow_now">今すぐ許可</string>
+    <string name="permission_app_lock_usage_desc">保護されたアプリが開かれたことを検出するため、使用状況アクセスでQuick Clean PROを許可してください。</string>
+    <!-- Home exit prompts -->
+    <string name="exit">終了</string>
+    <string name="close">閉じる</string>
+    <string name="enable_now">今すぐ有効化</string>
+    <string name="view_now">今すぐ見る</string>
+    <string name="exit_prompt_device_info">デバイスをもっと詳しく確認しましょう。\nすべての仕様をチェックできます。</string>
+    <string name="exit_prompt_junk_removal">クイックスキャンでストレージを解放しましょう。</string>
+    <string name="exit_prompt_battery_info">バッテリーの健康状態と電源状態を確認しましょう。</string>
+    <string name="exit_prompt_network_scan">ネットワーク上のすべてのデバイスを確認しましょう。</string>
+    <string name="exit_prompt_network_usage">モバイルデータとWi-Fi使用量を追跡しましょう。</string>
+    <string name="exit_prompt_notification_title">スマート通知フィルターで\n集中を保ちましょう</string>
+    <string name="exit_prompt_notification_tip_block">不要な通知をブロック</string>
+    <string name="exit_prompt_notification_tip_matters">重要な通知だけを表示</string>
+    <string name="exit_prompt_notification_tip_focus">集中を保ち、中断を減らします</string>
+    <string name="permission_title_required">権限が必要です</string>
+    <string name="permission_post_notifications_desc">クリーンアップツールを利用できるように、Quick Clean PROからの通知を許可してください。</string>
+    <string name="permission_hint_app_notifications">アプリの状態とクリーンアップ通知のみ送信されます。</string>
+    <string name="notification_enable_title">通知を有効にするには？</string>
+    <string name="notification_enable_step_find_prefix">1.\u0020</string>
+    <string name="notification_enable_step_find_suffix">を見つけます</string>
+    <string name="notification_enable_step_allow">2.「許可」をタップします</string>
+</resources>

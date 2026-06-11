@@ -1,0 +1,36 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android" android:autoMirrored="true" android:height="44dp" android:viewportHeight="44" android:viewportWidth="44" android:width="44dp">
+      
+    <path android:pathData="M8.8,0L35.2,0A8.8,8.8 0,0 1,44 8.8L44,35.2A8.8,8.8 0,0 1,35.2 44L8.8,44A8.8,8.8 0,0 1,0 35.2L0,8.8A8.8,8.8 0,0 1,8.8 0z">
+            
+        <aapt:attr name="android:fillColor">
+                  
+            <gradient android:endX="22" android:endY="44" android:startX="22" android:startY="0" android:type="linear">
+                        
+                <item android:color="#FF49FF91" android:offset="0"/>
+                        
+                <item android:color="#FF62E596" android:offset="1"/>
+                      
+            </gradient>
+                
+        </aapt:attr>
+          
+    </path>
+      
+    <path android:fillColor="#ffffff" android:pathData="M37,18.999V16.001C37,14.35 35.65,13 34.001,13H8.501C6.85,13 5.5,14.35 5.5,16.001V27.999C5.5,29.65 6.85,31 8.501,31H34.001C35.65,31 37,29.65 37,27.999V25.001C37.398,25 37.779,24.841 38.061,24.56C38.342,24.278 38.5,23.897 38.501,23.499V20.501C38.5,20.103 38.342,19.722 38.061,19.44C37.779,19.159 37.398,19 37,18.999ZM35.501,27.999C35.5,28.397 35.341,28.778 35.061,29.059C34.78,29.34 34.399,29.499 34.001,29.501H8.501C8.103,29.499 7.722,29.34 7.441,29.059C7.16,28.778 7.002,28.397 7.001,27.999V16.001C7.001,15.174 7.676,14.499 8.501,14.499H34.001C34.826,14.499 35.501,15.174 35.501,16.001V27.999ZM8.501,27.999H22.001V16.001H8.501V27.999Z"/>
+    
+</vector>

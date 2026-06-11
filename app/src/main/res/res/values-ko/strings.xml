@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main-path Korean localization. Missing keys fall back to English. -->
+    <string name="back">뒤로</string>
+    <string name="cancel">취소</string>
+    <string name="allow">허용</string>
+    <string name="ok">확인</string>
+    <string name="confirm">확인</string>
+    <string name="grant">권한 부여</string>
+    <string name="delete">삭제</string>
+    <string name="remove">제거</string>
+    <string name="retry">다시 시도</string>
+    <string name="settings">설정</string>
+    <string name="clean_now">지금 정리</string>
+    <string name="scan_now">지금 검사</string>
+    <string name="nav_home">홈</string>
+    <string name="nav_settings">설정</string>
+    <string name="nav_photos">사진</string>
+    <string name="nav_videos">동영상</string>
+    <string name="nav_audios">오디오</string>
+    <string name="nav_documents">문서</string>
+    <string name="home_tab_home">홈</string>
+    <string name="home_tab_file_manager">파일</string>
+    <string name="home_tab_toolbox">도구</string>
+    <string name="home_storage_label">저장공간:</string>
+    <string name="home_remove_junk">정크 제거</string>
+    <string name="home_virus_title">바이러스</string>
+    <string name="home_virus_desc">바이러스, 악성 앱,\n위험 파일을 정밀 검사</string>
+    <string name="home_toolbox_title">도구</string>
+    <string name="home_device_model">기기 모델</string>
+    <string name="home_system_version">시스템 버전</string>
+    <string name="home_battery_status">배터리 상태</string>
+    <string name="home_health">상태</string>
+    <string name="junk_removal">정크 정리</string>
+    
+    
+    
+    
+    
+    
+    <string name="clean_result_done">정리 완료!</string>
+    
+    <string name="permission_is_required">권한 필요</string>
+    <string name="permission_storage_desc">정크 파일을 검사하고 삭제하려면 파일 및 미디어 접근을 허용하세요.</string>
+    <string name="permission_hint_junk_deleted">정크 파일만 삭제됩니다.</string>
+    <string name="permission_hint_no_personal">개인정보는 수집되지 않습니다.</string>
+    <string name="file_select_all">전체 선택</string>
+    <string name="file_unselect_all">전체 해제</string>
+    <string name="file_delete">삭제</string>
+    <string name="file_items">항목</string>
+    <string name="file_all">전체</string>
+    <string name="file_photos">사진</string>
+    <string name="file_download">다운로드</string>
+    <string name="file_other">기타</string>
+    <string name="file_got_it">확인</string>
+    <string name="file_scanning_photos">사진 검사 중...</string>
+    <string name="file_scanning_videos">동영상 검사 중...</string>
+    <string name="file_deleting_files">파일 삭제 중...</string>
+    <string name="anti_virus">바이러스 검사</string>
+    <string name="virus">바이러스</string>
+    <string name="privacy">개인정보</string>
+    <string name="battery_info">배터리 정보</string>
+    <string name="app_usage">앱 사용량</string>
+    <string name="network_usage">네트워크 사용량</string>
+    <string name="network_speed">네트워크 속도</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="hours_spent">사용 시간</string>
+    <string name="times_opened">실행 횟수</string>
+    <string name="stop">중지</string>
+    <!-- App Lock -->
+    <string name="app_lock">앱 잠금</string>
+    <string name="nav_app_lock">앱 잠금</string>
+    <string name="setting">설정</string>
+    <string name="enable">사용</string>
+    <string name="haptic_feedback">햅틱 피드백</string>
+    <string name="lock_selected_apps">선택한 앱 잠금</string>
+    <string name="create_your_pin">PIN 만들기</string>
+    <string name="enter_pin_to_use">사용하려면 PIN 입력</string>
+    <string name="re_enter_pin_to_proceed">계속하려면 PIN 다시 입력</string>
+    <string name="pin_no_match">PIN이 일치하지 않습니다. 다시 시도하세요.</string>
+    <string name="change_pin">PIN 변경</string>
+    <string name="enter_current_pin_to_verify">확인을 위해 현재 PIN 입력</string>
+    <string name="enter_your_new_pin">새 PIN 입력</string>
+    <string name="pin_updated_successfully">PIN이 업데이트되었습니다</string>
+    <string name="app_lock_no_apps">사용 가능한 앱이 없습니다</string>
+    <string name="app_lock_no_search_results">일치하는 앱이 없습니다</string>
+    <string name="lock_all_apps">모든 앱 잠금</string>
+    <string name="locked_apps">잠긴 앱</string>
+    <string name="my_apps">내 앱</string>
+    <string name="search_app">앱 검색</string>
+    <string name="please_enter_app_name">앱 이름을 입력하세요</string>
+    <string name="turn_on_auto_lock">자동 잠금 켜기</string>
+    <string name="turn_on_auto_lock_hint">설치 후 새 앱을 자동으로 잠급니다.</string>
+    <string name="app_lock_usage_permission_title">사용 데이터 권한 필요</string>
+    <string name="app_lock_usage_permission_desc">Quick Clean PRO를 찾아 권한을 켜세요.</string>
+    <string name="app_lock_usage_permission_grant">사용 데이터 접근 허용</string>
+    <string name="app_lock_overlay_permission_message">이 기능을 사용하려면 필요한 권한을 허용하세요.</string>
+    <string name="app_lock_overlay_permission_title">플로팅 창 권한 필요</string>
+    <string name="app_lock_overlay_permission_desc">Quick Clean PRO를 찾아 권한을 켜세요.</string>
+    <string name="app_lock_overlay_permission_grant">다른 앱 위에 표시 허용</string>
+    <string name="manage_permission">권한 관리</string>
+    <string name="allow_now">지금 허용</string>
+    <string name="permission_app_lock_usage_desc">보호된 앱이 열리는 것을 감지하려면 사용 접근 설정에서 Quick Clean PRO를 허용하세요.</string>
+    <!-- Home exit prompts -->
+    <string name="exit">종료</string>
+    <string name="close">닫기</string>
+    <string name="enable_now">지금 켜기</string>
+    <string name="view_now">지금 보기</string>
+    <string name="exit_prompt_device_info">기기를 더 자세히 알아보세요.\n모든 사양을 확인할 수 있습니다.</string>
+    <string name="exit_prompt_junk_removal">빠른 스캔으로 저장 공간을 확보하세요.</string>
+    <string name="exit_prompt_battery_info">배터리 상태와 전원 상태를 확인하세요.</string>
+    <string name="exit_prompt_network_scan">네트워크의 모든 기기를 확인하세요.</string>
+    <string name="exit_prompt_network_usage">모바일 데이터와 Wi-Fi 사용량을 추적하세요.</string>
+    <string name="exit_prompt_notification_title">스마트 알림 필터링으로\n집중을 유지하세요</string>
+    <string name="exit_prompt_notification_tip_block">원치 않는 알림 차단</string>
+    <string name="exit_prompt_notification_tip_matters">중요한 내용만 보기</string>
+    <string name="exit_prompt_notification_tip_focus">집중을 유지하고 방해를 줄이세요</string>
+    <string name="permission_title_required">권한 필요</string>
+    <string name="permission_post_notifications_desc">정리 도구를 계속 사용할 수 있도록 Quick Clean PRO의 알림 전송을 허용하세요.</string>
+    <string name="permission_hint_app_notifications">앱 상태 및 정리 알림만 전송됩니다.</string>
+    <string name="notification_enable_title">알림을 활성화하는 방법</string>
+    <string name="notification_enable_step_find_prefix">1.\u0020</string>
+    <string name="notification_enable_step_find_suffix"> 찾기</string>
+    <string name="notification_enable_step_allow">2. “허용”을 탭하세요</string>
+</resources>

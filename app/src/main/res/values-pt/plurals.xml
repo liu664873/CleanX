@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="locked_apps_count">
+        <item quantity="one">%1$d app bloqueado</item>
+        <item quantity="other">%1$d apps bloqueados</item>
+    </plurals>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="locked_apps_count">
+        <item quantity="other">%1$d ứng dụng đã khóa</item>
+    </plurals>
+</resources>
