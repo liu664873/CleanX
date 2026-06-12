@@ -19,3 +19,93 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keepattributes Signature,*Annotation*,InnerClasses,EnclosingMethod,AnnotationDefault
+
+# Keep classes and members explicitly marked for reflection or framework lookup.
+-keep @androidx.annotation.Keep class * { *; }
+-keepclasseswithmembers class * {
+    @androidx.annotation.Keep <fields>;
+    @androidx.annotation.Keep <methods>;
+    @androidx.annotation.Keep <init>(...);
+}
+
+# Android framework entry points and native methods.
+-keep class * extends android.app.Application { public <init>(); }
+-keep class * extends android.app.Activity { public <init>(); }
+-keep class * extends android.app.Service { public <init>(); }
+-keep class * extends android.content.BroadcastReceiver { public <init>(); }
+-keep class * extends android.content.ContentProvider { public <init>(); }
+-keep class * extends android.service.notification.NotificationListenerService { public <init>(); }
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Enum APIs are used by UI state and routing helpers.
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Project bean/model/state classes.
+-keep class com.quickcleanpro.phonecleaner.common.** { *; }
+-keep class com.quickcleanpro.phonecleaner.domain.model.** { *; }
+-keep class com.quickcleanpro.phonecleaner.domain.state.** { *; }
+-keep class com.quickcleanpro.phonecleaner.presentation.common.state.** { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*UiState { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*State { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*Item { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*Info { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*Result { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*Progress { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*Summary { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*Entry { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*Config { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*Spec { *; }
+-keep class com.quickcleanpro.phonecleaner.**.*Snapshot { *; }
+
+# App component classes that are resolved by manifest, Koin, or callbacks.
+-keep class com.quickcleanpro.phonecleaner.di.** { *; }
+-keep class com.quickcleanpro.phonecleaner.QuickCleanApplication { *; }
+-keep class com.quickcleanpro.phonecleaner.MainActivity { *; }
+-keep class com.quickcleanpro.phonecleaner.data.source.notification.PersistentNotificationService { *; }
+-keep class com.quickcleanpro.phonecleaner.data.source.notification.QuickCleanNotificationListener { *; }
+-keep class com.quickcleanpro.phonecleaner.data.source.applock.LockScreenOverlayService { *; }
+-keep class com.quickcleanpro.phonecleaner.domain.repository.** { *; }
+-keep class com.quickcleanpro.phonecleaner.domain.usecase.** { *; }
+-keep class com.quickcleanpro.phonecleaner.data.local.** { *; }
+-keep class com.quickcleanpro.phonecleaner.data.repository.** { *; }
+-keep class com.quickcleanpro.phonecleaner.data.source.** { *; }
+-keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen { *; }
+-keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen$* { *; }
+-keep class com.quickcleanpro.phonecleaner.presentation.screen.**.*ViewModel { *; }
+-keep class com.quickcleanpro.phonecleaner.util.** { *; }
+-keep class com.quickcleanpro.phonecleaner.utils.** { *; }
+
+# Trustlook cloud scan SDK and SDK callback/data classes.
+-keep class com.trustlook.** { *; }
+-dontwarn com.trustlook.**
+
+# Koin dependency injection.
+-keep class org.koin.** { *; }
+-keep class kotlin.reflect.** { *; }
+-dontwarn org.koin.**
+-dontwarn kotlin.reflect.**
+
+# Lottie animation runtime.
+-keep class com.airbnb.lottie.** { *; }
+-dontwarn com.airbnb.lottie.**
+
+# Kotlin, coroutines, AndroidX, Compose, AppCompat, Okio/OkHttp optional classes.
+-keep class kotlin.Metadata { *; }
+-dontwarn kotlin.**
+-dontwarn kotlinx.coroutines.**
+-dontwarn androidx.compose.**
+-dontwarn androidx.lifecycle.**
+-dontwarn androidx.navigation.**
+-dontwarn androidx.appcompat.**
+-dontwarn okio.**
+-dontwarn okhttp3.**
+-dontwarn javax.annotation.**
+-dontwarn org.jetbrains.annotations.**
+-dontwarn org.codehaus.mojo.animal_sniffer.**

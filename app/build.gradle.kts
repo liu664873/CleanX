@@ -1,9 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "com.clean.cleanx"
+    namespace = "com.quickcleanpro.phonecleaner"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -11,11 +12,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.clean.cleanx"
+        applicationId = "com.quickcleanpro.phonecleaner"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -44,6 +45,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(files("libs/cloudscan_sdk_5.0.18.20250821.aar"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -59,11 +61,13 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(libs.lottie)
     implementation(libs.lottie.compose)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
