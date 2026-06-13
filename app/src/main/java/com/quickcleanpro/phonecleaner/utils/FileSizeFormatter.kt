@@ -1,4 +1,4 @@
-﻿package com.quickcleanpro.phonecleaner.util
+package com.quickcleanpro.phonecleaner.utils
 
 object FileSizeFormatter {
     fun format(bytes: Long): String =

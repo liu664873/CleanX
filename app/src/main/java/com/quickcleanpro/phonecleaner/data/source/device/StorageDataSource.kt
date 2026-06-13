@@ -4,7 +4,7 @@ import android.os.Environment
 import android.os.StatFs
 import android.os.storage.StorageManager
 import com.quickcleanpro.phonecleaner.domain.model.device.StorageInfo
-import com.quickcleanpro.phonecleaner.util.FileSizeFormatter
+import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import java.io.File
 
 /**

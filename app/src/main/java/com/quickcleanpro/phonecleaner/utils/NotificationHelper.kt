@@ -1,6 +1,7 @@
-﻿package com.quickcleanpro.phonecleaner.util
+﻿package com.quickcleanpro.phonecleaner.utils
 
 import android.Manifest
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -11,12 +12,12 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.quickcleanpro.phonecleaner.MainActivity
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.data.source.notification.QuickCleanNotificationListener
 import com.quickcleanpro.phonecleaner.presentation.navigation.Screen
-import com.quickcleanpro.phonecleaner.utils.NotificationChannelManager
 
 data class BlockableNotificationApp(
     val appName: String,
@@ -43,7 +44,7 @@ object NotificationHelper {
 
         createChannel(context)
         val manager =
-            androidx.core.app.NotificationManagerCompat
+            NotificationManagerCompat
                 .from(context)
         manager.cancelAll()
 
@@ -79,7 +80,7 @@ object NotificationHelper {
                 setShowBadge(true)
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0L, 100L, 200L, 300L)
-                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             }
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.createNotificationChannel(channel)

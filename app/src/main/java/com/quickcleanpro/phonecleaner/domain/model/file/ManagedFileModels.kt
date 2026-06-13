@@ -1,7 +1,7 @@
 ﻿package com.quickcleanpro.phonecleaner.domain.model.file
 
 import android.net.Uri
-import com.quickcleanpro.phonecleaner.util.FileSizeFormatter
+import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 
 /**
  * 鏂囦欢绠＄悊妯″潡鏀寔鐨勬枃浠剁被鍨嬨€? */

@@ -1,6 +1,6 @@
 ﻿package com.quickcleanpro.phonecleaner.domain.model.clean
 
-import com.quickcleanpro.phonecleaner.util.FileSizeFormatter
+import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 
 /**
  * 鍐呭瓨娓呯悊缁撴灉銆? */

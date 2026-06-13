@@ -22,7 +22,7 @@ import com.quickcleanpro.phonecleaner.domain.model.toolbox.NetworkSpeedResult
 import com.quickcleanpro.phonecleaner.domain.model.toolbox.NetworkUsageApp
 import com.quickcleanpro.phonecleaner.domain.model.toolbox.NetworkUsageInfo
 import com.quickcleanpro.phonecleaner.domain.model.toolbox.UNKNOWN_NETWORK_TRAFFIC_PACKAGE
-import com.quickcleanpro.phonecleaner.util.FileSizeFormatter
+import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
