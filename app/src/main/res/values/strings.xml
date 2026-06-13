@@ -195,6 +195,7 @@
     <string name="clean_result_junk_removed">Of junk files removed</string>
     <string name="clean_result_junk_removed_with_failed">Of junk files removed (%1$d failed)</string>
     <string name="clean_result_files_failed">%1$d files could not be removed. Some folders require system file access.</string>
+    <string name="no_data_available">No data available</string>
 
     <!-- Common result toolbox entries -->
     <string name="common_tool_device_desc">View detailed specs of your phone</string>
@@ -549,4 +550,6 @@
     <string name="notification_tool_network_scan_desc">Network scan</string>
     <string name="notification_tool_network_usage_desc">View your data usage</string>
     <string name="notification_tool_cleaner_desc">Check if there are unwanted notifications</string>
+
+    <string name="device_info_source_hint">The device information displayed is based on system-provided data and may vary from the official specifications. For in stance, storage capacity or memory may differ slightly due to system reservations or hardware configuration variations.</string>>
 </resources>
