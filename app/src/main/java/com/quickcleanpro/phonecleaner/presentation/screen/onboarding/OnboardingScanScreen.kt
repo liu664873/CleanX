@@ -11,48 +11,44 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
-private const val OnboardingStepDelayMillis = 680L
-private const val OnboardingScanLineDurationMillis = 1800
-private const val OnboardingStatusRingDurationMillis = 1200
+private const val ONBOARDING_STEP_DELAY_MILLIS = 680L
+private const val ONBOARDING_SCAN_LINE_DURATION_MILLIS = 1800
+private const val ONBOARDING_STATUS_RING_DURATION_MILLIS = 1200
 
 @Composable
-fun OnboardingScanScreen(
-    onContinueToHome: () -> Unit
-) {
+fun OnboardingScanScreen(onContinueToHome: () -> Unit) {
     OnboardingScanContent(
-        onContinueToHome = onContinueToHome
+        onContinueToHome = onContinueToHome,
     )
 }
 
 @Composable
-private fun OnboardingScanContent(
-    onContinueToHome: () -> Unit
-) {
+private fun OnboardingScanContent(onContinueToHome: () -> Unit) {
     val viewModel: OnboardingScanViewModel = koinViewModel()
     val lifecycleOwner = LocalLifecycleOwner.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var completedStep by remember { mutableIntStateOf(0) }
 
     DisposableEffect(lifecycleOwner, viewModel) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.refresh()
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    viewModel.refresh()
+                }
             }
-        }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     LaunchedEffect(Unit) {
         for (step in 1..6) {
-            delay(OnboardingStepDelayMillis)
+            delay(ONBOARDING_STEP_DELAY_MILLIS)
             completedStep = step
         }
-        delay(OnboardingStepDelayMillis)
+        delay(ONBOARDING_STEP_DELAY_MILLIS)
         completedStep = 7
     }
 }

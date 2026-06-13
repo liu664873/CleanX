@@ -8,16 +8,16 @@ import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.BatteryManager
 import android.os.Build
+import com.quickcleanpro.phonecleaner.data.source.device.DeviceInfoDataSource
+import com.quickcleanpro.phonecleaner.data.source.device.StorageDataSource
 import com.quickcleanpro.phonecleaner.domain.model.BatteryStatusInfo
 import com.quickcleanpro.phonecleaner.domain.model.DeviceCpuInfo
 import com.quickcleanpro.phonecleaner.domain.model.DeviceHardwareInfo
 import com.quickcleanpro.phonecleaner.domain.model.DeviceSensorInfo
-import com.quickcleanpro.phonecleaner.domain.repository.DeviceInfoRepository
 import com.quickcleanpro.phonecleaner.domain.model.device.BatteryInfo
-import com.quickcleanpro.phonecleaner.data.source.device.DeviceInfoDataSource
 import com.quickcleanpro.phonecleaner.domain.model.device.MemoryInfo
 import com.quickcleanpro.phonecleaner.domain.model.device.StorageInfo
-import com.quickcleanpro.phonecleaner.data.source.device.StorageDataSource
+import com.quickcleanpro.phonecleaner.domain.repository.DeviceInfoRepository
 import java.io.File
 import java.util.Locale
 
@@ -28,15 +28,15 @@ import java.util.Locale
  * 并实现 [DeviceInfoRepository] 接口。统一使用 Application Context，
  * 避免持有 Activity 引用导致内存泄漏。
  */
-class DeviceInfoRepositoryImpl(context: Context) : DeviceInfoRepository {
-
+class DeviceInfoRepositoryImpl(
+    context: Context,
+) : DeviceInfoRepository {
     private val appContext = context.applicationContext
 
     /**
      * 获取当前电池基本信息（电量、健康度、温度、电压、技术、容量、续航时间）。
      */
-    override fun batteryInfo(): BatteryInfo =
-        DeviceInfoDataSource.getBatteryInfo(appContext)
+    override fun batteryInfo(): BatteryInfo = DeviceInfoDataSource.getBatteryInfo(appContext)
 
     /**
      * 获取电池充放电状态（充电中、放电中、已满等）。
@@ -45,21 +45,19 @@ class DeviceInfoRepositoryImpl(context: Context) : DeviceInfoRepository {
         val status = readBatteryStatus()
         return BatteryStatusInfo(
             statusText = status.toBatteryStatusText(),
-            isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING
+            isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING,
         )
     }
 
     /**
      * 获取内存使用情况（总内存、可用内存、使用百分比等）。
      */
-    override fun memoryInfo(): MemoryInfo =
-        DeviceInfoDataSource.getMemoryInfo(appContext)
+    override fun memoryInfo(): MemoryInfo = DeviceInfoDataSource.getMemoryInfo(appContext)
 
     /**
      * 获取内部存储使用情况（总容量、已用容量、可用容量）。
      */
-    override fun internalStorageInfo(): StorageInfo =
-        StorageDataSource.getInternalStorageInfo()
+    override fun internalStorageInfo(): StorageInfo = StorageDataSource.getInternalStorageInfo()
 
     /**
      * 获取设备硬件综合信息：设备型号、Android 版本、屏幕尺寸/密度、多点触控支持、
@@ -75,30 +73,30 @@ class DeviceInfoRepositoryImpl(context: Context) : DeviceInfoRepository {
             screenDensity = "${metrics.densityDpi} DPI",
             multiTouchSupported = packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN_MULTITOUCH),
             sensors = readSensorInfo(),
-            cpu = DeviceCpuInfo(
-                hardware = Build.HARDWARE.takeIf { it.isNotBlank() } ?: UNKNOWN,
-                model = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Build.SOC_MODEL.isNotBlank()) {
-                    Build.SOC_MODEL
-                } else {
-                    UNKNOWN
-                },
-                cores = Runtime.getRuntime().availableProcessors().coerceAtLeast(1),
-                maxFrequency = readCpuMaxFrequency()
-            )
+            cpu =
+                DeviceCpuInfo(
+                    hardware = Build.HARDWARE.takeIf { it.isNotBlank() } ?: UNKNOWN,
+                    model =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && Build.SOC_MODEL.isNotBlank()) {
+                            Build.SOC_MODEL
+                        } else {
+                            UNKNOWN
+                        },
+                    cores = Runtime.getRuntime().availableProcessors().coerceAtLeast(1),
+                    maxFrequency = readCpuMaxFrequency(),
+                ),
         )
     }
 
     /**
      * 获取当前瞬时电流（毫安）。系统不支持或 API 低于 21 时返回 null。
      */
-    override fun batteryCurrentNowMa(): Float? =
-        readBatteryCurrentMa(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+    override fun batteryCurrentNowMa(): Float? = readBatteryCurrentMa(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
 
     /**
      * 获取系统提供的平均电流（毫安）。系统不支持或 API 低于 21 时返回 null。
      */
-    override fun batteryCurrentAverageMa(): Float? =
-        readBatteryCurrentMa(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)
+    override fun batteryCurrentAverageMa(): Float? = readBatteryCurrentMa(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)
 
     /**
      * 读取电池状态（通过注册空广播接收器获取最后一次粘性广播）。
@@ -107,15 +105,16 @@ class DeviceInfoRepositoryImpl(context: Context) : DeviceInfoRepository {
      */
     private fun readBatteryStatus(): Int? =
         try {
-            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                appContext.registerReceiver(
-                    null,
-                    IntentFilter(Intent.ACTION_BATTERY_CHANGED),
-                    Context.RECEIVER_NOT_EXPORTED
-                )
-            } else {
-                appContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-            }
+            val intent =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    appContext.registerReceiver(
+                        null,
+                        IntentFilter(Intent.ACTION_BATTERY_CHANGED),
+                        Context.RECEIVER_NOT_EXPORTED,
+                    )
+                } else {
+                    appContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                }
             intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
         } catch (_: Exception) {
             null
@@ -128,6 +127,7 @@ class DeviceInfoRepositoryImpl(context: Context) : DeviceInfoRepository {
      */
     private fun readSensorInfo(): DeviceSensorInfo {
         val sensorManager = appContext.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+
         fun supported(type: Int): Boolean = sensorManager?.getDefaultSensor(type) != null
         return DeviceSensorInfo(
             accelerometer = supported(Sensor.TYPE_ACCELEROMETER),
@@ -136,7 +136,7 @@ class DeviceInfoRepositoryImpl(context: Context) : DeviceInfoRepository {
             gyroscope = supported(Sensor.TYPE_GYROSCOPE),
             light = supported(Sensor.TYPE_LIGHT),
             proximity = supported(Sensor.TYPE_PROXIMITY),
-            ambientTemperature = supported(Sensor.TYPE_AMBIENT_TEMPERATURE)
+            ambientTemperature = supported(Sensor.TYPE_AMBIENT_TEMPERATURE),
         )
     }
 
@@ -184,11 +184,13 @@ class DeviceInfoRepositoryImpl(context: Context) : DeviceInfoRepository {
 
     private companion object {
         private const val UNKNOWN = "Unknown"
+
         // CPU 最大频率的可能 sysfs 路径
-        private val CPU_FREQUENCY_PATHS = listOf(
-            "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq",
-            "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq"
-        )
+        private val CPU_FREQUENCY_PATHS =
+            listOf(
+                "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq",
+                "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq",
+            )
     }
 }
 

@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.Flow
  * delete implementations.
  */
 interface CleanRepository {
-
     val scanProgress: Flow<ScanProgress>
 
     suspend fun performFullScan(): ScanResult

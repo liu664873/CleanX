@@ -4,13 +4,13 @@ import android.content.Context
 import com.quickcleanpro.phonecleaner.domain.model.JunkCategory
 import java.io.File
 
-class ResidualScanner(context: Context) : BaseFileScanner() {
-
+class ResidualScanner(
+    context: Context,
+) : BaseFileScanner() {
     override val category: JunkCategory = JunkCategory.RESIDUAL
     private val appContext = context.applicationContext
 
-    override fun getRootDirectories(): List<File> =
-        ScanDirectoryHelper.prioritizedDirectories(appContext)
+    override fun getRootDirectories(): List<File> = ScanDirectoryHelper.prioritizedDirectories(appContext)
 
     override fun isJunkFile(file: File): Boolean {
         if (!file.isFile || file.length() < MIN_RESIDUAL_BYTES) return false
@@ -27,19 +27,20 @@ class ResidualScanner(context: Context) : BaseFileScanner() {
 
     private companion object {
         const val MIN_RESIDUAL_BYTES = 1024L
-        val RESIDUAL_PATTERNS = setOf(
-            "cache",
-            "temp",
-            "tmp",
-            "log",
-            "backup",
-            "trash",
-            "trashes",
-            ".temp",
-            ".tmp",
-            ".cache",
-            "tmp_",
-            "temp_"
-        )
+        val RESIDUAL_PATTERNS =
+            setOf(
+                "cache",
+                "temp",
+                "tmp",
+                "log",
+                "backup",
+                "trash",
+                "trashes",
+                ".temp",
+                ".tmp",
+                ".cache",
+                "tmp_",
+                "temp_",
+            )
     }
 }

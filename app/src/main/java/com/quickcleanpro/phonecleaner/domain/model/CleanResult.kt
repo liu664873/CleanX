@@ -1,13 +1,12 @@
 ﻿package com.quickcleanpro.phonecleaner.domain.model
 
-
 /**
  * 娓呯悊缁撴灉棰嗗煙妯″瀷
  */
 data class CleanResult(
     val cleanedFiles: List<JunkFile>,
     val freedSpace: Long,
-    val failedFiles: List<JunkFile> = emptyList()
+    val failedFiles: List<JunkFile> = emptyList(),
 ) {
     val successCount: Int
         get() = cleanedFiles.size

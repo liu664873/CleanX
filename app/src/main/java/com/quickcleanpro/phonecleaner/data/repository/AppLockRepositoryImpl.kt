@@ -8,8 +8,9 @@ import com.quickcleanpro.phonecleaner.utils.AdvancedLockAppInfoHelper
 import com.quickcleanpro.phonecleaner.utils.AppLockPermissionUtils
 import com.quickcleanpro.phonecleaner.utils.AppPrefsUtils
 
-class AppLockRepositoryImpl(context: Context) : AppLockRepository {
-
+class AppLockRepositoryImpl(
+    context: Context,
+) : AppLockRepository {
     private val appContext = context.applicationContext
     private val appInfoHelper = AdvancedLockAppInfoHelper(appContext)
 
@@ -22,19 +23,18 @@ class AppLockRepositoryImpl(context: Context) : AppLockRepository {
         AppPrefsUtils.putBoolean(KEY_IS_SET_LOCK, true)
     }
 
-    override fun verifyPin(pin: String): Boolean =
-        pin.length == PIN_LENGTH && pin == AppPrefsUtils.getString(KEY_PIN, "")
+    override fun verifyPin(pin: String): Boolean = pin.length == PIN_LENGTH && pin == AppPrefsUtils.getString(KEY_PIN, "")
 
-    override fun lockedPackages(): Set<String> =
-        decodePackages(AppPrefsUtils.getString(KEY_LOCKED_PACKAGES, ""))
+    override fun lockedPackages(): Set<String> = decodePackages(AppPrefsUtils.getString(KEY_LOCKED_PACKAGES, ""))
 
-    override fun lockedAppCount(): Int =
-        if (isPinSet()) lockedPackages().size else 0
+    override fun lockedAppCount(): Int = if (isPinSet()) lockedPackages().size else 0
 
-    override fun isPackageLocked(packageName: String): Boolean =
-        packageName in lockedPackages()
+    override fun isPackageLocked(packageName: String): Boolean = packageName in lockedPackages()
 
-    override fun setPackageLocked(packageName: String, locked: Boolean) {
+    override fun setPackageLocked(
+        packageName: String,
+        locked: Boolean,
+    ) {
         if (packageName.isBlank() || packageName == appContext.packageName) return
         val current = lockedPackages().toMutableSet()
         if (locked) current += packageName else current -= packageName
@@ -49,52 +49,46 @@ class AppLockRepositoryImpl(context: Context) : AppLockRepository {
                 .map { it.trim() }
                 .filter { it.isNotBlank() && it != appContext.packageName }
                 .distinct()
-                .joinToString(",")
+                .joinToString(","),
         )
     }
 
     override suspend fun lockableApps(): List<AppLockApp> {
         val locked = if (isPinSet()) lockedPackages() else DEFAULT_LOCK_PACKAGES
-        return appInfoHelper.getApps()
+        return appInfoHelper
+            .getApps()
             .map { app ->
                 app.copy(isLocked = app.packageName in locked)
-            }
-            .sortedWith(
+            }.sortedWith(
                 compareByDescending<AppLockApp> { it.isLocked }
                     .thenBy { it.appName.lowercase() }
-                    .thenBy { it.packageName }
+                    .thenBy { it.packageName },
             )
     }
 
-    override fun isMonitoringEnabled(): Boolean =
-        AppPrefsUtils.getBoolean(KEY_MONITORING_ENABLED, true)
+    override fun isMonitoringEnabled(): Boolean = AppPrefsUtils.getBoolean(KEY_MONITORING_ENABLED, true)
 
     override fun setMonitoringEnabled(enabled: Boolean) {
         AppPrefsUtils.putBoolean(KEY_MONITORING_ENABLED, enabled)
     }
 
-    override fun isAutoLockEnabled(): Boolean =
-        AppPrefsUtils.getBoolean(KEY_AUTO_LOCK, false)
+    override fun isAutoLockEnabled(): Boolean = AppPrefsUtils.getBoolean(KEY_AUTO_LOCK, false)
 
     override fun setAutoLockEnabled(enabled: Boolean) {
         AppPrefsUtils.putBoolean(KEY_AUTO_LOCK, enabled)
     }
 
-    override fun isVibrationEnabled(): Boolean =
-        AppPrefsUtils.getBoolean(KEY_VIBRATE_ON_KEYPAD, true)
+    override fun isVibrationEnabled(): Boolean = AppPrefsUtils.getBoolean(KEY_VIBRATE_ON_KEYPAD, true)
 
     override fun setVibrationEnabled(enabled: Boolean) {
         AppPrefsUtils.putBoolean(KEY_VIBRATE_ON_KEYPAD, enabled)
     }
 
-    override fun hasUsageAccess(): Boolean =
-        AppLockPermissionUtils.hasUsageStatsPermission(appContext)
+    override fun hasUsageAccess(): Boolean = AppLockPermissionUtils.hasUsageStatsPermission(appContext)
 
-    override fun hasOverlayPermission(): Boolean =
-        AppLockPermissionUtils.canDrawOverlays(appContext)
+    override fun hasOverlayPermission(): Boolean = AppLockPermissionUtils.canDrawOverlays(appContext)
 
-    override fun overlayPermissionIntent(): Intent? =
-        AppLockPermissionUtils.getOverlayPermissionIntent(appContext)
+    override fun overlayPermissionIntent(): Intent? = AppLockPermissionUtils.getOverlayPermissionIntent(appContext)
 
     override fun handlePackageAdded(packageName: String) {
         if (isPinSet() && isAutoLockEnabled() && isLaunchable(packageName)) {
@@ -112,7 +106,8 @@ class AppLockRepositoryImpl(context: Context) : AppLockRepository {
             appContext.packageManager.getLaunchIntentForPackage(packageName) != null
 
     private fun decodePackages(value: String): Set<String> =
-        value.split(',')
+        value
+            .split(',')
             .asSequence()
             .map { it.trim() }
             .filter { it.isNotBlank() }
@@ -128,14 +123,15 @@ class AppLockRepositoryImpl(context: Context) : AppLockRepository {
         const val KEY_VIBRATE_ON_KEYPAD = "vibrate_on_keypad"
         const val PIN_LENGTH = 4
 
-        private val DEFAULT_LOCK_PACKAGES = setOf(
-            "com.google.android.gm",
-            "com.google.android.apps.photos",
-            "com.facebook.katana",
-            "com.instagram.android",
-            "com.twitter.android",
-            "com.whatsapp",
-            "com.sec.android.gallery3d"
-        )
+        private val DEFAULT_LOCK_PACKAGES =
+            setOf(
+                "com.google.android.gm",
+                "com.google.android.apps.photos",
+                "com.facebook.katana",
+                "com.instagram.android",
+                "com.twitter.android",
+                "com.whatsapp",
+                "com.sec.android.gallery3d",
+            )
     }
 }

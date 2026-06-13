@@ -22,20 +22,26 @@ object NotificationDataSource {
     private const val MAX_VISIBLE_APPS = 30
     private const val OPSTR_POST_NOTIFICATION = "android:post_notification"
 
-    fun isEnabled(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_ENABLED, false) && hasNotificationListenerAccess(context)
+    fun isEnabled(context: Context): Boolean = prefs(context).getBoolean(KEY_ENABLED, false) && hasNotificationListenerAccess(context)
 
-    fun setEnabled(context: Context, enabled: Boolean) {
+    fun setEnabled(
+        context: Context,
+        enabled: Boolean,
+    ) {
         prefs(context).edit().putBoolean(KEY_ENABLED, enabled).apply()
     }
 
     fun blockedCount(context: Context): Int = prefs(context).getInt(KEY_BLOCKED_COUNT, 0)
 
-    fun incrementBlocked(context: Context, packageName: String) {
+    fun incrementBlocked(
+        context: Context,
+        packageName: String,
+    ) {
         val p = prefs(context)
         val packageCounts = blockedCountsByPackage(context).toMutableMap()
         packageCounts[packageName] = (packageCounts[packageName] ?: 0) + 1
-        p.edit()
+        p
+            .edit()
             .putInt(KEY_BLOCKED_COUNT, p.getInt(KEY_BLOCKED_COUNT, 0) + 1)
             .putString(KEY_BLOCKED_COUNTS_BY_PACKAGE, encodeBlockedCounts(packageCounts))
             .apply()
@@ -47,7 +53,11 @@ object NotificationDataSource {
     fun selectedPackages(context: Context): Set<String> =
         prefs(context).getStringSet(KEY_SELECTED_PACKAGES, defaultPackages(context)) ?: emptySet()
 
-    fun setPackageSelected(context: Context, packageName: String, selected: Boolean) {
+    fun setPackageSelected(
+        context: Context,
+        packageName: String,
+        selected: Boolean,
+    ) {
         val current = selectedPackages(context).toMutableSet()
         if (selected) current += packageName else current -= packageName
         prefs(context).edit().putStringSet(KEY_SELECTED_PACKAGES, current).apply()
@@ -57,32 +67,39 @@ object NotificationDataSource {
         val pm = context.packageManager
         val defaults = defaultPackages(context)
         val selected = selectedPackages(context)
-        val installedAppInfos = pm.getInstalledApplications(0)
-            .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
-        val installed = installedAppInfos
-            .map { BlockableNotificationApp(it.loadLabel(pm).toString(), it.packageName) }
-            .sortedWith(
-                compareByDescending<BlockableNotificationApp> { it.packageName in defaults }
-                    .thenByDescending { it.packageName in selected }
-                    .thenBy { it.appName.lowercase() }
-            )
-        val notificationAllowedPackages = installedAppInfos
-            .filter { notificationsAllowed(context, it) }
-            .mapTo(mutableSetOf()) { it.packageName }
-        val filtered = installed.filter { app ->
-            app.packageName in notificationAllowedPackages || app.packageName in selected
-        }
+        val installedAppInfos =
+            pm
+                .getInstalledApplications(0)
+                .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
+        val installed =
+            installedAppInfos
+                .map { BlockableNotificationApp(it.loadLabel(pm).toString(), it.packageName) }
+                .sortedWith(
+                    compareByDescending<BlockableNotificationApp> { it.packageName in defaults }
+                        .thenByDescending { it.packageName in selected }
+                        .thenBy { it.appName.lowercase() },
+                )
+        val notificationAllowedPackages =
+            installedAppInfos
+                .filter { notificationsAllowed(context, it) }
+                .mapTo(mutableSetOf()) { it.packageName }
+        val filtered =
+            installed.filter { app ->
+                app.packageName in notificationAllowedPackages || app.packageName in selected
+            }
         return limitVisibleApps(if (filtered.isNotEmpty()) filtered else installed, selected).ifEmpty {
             listOf(
                 BlockableNotificationApp("Tencent Meeting", "com.tencent.wemeet.app"),
                 BlockableNotificationApp("YouTube", "com.google.android.youtube"),
-                BlockableNotificationApp("Spotify", "com.spotify.music")
+                BlockableNotificationApp("Spotify", "com.spotify.music"),
             )
         }
     }
 
-    fun shouldBlock(context: Context, packageName: String): Boolean =
-        isEnabled(context) && packageName in selectedPackages(context)
+    fun shouldBlock(
+        context: Context,
+        packageName: String,
+    ): Boolean = isEnabled(context) && packageName in selectedPackages(context)
 
     fun hasNotificationListenerAccess(context: Context): Boolean {
         val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
@@ -107,16 +124,24 @@ object NotificationDataSource {
         }
 
     private fun defaultPackages(context: Context): Set<String> {
-        val installed = context.packageManager.getInstalledApplications(0).map { it.packageName }.toSet()
+        val installed =
+            context.packageManager
+                .getInstalledApplications(0)
+                .map { it.packageName }
+                .toSet()
         return listOf("com.tencent.wemeet.app", "com.google.android.youtube", "com.spotify.music")
             .filter { it in installed }
             .toSet()
     }
 
-    private fun notificationsAllowed(context: Context, appInfo: ApplicationInfo): Boolean =
+    private fun notificationsAllowed(
+        context: Context,
+        appInfo: ApplicationInfo,
+    ): Boolean =
         runCatching {
-            val appOps = context.getSystemService(AppOpsManager::class.java)
-                ?: return@runCatching true
+            val appOps =
+                context.getSystemService(AppOpsManager::class.java)
+                    ?: return@runCatching true
             val mode = notificationOpMode(appOps, appInfo.uid, appInfo.packageName)
             mode == AppOpsManager.MODE_ALLOWED || mode == AppOpsManager.MODE_DEFAULT
         }.getOrDefault(true)
@@ -124,7 +149,7 @@ object NotificationDataSource {
     private fun notificationOpMode(
         appOps: AppOpsManager,
         uid: Int,
-        packageName: String
+        packageName: String,
     ): Int =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             appOps.unsafeCheckOpNoThrow(OPSTR_POST_NOTIFICATION, uid, packageName)
@@ -135,7 +160,7 @@ object NotificationDataSource {
 
     private fun limitVisibleApps(
         apps: List<BlockableNotificationApp>,
-        selected: Set<String>
+        selected: Set<String>,
     ): List<BlockableNotificationApp> {
         if (apps.size <= MAX_VISIBLE_APPS) return apps
         val selectedApps = apps.filter { it.packageName in selected }
@@ -153,15 +178,15 @@ object NotificationDataSource {
 
     private fun decodeBlockedCounts(value: String?): Map<String, Int> {
         if (value.isNullOrBlank()) return emptyMap()
-        return value.split(';')
+        return value
+            .split(';')
             .mapNotNull { entry ->
                 val separatorIndex = entry.lastIndexOf('=')
                 if (separatorIndex <= 0 || separatorIndex == entry.lastIndex) return@mapNotNull null
                 val packageName = entry.substring(0, separatorIndex)
                 val count = entry.substring(separatorIndex + 1).toIntOrNull()
                 if (packageName.isBlank() || count == null || count <= 0) null else packageName to count
-            }
-            .toMap()
+            }.toMap()
     }
 }
 

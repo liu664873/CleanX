@@ -7,7 +7,7 @@ data class ScanProgress(
     val percent: Float = 0f,
     val currentCategory: JunkCategory? = null,
     val foundCount: Int = 0,
-    val foundSize: Long = 0
+    val foundSize: Long = 0,
 ) {
     companion object {
         /** 灏氭湭寮€濮嬫壂鎻忔椂鐨勭┖杩涘害銆?*/

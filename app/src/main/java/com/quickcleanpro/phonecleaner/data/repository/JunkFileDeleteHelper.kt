@@ -12,48 +12,48 @@ data class JunkDeleteOutcome(
     val junkFile: JunkFile,
     val deleted: Boolean,
     val freedBytes: Long,
-    val authorizationUri: Uri? = null
+    val authorizationUri: Uri? = null,
 )
 
 data class JunkAuthorizedDeleteResult(
     val cleanedFiles: List<JunkFile>,
     val failedFiles: List<JunkFile>,
-    val freedBytes: Long
+    val freedBytes: Long,
 )
 
 object JunkFileDeleteHelper {
-
-    fun delete(context: Context, junkFile: JunkFile): JunkDeleteOutcome {
+    fun delete(
+        context: Context,
+        junkFile: JunkFile,
+    ): JunkDeleteOutcome {
         val file = File(junkFile.filePath)
         if (!file.exists()) {
             return JunkDeleteOutcome(
                 junkFile = junkFile,
                 deleted = true,
-                freedBytes = junkFile.fileSize
+                freedBytes = junkFile.fileSize,
             )
         }
 
         val beforeSize = sizeOf(file).takeIf { it > 0L } ?: junkFile.fileSize
-        val deleted = if (file.isDirectory) {
-            deleteDirectory(context, file)
-        } else {
-            deleteFile(context, file)
-        }
+        val deleted =
+            if (file.isDirectory) {
+                deleteDirectory(context, file)
+            } else {
+                deleteFile(context, file)
+            }
 
         return JunkDeleteOutcome(
             junkFile = junkFile,
             deleted = deleted && !file.exists(),
             freedBytes = if (deleted && !file.exists()) beforeSize else 0L,
-            authorizationUri = if (!deleted && file.isFile) findMediaUri(context.contentResolver, file) else null
+            authorizationUri = if (!deleted && file.isFile) findMediaUri(context.contentResolver, file) else null,
         )
     }
 
-    fun collectAuthorizationUris(outcomes: List<JunkDeleteOutcome>): List<Uri> =
-        outcomes.mapNotNull { it.authorizationUri }.distinct()
+    fun collectAuthorizationUris(outcomes: List<JunkDeleteOutcome>): List<Uri> = outcomes.mapNotNull { it.authorizationUri }.distinct()
 
-    fun finalizeAuthorizedDeletes(
-        pendingOutcomes: List<JunkDeleteOutcome>
-    ): JunkAuthorizedDeleteResult {
+    fun finalizeAuthorizedDeletes(pendingOutcomes: List<JunkDeleteOutcome>): JunkAuthorizedDeleteResult {
         val cleanedFiles = mutableListOf<JunkFile>()
         val failedFiles = mutableListOf<JunkFile>()
         var freedBytes = 0L
@@ -71,19 +71,23 @@ object JunkFileDeleteHelper {
         return JunkAuthorizedDeleteResult(
             cleanedFiles = cleanedFiles,
             failedFiles = failedFiles,
-            freedBytes = freedBytes
+            freedBytes = freedBytes,
         )
     }
 
-    private fun deleteDirectory(context: Context, directory: File): Boolean {
+    private fun deleteDirectory(
+        context: Context,
+        directory: File,
+    ): Boolean {
         val children = directory.listFiles().orEmpty()
         var allChildrenDeleted = true
         for (child in children) {
-            val deleted = if (child.isDirectory) {
-                deleteDirectory(context, child)
-            } else {
-                deleteFile(context, child)
-            }
+            val deleted =
+                if (child.isDirectory) {
+                    deleteDirectory(context, child)
+                } else {
+                    deleteFile(context, child)
+                }
             if (!deleted || child.exists()) allChildrenDeleted = false
         }
 
@@ -91,7 +95,10 @@ object JunkFileDeleteHelper {
         return (ownDeleted || !directory.exists()) && allChildrenDeleted
     }
 
-    private fun deleteFile(context: Context, file: File): Boolean {
+    private fun deleteFile(
+        context: Context,
+        file: File,
+    ): Boolean {
         if (!file.exists()) return true
 
         val directDeleted = runCatching { file.delete() }.getOrDefault(false)
@@ -101,24 +108,31 @@ object JunkFileDeleteHelper {
         return mediaDeleted && !file.exists()
     }
 
-    private fun deleteViaMediaStore(contentResolver: ContentResolver, file: File): Boolean {
+    private fun deleteViaMediaStore(
+        contentResolver: ContentResolver,
+        file: File,
+    ): Boolean {
         val uri = findMediaUri(contentResolver, file) ?: return false
         return runCatching {
             contentResolver.delete(uri, null, null) > 0
         }.getOrDefault(false)
     }
 
-    fun findMediaUri(contentResolver: ContentResolver, file: File): Uri? {
+    fun findMediaUri(
+        contentResolver: ContentResolver,
+        file: File,
+    ): Uri? {
         val path = file.absolutePath
-        val collections = buildList {
-            add(MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            add(MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-            add(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
-            add(MediaStore.Files.getContentUri("external"))
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                add(MediaStore.Downloads.EXTERNAL_CONTENT_URI)
+        val collections =
+            buildList {
+                add(MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                add(MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+                add(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
+                add(MediaStore.Files.getContentUri("external"))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    add(MediaStore.Downloads.EXTERNAL_CONTENT_URI)
+                }
             }
-        }
 
         for (collection in collections) {
             val uri = queryMediaUri(contentResolver, collection, path)
@@ -130,7 +144,7 @@ object JunkFileDeleteHelper {
     private fun queryMediaUri(
         contentResolver: ContentResolver,
         collection: Uri,
-        path: String
+        path: String,
     ): Uri? {
         val projection = arrayOf(MediaStore.MediaColumns._ID)
         val selection = "${MediaStore.MediaColumns.DATA} = ?"
@@ -151,7 +165,8 @@ object JunkFileDeleteHelper {
         if (!file.exists()) return 0L
         if (file.isFile) return file.length()
         return runCatching {
-            file.walkTopDown()
+            file
+                .walkTopDown()
                 .filter { it.isFile }
                 .sumOf { it.length() }
         }.getOrDefault(0L)

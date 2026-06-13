@@ -7,9 +7,8 @@ import com.quickcleanpro.phonecleaner.domain.repository.CleanRepository
 /**
  * 娓呯悊鏂囦欢鐢ㄤ緥
  */
-class CleanJunkUseCase(private val repository: CleanRepository) {
-
-    suspend operator fun invoke(selectedItems: List<CleanItem>): CleanResult {
-        return repository.cleanFiles(selectedItems)
-    }
+class CleanJunkUseCase(
+    private val repository: CleanRepository,
+) {
+    suspend operator fun invoke(selectedItems: List<CleanItem>): CleanResult = repository.cleanFiles(selectedItems)
 }

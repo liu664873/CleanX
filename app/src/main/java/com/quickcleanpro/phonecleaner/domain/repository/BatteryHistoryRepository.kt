@@ -10,6 +10,6 @@ interface BatteryHistoryRepository {
 
     fun append(
         sample: BatteryHistorySample,
-        nowMillis: Long = System.currentTimeMillis()
+        nowMillis: Long = System.currentTimeMillis(),
     ): List<BatteryHistorySample>
 }

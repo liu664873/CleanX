@@ -32,7 +32,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class LockScreenOverlayService : Service() {
-
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var windowManager: WindowManager
     private var overlayView: View? = null
@@ -46,7 +45,11 @@ class LockScreenOverlayService : Service() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         targetPackage = intent?.getStringExtra(EXTRA_TARGET_PACKAGE).orEmpty()
         if (targetPackage.isBlank() || !AppLockPermissionUtils.canDrawOverlays(this)) {
             stopSelf()
@@ -72,20 +75,22 @@ class LockScreenOverlayService : Service() {
         view.findViewById<TextView>(R.id.tv_error_hint).visibility = View.INVISIBLE
         bindAppInfo(view)
         bindKeypad(view)
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            } else {
-                @Suppress("DEPRECATION")
-                WindowManager.LayoutParams.TYPE_PHONE
-            },
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-        }
+        val params =
+            WindowManager
+                .LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    } else {
+                        @Suppress("DEPRECATION")
+                        WindowManager.LayoutParams.TYPE_PHONE
+                    },
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    PixelFormat.TRANSLUCENT,
+                ).apply {
+                    gravity = Gravity.TOP or Gravity.START
+                }
         runCatching {
             windowManager.addView(view, params)
         }.onFailure {
@@ -103,18 +108,19 @@ class LockScreenOverlayService : Service() {
     }
 
     private fun bindKeypad(view: View) {
-        val digitButtons = listOf(
-            R.id.btn_1 to '1',
-            R.id.btn_2 to '2',
-            R.id.btn_3 to '3',
-            R.id.btn_4 to '4',
-            R.id.btn_5 to '5',
-            R.id.btn_6 to '6',
-            R.id.btn_7 to '7',
-            R.id.btn_8 to '8',
-            R.id.btn_9 to '9',
-            R.id.btn_0 to '0'
-        )
+        val digitButtons =
+            listOf(
+                R.id.btn_1 to '1',
+                R.id.btn_2 to '2',
+                R.id.btn_3 to '3',
+                R.id.btn_4 to '4',
+                R.id.btn_5 to '5',
+                R.id.btn_6 to '6',
+                R.id.btn_7 to '7',
+                R.id.btn_8 to '8',
+                R.id.btn_9 to '9',
+                R.id.btn_0 to '0',
+            )
         digitButtons.forEach { (id, digit) ->
             view.findViewById<Button>(id).setOnClickListener { onDigit(digit) }
         }
@@ -163,14 +169,13 @@ class LockScreenOverlayService : Service() {
         }
     }
 
-    private fun isVibrationEnabled(): Boolean =
-        AppPrefsUtils.getBoolean(AppLockRepositoryImpl.KEY_VIBRATE_ON_KEYPAD, true)
+    private fun isVibrationEnabled(): Boolean = AppPrefsUtils.getBoolean(AppLockRepositoryImpl.KEY_VIBRATE_ON_KEYPAD, true)
 
     private fun updatePinDots() {
         val view = overlayView ?: return
         listOf(R.id.circle1, R.id.circle2, R.id.circle3, R.id.circle4).forEachIndexed { index, id ->
             view.findViewById<View>(id).setBackgroundResource(
-                if (index < currentPin.length) R.drawable.circle_selected else R.drawable.circle_unselected
+                if (index < currentPin.length) R.drawable.circle_selected else R.drawable.circle_unselected,
             )
         }
     }
@@ -196,7 +201,7 @@ class LockScreenOverlayService : Service() {
                 Intent(Intent.ACTION_MAIN).apply {
                     addCategory(Intent.CATEGORY_HOME)
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
+                },
             )
         }
     }
@@ -213,24 +218,25 @@ class LockScreenOverlayService : Service() {
             val info = packageManager.getApplicationInfo(packageName, 0)
             TargetAppInfo(
                 name = packageManager.getApplicationLabel(info).toString(),
-                icon = packageManager.getApplicationIcon(info.packageName)
+                icon = packageManager.getApplicationIcon(info.packageName),
             )
         }.getOrElse {
             TargetAppInfo(
                 name = packageName.substringAfterLast('.').ifBlank { getString(R.string.app_lock) },
-                icon = null
+                icon = null,
             )
         }
     }
 
     private fun vibrate() {
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val manager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            manager.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        }
+        val vibrator =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val manager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                manager.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            }
         runCatching {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 vibrator.vibrate(VibrationEffect.createOneShot(30L, VibrationEffect.DEFAULT_AMPLITUDE))
@@ -243,7 +249,7 @@ class LockScreenOverlayService : Service() {
 
     private data class TargetAppInfo(
         val name: String,
-        val icon: android.graphics.drawable.Drawable?
+        val icon: android.graphics.drawable.Drawable?,
     )
 
     companion object {

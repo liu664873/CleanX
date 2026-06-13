@@ -2,5 +2,5 @@
 
 data class BlockableNotificationApp(
     val appName: String,
-    val packageName: String
+    val packageName: String,
 )

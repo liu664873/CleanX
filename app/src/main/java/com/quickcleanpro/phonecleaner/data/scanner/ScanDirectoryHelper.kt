@@ -8,18 +8,19 @@ import java.util.concurrent.ConcurrentHashMap
 
 object ScanDirectoryHelper {
     private val cache = ConcurrentHashMap<String, List<File>>()
-    private val priorityPatterns = mapOf(
-        "cache" to 1,
-        "temp" to 1,
-        "tmp" to 1,
-        Environment.DIRECTORY_DOWNLOADS.lowercase() to 2,
-        "apk" to 2,
-        Environment.DIRECTORY_DOCUMENTS.lowercase() to 3,
-        Environment.DIRECTORY_PICTURES.lowercase() to 3,
-        Environment.DIRECTORY_DCIM.lowercase() to 3,
-        Environment.DIRECTORY_MOVIES.lowercase() to 3,
-        Environment.DIRECTORY_MUSIC.lowercase() to 3
-    )
+    private val priorityPatterns =
+        mapOf(
+            "cache" to 1,
+            "temp" to 1,
+            "tmp" to 1,
+            Environment.DIRECTORY_DOWNLOADS.lowercase() to 2,
+            "apk" to 2,
+            Environment.DIRECTORY_DOCUMENTS.lowercase() to 3,
+            Environment.DIRECTORY_PICTURES.lowercase() to 3,
+            Environment.DIRECTORY_DCIM.lowercase() to 3,
+            Environment.DIRECTORY_MOVIES.lowercase() to 3,
+            Environment.DIRECTORY_MUSIC.lowercase() to 3,
+        )
 
     fun prioritizedDirectories(context: Context): List<File> {
         val key = "dirs_${Build.VERSION.SDK_INT}_${hasAllFilesAccess()}"
@@ -44,7 +45,7 @@ object ScanDirectoryHelper {
                         "Temp",
                         "temp",
                         "Tmp",
-                        "tmp"
+                        "tmp",
                     ).forEach { add(File(external, it)) }
 
                     if (hasAllFilesAccess()) {
@@ -52,13 +53,11 @@ object ScanDirectoryHelper {
                         add(File(external, "Android/data"))
                     }
                 }
-            }
-                .filter { file ->
-                    runCatching {
-                        file.exists() && file.isDirectory && file.canRead() && !isHiddenOrSystemPath(file)
-                    }.getOrDefault(false)
-                }
-                .distinctBy { it.absolutePath }
+            }.filter { file ->
+                runCatching {
+                    file.exists() && file.isDirectory && file.canRead() && !isHiddenOrSystemPath(file)
+                }.getOrDefault(false)
+            }.distinctBy { it.absolutePath }
                 .sortedBy { scanPriority(it) }
         }
     }
@@ -74,7 +73,7 @@ object ScanDirectoryHelper {
             File(external, Environment.DIRECTORY_MUSIC),
             File(external, "Temp"),
             File(external, "temp"),
-            File(external, "tmp")
+            File(external, "tmp"),
         ).filter { file ->
             runCatching { file.exists() && file.isDirectory && file.canRead() }.getOrDefault(false)
         }
@@ -85,20 +84,21 @@ object ScanDirectoryHelper {
         val path = file.absolutePath.lowercase()
         if (name.startsWith(".") || name == "lost+found") return true
 
-        val systemDirs = listOf(
-            "/system",
-            "/lost+found",
-            "/preload",
-            "/vendor",
-            "/mnt",
-            "/proc",
-            "/sys",
-            "/acct",
-            "/dev",
-            "/config",
-            "/oem",
-            "/firmware"
-        )
+        val systemDirs =
+            listOf(
+                "/system",
+                "/lost+found",
+                "/preload",
+                "/vendor",
+                "/mnt",
+                "/proc",
+                "/sys",
+                "/acct",
+                "/dev",
+                "/config",
+                "/oem",
+                "/firmware",
+            )
         return systemDirs.any { path == it || path.startsWith("$it/") }
     }
 
@@ -109,15 +109,15 @@ object ScanDirectoryHelper {
     private fun scanPriority(file: File): Int {
         val path = file.absolutePath.lowercase()
         val name = file.name.lowercase()
-        return priorityPatterns.entries.firstOrNull { (pattern, _) ->
-            path.contains(pattern) || name.contains(pattern)
-        }?.value ?: 4
+        return priorityPatterns.entries
+            .firstOrNull { (pattern, _) ->
+                path.contains(pattern) || name.contains(pattern)
+            }?.value ?: 4
     }
 
     private fun hasAllFilesAccess(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
             runCatching { Environment.isExternalStorageManager() }.getOrDefault(false)
 
-    private fun externalStorageDirectoryOrNull(): File? =
-        runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
+    private fun externalStorageDirectoryOrNull(): File? = runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
 }

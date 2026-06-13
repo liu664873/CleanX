@@ -11,7 +11,7 @@ data class BatteryInfo(
     val voltage: Int,
     val technology: String,
     val capacity: Int,
-    val availableTime: String = "Unknown"
+    val availableTime: String = "Unknown",
 )
 
 /**
@@ -21,7 +21,7 @@ data class MemoryInfo(
     val availableBytes: Long,
     val usedBytes: Long,
     val usagePercent: Int,
-    val isTotalValid: Boolean
+    val isTotalValid: Boolean,
 ) {
     /** 宸叉牸寮忓寲鐨勬€诲唴瀛樺ぇ灏忋€?*/
     val formattedTotal: String get() = FileSizeFormatter.format(totalBytes)
@@ -38,7 +38,7 @@ data class MemoryInfo(
 data class StorageInfo(
     val totalBytes: Long,
     val availableBytes: Long,
-    val usedBytes: Long
+    val usedBytes: Long,
 ) {
     /** 宸叉牸寮忓寲鐨勬€荤┖闂村ぇ灏忋€?*/
     val formattedTotal: String get() = FileSizeFormatter.format(totalBytes)

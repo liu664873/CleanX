@@ -51,7 +51,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.config.AppConfig
-import com.quickcleanpro.phonecleaner.presentation.common.compoents.RoundedProgressBar
+import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
 import com.quickcleanpro.phonecleaner.presentation.common.utils.openUrl
 import com.quickcleanpro.phonecleaner.presentation.theme.CleanXTheme
 import kotlinx.coroutines.delay
@@ -59,7 +59,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun SplashScreen(
     paused: Boolean = false,
-    onSplashFinished: () -> Unit
+    onSplashFinished: () -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -72,11 +72,12 @@ fun SplashScreen(
     val interactionSource = remember { MutableInteractionSource() }
 
     DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                pausedForLink = false
+        val observer =
+            LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    pausedForLink = false
+                }
             }
-        }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
@@ -86,19 +87,19 @@ fun SplashScreen(
         if (scaleAnim.value < 1f) {
             scaleAnim.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
+                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
             )
         }
         if (alphaAnim.value < 1f) {
             alphaAnim.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 600)
+                animationSpec = tween(durationMillis = 600),
             )
         }
         if (progressAnim.value < 1f) {
             progressAnim.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 1500, easing = LinearEasing)
+                animationSpec = tween(durationMillis = 1500, easing = LinearEasing),
             ) {
                 progress = value
             }
@@ -110,44 +111,48 @@ fun SplashScreen(
     val logoShape = RoundedCornerShape(16.dp)
 
     Box(
-        modifier = Modifier.fillMaxSize()
-    ){
+        modifier = Modifier.fillMaxSize(),
+    ) {
         Image(
             painter = painterResource(id = R.drawable.splash_bg),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
         )
 
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Black.copy(alpha = 0.35f),
-                            Color.Black.copy(alpha = 0.15f),
-                            Color.Black.copy(alpha = 0.35f)
-                        )
-                    )
-                )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors =
+                                listOf(
+                                    Color.Black.copy(alpha = 0.35f),
+                                    Color.Black.copy(alpha = 0.15f),
+                                    Color.Black.copy(alpha = 0.35f),
+                                ),
+                        ),
+                    ),
         )
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 160.dp)
-                .alpha(alphaAnim.value)
-                .scale(scaleAnim.value),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(top = 160.dp)
+                    .alpha(alphaAnim.value)
+                    .scale(scaleAnim.value),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
                 painter = painterResource(id = R.drawable.app_logo),
                 contentDescription = null,
-                modifier = Modifier
-                    .size(100.dp)
-                    .border(1.35.dp, Color.White, logoShape)
-                    .clip(logoShape)
+                modifier =
+                    Modifier
+                        .size(100.dp)
+                        .border(1.35.dp, Color.White, logoShape)
+                        .clip(logoShape),
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -157,81 +162,83 @@ fun SplashScreen(
                 color = Color.White,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.SemiBold,
-                lineHeight = 30.sp
+                lineHeight = 30.sp,
             )
         }
 
         Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 40.dp),
-            verticalArrangement = Arrangement.spacedBy(40.dp)
+            modifier =
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 40.dp),
+            verticalArrangement = Arrangement.spacedBy(40.dp),
         ) {
             RoundedProgressBar(progress = progress)
 
             FlowRow(
-                modifier = Modifier
-                    .width(330.dp)
-                    .wrapContentHeight()
-                    .navigationBarsPadding(),
+                modifier =
+                    Modifier
+                        .width(330.dp)
+                        .wrapContentHeight()
+                        .navigationBarsPadding(),
                 horizontalArrangement = Arrangement.Center,
-                verticalArrangement = Arrangement.Center
-            ){
+                verticalArrangement = Arrangement.Center,
+            ) {
                 Text(
                     text = stringResource(R.string.splash_accept_prefix),
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp,
-                    color = Color(0xFFD9D9D9)
+                    color = Color(0xFFD9D9D9),
                 )
                 Text(
-                    modifier = Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = null
-                    ){
-                        pausedForLink = true
-                        if (!context.openUrl(AppConfig.TERMS_OF_SERVICE_URL)) {
-                            pausedForLink = false
-                        }
-                    },
+                    modifier =
+                        Modifier.clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                        ) {
+                            pausedForLink = true
+                            if (!context.openUrl(AppConfig.TERMS_OF_SERVICE_URL)) {
+                                pausedForLink = false
+                            }
+                        },
                     text = stringResource(R.string.settings_terms_of_service),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
-                    color = Color.White
+                    color = Color.White,
                 )
                 Text(
                     text = " | ",
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp,
-                    color = Color(0xFFD9D9D9)
+                    color = Color(0xFFD9D9D9),
                 )
                 Text(
-                    modifier = Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = null
-                    ){
-                        pausedForLink = true
-                        if (!context.openUrl(AppConfig.PRIVACY_POLICY_URL)) {
-                            pausedForLink = false
-                        }
-                    },
+                    modifier =
+                        Modifier.clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                        ) {
+                            pausedForLink = true
+                            if (!context.openUrl(AppConfig.PRIVACY_POLICY_URL)) {
+                                pausedForLink = false
+                            }
+                        },
                     text = stringResource(R.string.settings_privacy_policy),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
-                    color = Color.White
+                    color = Color.White,
                 )
             }
         }
-
-
     }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFF000000)
 @Composable
 private fun PreviewSplashScreen() {
-    CleanXTheme() {
+    CleanXTheme {
         SplashScreen(
-            onSplashFinished = {}
+            onSplashFinished = {},
         )
     }
 }

@@ -16,7 +16,6 @@ import com.quickcleanpro.phonecleaner.domain.model.toolbox.NetworkUsageInfo
  * 通过此接口，上层（ViewModel / UseCase）可以统一调用，而不必依赖多个独立的 Repository。
  */
 interface ToolboxRepository {
-
     // -------------------- 应用使用情况（App Usage） --------------------
 
     /**
@@ -49,7 +48,10 @@ interface ToolboxRepository {
      * @param endMillis   结束时间戳（毫秒）
      * @return 应用使用信息列表
      */
-    suspend fun appUsageBetween(startMillis: Long, endMillis: Long): List<AppUsageInfo>
+    suspend fun appUsageBetween(
+        startMillis: Long,
+        endMillis: Long,
+    ): List<AppUsageInfo>
 
     /**
      * 判断指定包名集合中哪些应用当前正在运行（或最近活跃）。
@@ -153,7 +155,10 @@ interface ToolboxRepository {
      * @param packageName 应用包名
      * @param selected    true 表示选中（拦截其通知），false 表示取消选中
      */
-    fun setNotificationPackageSelected(packageName: String, selected: Boolean)
+    fun setNotificationPackageSelected(
+        packageName: String,
+        selected: Boolean,
+    )
 
     /**
      * 返回跳转到通知监听权限设置页的 Intent。

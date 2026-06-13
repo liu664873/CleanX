@@ -1,11 +1,10 @@
 ﻿package com.quickcleanpro.phonecleaner.domain.model
 
-
 /**
  * 鎸夌被鍒垎缁勭殑娓呯悊椤归泦鍚? */
 data class CategoryCleanGroup(
     val category: JunkCategory,
-    val items: List<CleanItem>
+    val items: List<CleanItem>,
 ) {
     val totalSize: Long
         get() = items.sumOf { it.fileSize }

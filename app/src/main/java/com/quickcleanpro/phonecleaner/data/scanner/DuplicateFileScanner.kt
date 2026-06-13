@@ -11,26 +11,27 @@ import java.security.MessageDigest
 import java.util.Locale
 
 class DuplicateFileScanner : JunkScanner {
-
     override val category: JunkCategory = JunkCategory.DUPLICATE
 
     private var progress: Float = 0f
 
-    override suspend fun scan(): List<JunkFile> = withContext(Dispatchers.IO) {
-        progress = 0f
-        val files = scanPublicFilesFromFileSystem()
-        progress = 35f
+    override suspend fun scan(): List<JunkFile> =
+        withContext(Dispatchers.IO) {
+            progress = 0f
+            val files = scanPublicFilesFromFileSystem()
+            progress = 35f
 
-        val groups = buildDuplicateFileGroups(
-            files = files,
-            contentHash = { item -> computeFileHash(item.path) }
-        )
-        progress = 100f
+            val groups =
+                buildDuplicateFileGroups(
+                    files = files,
+                    contentHash = { item -> computeFileHash(item.path) },
+                )
+            progress = 100f
 
-        groups
-            .flatMap { group -> group.sortedByDescending { it.modifiedSeconds }.drop(1) }
-            .map(::toJunkFile)
-    }
+            groups
+                .flatMap { group -> group.sortedByDescending { it.modifiedSeconds }.drop(1) }
+                .map(::toJunkFile)
+        }
 
     override fun getProgress(): Float = progress
 
@@ -41,16 +42,17 @@ class DuplicateFileScanner : JunkScanner {
             fileName = file.name,
             fileSize = file.sizeBytes,
             category = JunkCategory.DUPLICATE,
-            lastModified = file.modifiedSeconds
+            lastModified = file.modifiedSeconds,
         )
 
     private fun buildDuplicateFileGroups(
         files: List<DuplicateCandidate>,
-        contentHash: (DuplicateCandidate) -> String?
+        contentHash: (DuplicateCandidate) -> String?,
     ): List<List<DuplicateCandidate>> {
-        val uniqueFiles = files
-            .filter { it.sizeBytes > 0L }
-            .distinctBy { it.path }
+        val uniqueFiles =
+            files
+                .filter { it.sizeBytes > 0L }
+                .distinctBy { it.path }
 
         val hashGroups = mutableListOf<List<DuplicateCandidate>>()
         val fallbackCandidates = mutableListOf<DuplicateCandidate>()
@@ -75,11 +77,12 @@ class DuplicateFileScanner : JunkScanner {
                     }
             }
 
-        val fallbackGroups = fallbackCandidates
-            .groupBy { "${it.name.lowercase(Locale.US)}#${it.sizeBytes}" }
-            .values
-            .filter { it.size > 1 }
-            .map { group -> group.sortedByDescending { it.modifiedSeconds } }
+        val fallbackGroups =
+            fallbackCandidates
+                .groupBy { "${it.name.lowercase(Locale.US)}#${it.sizeBytes}" }
+                .values
+                .filter { it.size > 1 }
+                .map { group -> group.sortedByDescending { it.modifiedSeconds } }
 
         return (hashGroups + fallbackGroups)
             .distinctBy { group -> group.joinToString("|") { it.path } }
@@ -104,7 +107,7 @@ class DuplicateFileScanner : JunkScanner {
     private fun collectPublicFiles(
         directory: File,
         results: MutableList<DuplicateCandidate>,
-        maxDepth: Int
+        maxDepth: Int,
     ) {
         if (maxDepth < 0 || results.size >= MAX_FILE_SYSTEM_RESULTS) return
         val children = runCatching { directory.listFiles() }.getOrNull().orEmpty()
@@ -116,12 +119,13 @@ class DuplicateFileScanner : JunkScanner {
             } else if (runCatching { file.isFile }.getOrDefault(false)) {
                 val sizeBytes = runCatching { file.length() }.getOrDefault(0L)
                 if (sizeBytes <= 0L) return@forEach
-                results += DuplicateCandidate(
-                    path = runCatching { file.canonicalPath }.getOrDefault(file.absolutePath),
-                    name = file.name,
-                    sizeBytes = sizeBytes,
-                    modifiedSeconds = runCatching { file.lastModified() }.getOrDefault(0L)
-                )
+                results +=
+                    DuplicateCandidate(
+                        path = runCatching { file.canonicalPath }.getOrDefault(file.absolutePath),
+                        name = file.name,
+                        sizeBytes = sizeBytes,
+                        modifiedSeconds = runCatching { file.lastModified() }.getOrDefault(0L),
+                    )
             }
         }
     }
@@ -142,33 +146,35 @@ class DuplicateFileScanner : JunkScanner {
             digest.digest().joinToString("") { "%02x".format(it) }
         }.getOrNull()
 
-    private fun externalStorageDirectoryOrNull(): File? =
-        runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
+    private fun externalStorageDirectoryOrNull(): File? = runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
 
-    private fun File.isReadableDirectory(): Boolean =
-        runCatching { exists() && isDirectory && canRead() }.getOrDefault(false)
+    private fun File.isReadableDirectory(): Boolean = runCatching { exists() && isDirectory && canRead() }.getOrDefault(false)
 
-    private fun shouldSkipPath(path: String?, name: String): Boolean {
+    private fun shouldSkipPath(
+        path: String?,
+        name: String,
+    ): Boolean {
         val lowerName = name.lowercase(Locale.US)
         val lowerPath = path?.lowercase(Locale.US).orEmpty()
         if (lowerName.startsWith(".") || lowerName == "lost+found") return true
         if (lowerPath.isBlank()) return false
 
-        val systemDirs = listOf(
-            "/system",
-            "/lost+found",
-            "/preload",
-            "/vendor",
-            "/mnt",
-            "/proc",
-            "/sys",
-            "/acct",
-            "/dev",
-            "/config",
-            "/oem",
-            "/firmware",
-            "/cache"
-        )
+        val systemDirs =
+            listOf(
+                "/system",
+                "/lost+found",
+                "/preload",
+                "/vendor",
+                "/mnt",
+                "/proc",
+                "/sys",
+                "/acct",
+                "/dev",
+                "/config",
+                "/oem",
+                "/firmware",
+                "/cache",
+            )
         return systemDirs.any { lowerPath == it || lowerPath.startsWith("$it/") }
     }
 
@@ -179,15 +185,24 @@ class DuplicateFileScanner : JunkScanner {
         val path: String,
         val name: String,
         val sizeBytes: Long,
-        val modifiedSeconds: Long
+        val modifiedSeconds: Long,
     )
 
     private companion object {
         const val MAX_FILE_SYSTEM_RESULTS = 10_000
 
-        val PUBLIC_SCAN_DIRECTORIES = listOf(
-            "Download", "Downloads", "Documents", "DCIM", "Pictures", "Movies", "Music",
-            "WhatsApp", "Telegram", "Android/media"
-        )
+        val PUBLIC_SCAN_DIRECTORIES =
+            listOf(
+                "Download",
+                "Downloads",
+                "Documents",
+                "DCIM",
+                "Pictures",
+                "Movies",
+                "Music",
+                "WhatsApp",
+                "Telegram",
+                "Android/media",
+            )
     }
 }

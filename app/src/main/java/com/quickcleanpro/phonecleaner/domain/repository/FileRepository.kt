@@ -7,7 +7,6 @@ import com.quickcleanpro.phonecleaner.domain.model.file.ManagedFileItem
  * 鏂囦欢绠＄悊浠撳簱鎺ュ彛銆? *
  * 棰嗗煙灞傞€氳繃璇ユ帴鍙ｆ弿杩?File Manager 闇€瑕佺殑鏁版嵁鑳藉姏锛涘叿浣撶殑 MediaStore銆佹枃浠剁郴缁熸壂鎻? * 鍜岀郴缁熷垹闄ゆ巿鏉冪敱 data 灞傚疄鐜帮紝椤甸潰涓?ViewModel 涓嶇洿鎺ヤ緷璧栧簳灞傚伐鍏峰崟渚嬨€? */
 interface FileRepository {
-
     /** 鍔犺浇璁惧涓殑鍥剧墖鏂囦欢銆?*/
     suspend fun loadImages(): List<ManagedFileItem>
 

@@ -28,7 +28,7 @@ import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.data.repository.AppLockRepositoryImpl
 import com.quickcleanpro.phonecleaner.data.source.applock.LockScreenOverlayService
 import com.quickcleanpro.phonecleaner.data.source.battery.BatteryHistoryOwner
-import com.quickcleanpro.phonecleaner.di.QuickCleanApplication
+import com.quickcleanpro.phonecleaner.data.source.battery.BatteryHistorySampler
 import com.quickcleanpro.phonecleaner.utils.AppLockManager
 import com.quickcleanpro.phonecleaner.utils.AppLockPermissionUtils
 import com.quickcleanpro.phonecleaner.utils.NotificationChannelManager
@@ -41,10 +41,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.android.ext.android.inject
 import java.util.concurrent.atomic.AtomicBoolean
 
 class PersistentNotificationService : Service() {
-
+    private val batteryHistorySampler: BatteryHistorySampler by inject()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var repository: AppLockRepositoryImpl
     private var monitorJob: Job? = null
@@ -54,62 +55,77 @@ class PersistentNotificationService : Service() {
     private var monitoringEnabled = false
     private var wakeLock: PowerManager.WakeLock? = null
 
-    private val commandReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                ACTION_START -> syncMonitoringState()
-                ACTION_ENABLE_MONITORING -> enableMonitoring()
-                ACTION_DISABLE_MONITORING -> disableMonitoring()
-                ACTION_APP_FOREGROUND -> _appInForeground.set(true)
-                ACTION_APP_BACKGROUND -> {
-                    _appInForeground.set(false)
-                    handleNotificationTrigger(NotificationTrigger.AppBackground)
+    private val commandReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(
+                context: Context?,
+                intent: Intent?,
+            ) {
+                when (intent?.action) {
+                    ACTION_START -> syncMonitoringState()
+                    ACTION_ENABLE_MONITORING -> enableMonitoring()
+                    ACTION_DISABLE_MONITORING -> disableMonitoring()
+                    ACTION_APP_FOREGROUND -> appInForeground.set(true)
+                    ACTION_APP_BACKGROUND -> {
+                        appInForeground.set(false)
+                        handleNotificationTrigger(NotificationTrigger.AppBackground)
+                    }
+                    ACTION_RESTORE_PERSISTENT_NOTIFICATION -> schedulePersistentNotificationRestore()
+                    ACTION_STOP_SERVICE -> {
+                        stopRequested.set(true)
+                        disableMonitoring()
+                        stopForegroundAndSelf()
+                    }
+                    ACTION_PASSWORD_SUCCESS,
+                    ACTION_LOCK_SCREEN_CANCELLED,
+                    -> lockScreenShowing = false
                 }
-                ACTION_RESTORE_PERSISTENT_NOTIFICATION -> schedulePersistentNotificationRestore()
-                ACTION_STOP_SERVICE -> {
-                    _stopRequested.set(true)
-                    disableMonitoring()
-                    stopForegroundAndSelf()
-                }
-                ACTION_PASSWORD_SUCCESS,
-                ACTION_LOCK_SCREEN_CANCELLED -> lockScreenShowing = false
             }
         }
-    }
 
-    private val systemEventReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val trigger = when (intent?.action) {
-                Intent.ACTION_SCREEN_ON -> NotificationTrigger.ScreenOn
-                Intent.ACTION_USER_PRESENT -> NotificationTrigger.UserPresent
-                Intent.ACTION_POWER_CONNECTED -> NotificationTrigger.PowerConnected
-                Intent.ACTION_POWER_DISCONNECTED -> NotificationTrigger.PowerDisconnected
-                else -> null
-            } ?: return
-            handleNotificationTrigger(trigger)
+    private val systemEventReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(
+                context: Context?,
+                intent: Intent?,
+            ) {
+                val trigger =
+                    when (intent?.action) {
+                        Intent.ACTION_SCREEN_ON -> NotificationTrigger.ScreenOn
+                        Intent.ACTION_USER_PRESENT -> NotificationTrigger.UserPresent
+                        Intent.ACTION_POWER_CONNECTED -> NotificationTrigger.PowerConnected
+                        Intent.ACTION_POWER_DISCONNECTED -> NotificationTrigger.PowerDisconnected
+                        else -> null
+                    } ?: return
+                handleNotificationTrigger(trigger)
+            }
         }
-    }
 
-    private val packageEventReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val trigger = when (intent?.action) {
-                Intent.ACTION_PACKAGE_ADDED -> NotificationTrigger.PackageAdded
-                Intent.ACTION_PACKAGE_REMOVED -> NotificationTrigger.PackageRemoved
-                else -> null
-            } ?: return
-            if (intent?.getBooleanExtra(Intent.EXTRA_REPLACING, false) == true) return
-            handleNotificationTrigger(trigger)
+    private val packageEventReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(
+                context: Context?,
+                intent: Intent?,
+            ) {
+                val trigger =
+                    when (intent?.action) {
+                        Intent.ACTION_PACKAGE_ADDED -> NotificationTrigger.PackageAdded
+                        Intent.ACTION_PACKAGE_REMOVED -> NotificationTrigger.PackageRemoved
+                        else -> null
+                    } ?: return
+                if (intent?.getBooleanExtra(Intent.EXTRA_REPLACING, false) == true) return
+                handleNotificationTrigger(trigger)
+            }
         }
-    }
 
     override fun onCreate() {
         super.onCreate()
         NotificationChannelManager.createAllChannels(this)
         startAsForeground()
         _isRunning.set(true)
-        _startInFlight.set(false)
+        startInFlight.set(false)
         repository = AppLockRepositoryImpl(this)
-        if (_stopRequested.get()) {
+        if (stopRequested.get()) {
             disableMonitoring()
             stopForegroundAndSelf()
             return
@@ -122,33 +138,37 @@ class PersistentNotificationService : Service() {
         syncMonitoringState()
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         startAsForeground()
         startPersistentNotificationWatchdog()
         _isRunning.set(true)
-        _startInFlight.set(false)
+        startInFlight.set(false)
         when (intent?.action) {
             ACTION_STOP_SERVICE -> {
-                _stopRequested.set(true)
+                stopRequested.set(true)
                 disableMonitoring()
                 stopForegroundAndSelf()
                 return START_NOT_STICKY
             }
             ACTION_START -> {
-                _stopRequested.set(false)
+                stopRequested.set(false)
                 syncMonitoringState()
             }
             ACTION_ENABLE_MONITORING -> {
-                _stopRequested.set(false)
+                stopRequested.set(false)
                 enableMonitoring()
             }
             ACTION_DISABLE_MONITORING -> {
-                _stopRequested.set(false)
+                stopRequested.set(false)
                 disableMonitoring()
             }
-            ACTION_APP_FOREGROUND -> _appInForeground.set(true)
+            ACTION_APP_FOREGROUND -> appInForeground.set(true)
             ACTION_APP_BACKGROUND -> {
-                _appInForeground.set(false)
+                appInForeground.set(false)
                 handleNotificationTrigger(NotificationTrigger.AppBackground)
             }
             ACTION_RESTORE_PERSISTENT_NOTIFICATION -> schedulePersistentNotificationRestore()
@@ -171,8 +191,8 @@ class PersistentNotificationService : Service() {
         runCatching { unregisterReceiver(systemEventReceiver) }
         runCatching { unregisterReceiver(packageEventReceiver) }
         _isRunning.set(false)
-        _startInFlight.set(false)
-        _stopRequested.set(false)
+        startInFlight.set(false)
+        stopRequested.set(false)
         super.onDestroy()
     }
 
@@ -205,16 +225,17 @@ class PersistentNotificationService : Service() {
 
     private fun startMonitoring() {
         if (monitorJob?.isActive == true) return
-        monitorJob = serviceScope.launch {
-            while (isActive && monitoringEnabled) {
-                if (!canMonitor()) {
-                    disableMonitoring()
-                    break
+        monitorJob =
+            serviceScope.launch {
+                while (isActive && monitoringEnabled) {
+                    if (!canMonitor()) {
+                        disableMonitoring()
+                        break
+                    }
+                    checkForegroundApp()
+                    delay(CHECK_INTERVAL_MS)
                 }
-                checkForegroundApp()
-                delay(CHECK_INTERVAL_MS)
             }
-        }
     }
 
     private fun canMonitor(): Boolean =
@@ -237,21 +258,24 @@ class PersistentNotificationService : Service() {
 
     private fun showLockScreen(packageName: String) {
         lockScreenShowing = true
-        val intent = Intent(this, LockScreenOverlayService::class.java).apply {
-            putExtra(LockScreenOverlayService.EXTRA_TARGET_PACKAGE, packageName)
-        }
+        val intent =
+            Intent(this, LockScreenOverlayService::class.java).apply {
+                putExtra(LockScreenOverlayService.EXTRA_TARGET_PACKAGE, packageName)
+            }
         runCatching { startService(intent) }
             .onFailure { lockScreenShowing = false }
     }
 
     private fun foregroundPackage(): String? {
-        val manager = runCatching {
-            getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        }.getOrNull() ?: return null
+        val manager =
+            runCatching {
+                getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            }.getOrNull() ?: return null
         val now = System.currentTimeMillis()
-        val events = runCatching {
-            manager.queryEvents((now - EVENT_LOOKBACK_MS).coerceAtLeast(0L), now)
-        }.getOrNull()
+        val events =
+            runCatching {
+                manager.queryEvents((now - EVENT_LOOKBACK_MS).coerceAtLeast(0L), now)
+            }.getOrNull()
         val event = UsageEvents.Event()
         var foregroundPackage: String? = null
         if (events != null) {
@@ -260,10 +284,12 @@ class PersistentNotificationService : Service() {
                 val eventPackage = event.packageName ?: continue
                 when (event.eventType) {
                     UsageEvents.Event.MOVE_TO_FOREGROUND,
-                    UsageEvents.Event.ACTIVITY_RESUMED -> foregroundPackage = eventPackage
+                    UsageEvents.Event.ACTIVITY_RESUMED,
+                    -> foregroundPackage = eventPackage
                     UsageEvents.Event.MOVE_TO_BACKGROUND,
                     UsageEvents.Event.ACTIVITY_PAUSED,
-                    UsageEvents.Event.ACTIVITY_STOPPED -> {
+                    UsageEvents.Event.ACTIVITY_STOPPED,
+                    -> {
                         if (foregroundPackage == eventPackage) foregroundPackage = null
                     }
                 }
@@ -272,12 +298,15 @@ class PersistentNotificationService : Service() {
         return foregroundPackage ?: foregroundPackageFromStats(manager, now)
     }
 
-    private fun foregroundPackageFromStats(manager: UsageStatsManager, now: Long): String? =
+    private fun foregroundPackageFromStats(
+        manager: UsageStatsManager,
+        now: Long,
+    ): String? =
         runCatching {
             manager.queryUsageStats(
                 UsageStatsManager.INTERVAL_DAILY,
                 (now - STATS_LOOKBACK_MS).coerceAtLeast(0L),
-                now
+                now,
             )
         }.getOrNull()
             ?.maxByOrNull(UsageStats::getLastTimeUsed)
@@ -289,7 +318,7 @@ class PersistentNotificationService : Service() {
             startForeground(
                 PERSISTENT_NOTIFICATION_ID,
                 notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
             )
         } else {
             startForeground(PERSISTENT_NOTIFICATION_ID, notification)
@@ -309,18 +338,19 @@ class PersistentNotificationService : Service() {
 
     private fun startBatteryHistorySampling() {
         runCatching {
-            QuickCleanApplication.instance.batteryHistorySampler.start(BatteryHistoryOwner.Service)
+            batteryHistorySampler.start(BatteryHistoryOwner.Service)
         }
     }
 
     private fun stopBatteryHistorySampling() {
         runCatching {
-            QuickCleanApplication.instance.batteryHistorySampler.stop(BatteryHistoryOwner.Service)
+            batteryHistorySampler.stop(BatteryHistoryOwner.Service)
         }
     }
 
-    private fun buildPersistentNotification(): Notification {
-        return NotificationCompat.Builder(this, NotificationChannelManager.PERSISTENT_CHANNEL_ID)
+    private fun buildPersistentNotification(): Notification =
+        NotificationCompat
+            .Builder(this, NotificationChannelManager.PERSISTENT_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_n_notification_cleaner)
             .setContentTitle(getString(R.string.app_name))
             .setContentText(getString(R.string.running_in_background))
@@ -330,7 +360,6 @@ class PersistentNotificationService : Service() {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setDeleteIntent(persistentNotificationDeletedIntent())
             .build()
-    }
 
     private fun persistentNotificationDeletedIntent(): PendingIntent {
         val intent = Intent(ACTION_RESTORE_PERSISTENT_NOTIFICATION).setPackage(packageName)
@@ -338,15 +367,15 @@ class PersistentNotificationService : Service() {
             this,
             PERSISTENT_NOTIFICATION_DELETE_REQUEST_CODE,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
     }
 
     private fun schedulePersistentNotificationRestore() {
-        if (_stopRequested.get()) return
+        if (stopRequested.get()) return
         serviceScope.launch {
             delay(PERSISTENT_NOTIFICATION_RESTORE_DELAY_MS)
-            if (!_stopRequested.get() && hasPostNotificationsPermission()) {
+            if (!stopRequested.get() && hasPostNotificationsPermission()) {
                 runCatching { startAsForeground() }
             }
         }
@@ -354,15 +383,16 @@ class PersistentNotificationService : Service() {
 
     private fun startPersistentNotificationWatchdog() {
         if (persistentNotificationJob?.isActive == true) return
-        persistentNotificationJob = serviceScope.launch {
-            while (isActive) {
-                delay(PERSISTENT_NOTIFICATION_CHECK_INTERVAL_MS)
-                if (_stopRequested.get()) break
-                if (hasPostNotificationsPermission() && !isPersistentNotificationActive()) {
-                    runCatching { startAsForeground() }
+        persistentNotificationJob =
+            serviceScope.launch {
+                while (isActive) {
+                    delay(PERSISTENT_NOTIFICATION_CHECK_INTERVAL_MS)
+                    if (stopRequested.get()) break
+                    if (hasPostNotificationsPermission() && !isPersistentNotificationActive()) {
+                        runCatching { startAsForeground() }
+                    }
                 }
             }
-        }
     }
 
     private fun isPersistentNotificationActive(): Boolean {
@@ -380,32 +410,35 @@ class PersistentNotificationService : Service() {
         if (!canSendTriggeredNotification(trigger)) return
         serviceScope.launch {
             if (trigger.delayMs > 0L) delay(trigger.delayMs)
-            if (_appInForeground.get() || !hasPostNotificationsPermission()) return@launch
+            if (appInForeground.get() || !hasPostNotificationsPermission()) return@launch
             publishToolNotification(trigger)
         }
     }
 
     private fun canSendTriggeredNotification(trigger: NotificationTrigger): Boolean {
-        if (_appInForeground.get() || !hasPostNotificationsPermission()) return false
+        if (appInForeground.get() || !hasPostNotificationsPermission()) return false
         val now = System.currentTimeMillis()
         val prefs = notificationTimingPrefs()
         val windowStart = prefs.getLong(KEY_PUSH_WINDOW_START, 0L)
-        val count = if (windowStart == 0L || now - windowStart >= PUSH_WINDOW_MS) {
-            prefs.edit()
-                .putLong(KEY_PUSH_WINDOW_START, now)
-                .putInt(KEY_PUSH_WINDOW_COUNT, 0)
-                .apply()
-            0
-        } else {
-            prefs.getInt(KEY_PUSH_WINDOW_COUNT, 0)
-        }
+        val count =
+            if (windowStart == 0L || now - windowStart >= PUSH_WINDOW_MS) {
+                prefs
+                    .edit()
+                    .putLong(KEY_PUSH_WINDOW_START, now)
+                    .putInt(KEY_PUSH_WINDOW_COUNT, 0)
+                    .apply()
+                0
+            } else {
+                prefs.getInt(KEY_PUSH_WINDOW_COUNT, 0)
+            }
         if (count >= MAX_TRIGGERED_NOTIFICATIONS_PER_DAY) return false
         if (now - prefs.getLong(KEY_LAST_TRIGGERED_NOTIFICATION, 0L) < GLOBAL_TRIGGER_INTERVAL_MS) {
             return false
         }
         val sceneKey = "${KEY_LAST_TRIGGER_PREFIX}${trigger.key}"
         if (now - prefs.getLong(sceneKey, 0L) < trigger.intervalMs) return false
-        prefs.edit()
+        prefs
+            .edit()
             .putLong(KEY_LAST_TRIGGERED_NOTIFICATION, now)
             .putLong(sceneKey, now)
             .putInt(KEY_PUSH_WINDOW_COUNT, count + 1)
@@ -418,23 +451,25 @@ class PersistentNotificationService : Service() {
         val manager = NotificationManagerCompat.from(this)
         val index = notificationIndexFor(trigger)
         val item = ToolNotificationSpecs.getOrNull(index) ?: return
-        val notification = NotificationCompat.Builder(this, NotificationChannelManager.TRIGGERED_TOOLS_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_n_notification_cleaner)
-            .setContentTitle(getString(item.titleRes))
-            .setContentText(getString(item.descriptionRes))
-            .setContentIntent(targetIntent(item.route, index))
-            .setCustomContentView(toolNotificationCollapsedView(item))
-            .setCustomBigContentView(toolNotificationExpandedView(item))
-            .setCustomHeadsUpContentView(toolNotificationHeadsUpView(item))
-            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            .setAutoCancel(true)
-            .setOnlyAlertOnce(false)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setShowWhen(true)
-            .setWhen(System.currentTimeMillis())
-            .build()
+        val notification =
+            NotificationCompat
+                .Builder(this, NotificationChannelManager.TRIGGERED_TOOLS_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_n_notification_cleaner)
+                .setContentTitle(getString(item.titleRes))
+                .setContentText(getString(item.descriptionRes))
+                .setContentIntent(targetIntent(item.route, index))
+                .setCustomContentView(toolNotificationCollapsedView(item))
+                .setCustomBigContentView(toolNotificationExpandedView(item))
+                .setCustomHeadsUpContentView(toolNotificationHeadsUpView(item))
+                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+                .setAutoCancel(true)
+                .setOnlyAlertOnce(false)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setShowWhen(true)
+                .setWhen(System.currentTimeMillis())
+                .build()
         try {
             manager.notify(TOOL_NOTIFICATION_BASE_ID + index, notification)
         } catch (_: SecurityException) {
@@ -445,51 +480,60 @@ class PersistentNotificationService : Service() {
     }
 
     private fun notificationIndexFor(trigger: NotificationTrigger): Int {
-        val preferredTitle = when (trigger) {
-            NotificationTrigger.PowerConnected,
-            NotificationTrigger.PowerDisconnected -> R.string.battery_info
-            NotificationTrigger.PackageAdded,
-            NotificationTrigger.PackageRemoved -> R.string.junk_removal
-            NotificationTrigger.ScreenOn,
-            NotificationTrigger.UserPresent,
-            NotificationTrigger.AppBackground -> null
-        }
-        val preferredIndex = preferredTitle?.let { titleRes ->
-            ToolNotificationSpecs.indexOfFirst { it.titleRes == titleRes }
-        } ?: -1
+        val preferredTitle =
+            when (trigger) {
+                NotificationTrigger.PowerConnected,
+                NotificationTrigger.PowerDisconnected,
+                -> R.string.battery_info
+                NotificationTrigger.PackageAdded,
+                NotificationTrigger.PackageRemoved,
+                -> R.string.junk_removal
+                NotificationTrigger.ScreenOn,
+                NotificationTrigger.UserPresent,
+                NotificationTrigger.AppBackground,
+                -> null
+            }
+        val preferredIndex =
+            preferredTitle?.let { titleRes ->
+                ToolNotificationSpecs.indexOfFirst { it.titleRes == titleRes }
+            } ?: -1
         if (preferredIndex >= 0) return preferredIndex
         val prefs = notificationTimingPrefs()
-        val nextIndex = (prefs.getInt(KEY_NEXT_TOOL_INDEX, -1) + 1)
-            .floorMod(ToolNotificationSpecs.size.coerceAtLeast(1))
+        val nextIndex =
+            (prefs.getInt(KEY_NEXT_TOOL_INDEX, -1) + 1)
+                .floorMod(ToolNotificationSpecs.size.coerceAtLeast(1))
         prefs.edit().putInt(KEY_NEXT_TOOL_INDEX, nextIndex).apply()
         return nextIndex
     }
 
-    private fun notificationTimingPrefs() =
-        getSharedPreferences(NOTIFICATION_TIMING_PREFS, Context.MODE_PRIVATE)
+    private fun notificationTimingPrefs() = getSharedPreferences(NOTIFICATION_TIMING_PREFS, Context.MODE_PRIVATE)
 
     private fun hasPostNotificationsPermission(): Boolean =
         runCatching {
             Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
                 ContextCompat.checkSelfPermission(
                     this,
-                    Manifest.permission.POST_NOTIFICATIONS
+                    Manifest.permission.POST_NOTIFICATIONS,
                 ) == PackageManager.PERMISSION_GRANTED
         }.getOrDefault(false)
 
-    private fun targetIntent(route: String, requestCode: Int): PendingIntent {
-        val intent = Intent(this, MainActivity::class.java).apply {
-            action = "$ACTION_OPEN_TOOL.$route"
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                Intent.FLAG_ACTIVITY_SINGLE_TOP
-            putExtra(ToolNotificationDataSource.EXTRA_TARGET_ROUTE, route)
-        }
+    private fun targetIntent(
+        route: String,
+        requestCode: Int,
+    ): PendingIntent {
+        val intent =
+            Intent(this, MainActivity::class.java).apply {
+                action = "$ACTION_OPEN_TOOL.$route"
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+                putExtra(ToolNotificationDataSource.EXTRA_TARGET_ROUTE, route)
+            }
         return PendingIntent.getActivity(
             this,
             TOOL_CONTENT_REQUEST_BASE_CODE + requestCode,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
     }
 
@@ -517,45 +561,48 @@ class PersistentNotificationService : Service() {
         }
 
     private fun registerCommandReceiver() {
-        val filter = IntentFilter().apply {
-            addAction(ACTION_START)
-            addAction(ACTION_ENABLE_MONITORING)
-            addAction(ACTION_DISABLE_MONITORING)
-            addAction(ACTION_APP_FOREGROUND)
-            addAction(ACTION_APP_BACKGROUND)
-            addAction(ACTION_RESTORE_PERSISTENT_NOTIFICATION)
-            addAction(ACTION_STOP_SERVICE)
-            addAction(ACTION_PASSWORD_SUCCESS)
-            addAction(ACTION_LOCK_SCREEN_CANCELLED)
-        }
+        val filter =
+            IntentFilter().apply {
+                addAction(ACTION_START)
+                addAction(ACTION_ENABLE_MONITORING)
+                addAction(ACTION_DISABLE_MONITORING)
+                addAction(ACTION_APP_FOREGROUND)
+                addAction(ACTION_APP_BACKGROUND)
+                addAction(ACTION_RESTORE_PERSISTENT_NOTIFICATION)
+                addAction(ACTION_STOP_SERVICE)
+                addAction(ACTION_PASSWORD_SUCCESS)
+                addAction(ACTION_LOCK_SCREEN_CANCELLED)
+            }
         runCatching {
             ContextCompat.registerReceiver(
                 this,
                 commandReceiver,
                 filter,
-                ContextCompat.RECEIVER_NOT_EXPORTED
+                ContextCompat.RECEIVER_NOT_EXPORTED,
             )
         }
     }
 
     private fun registerSystemEventReceiver() {
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_SCREEN_ON)
-            addAction(Intent.ACTION_USER_PRESENT)
-            addAction(Intent.ACTION_POWER_CONNECTED)
-            addAction(Intent.ACTION_POWER_DISCONNECTED)
-        }
-        val packageFilter = IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addDataScheme("package")
-        }
+        val filter =
+            IntentFilter().apply {
+                addAction(Intent.ACTION_SCREEN_ON)
+                addAction(Intent.ACTION_USER_PRESENT)
+                addAction(Intent.ACTION_POWER_CONNECTED)
+                addAction(Intent.ACTION_POWER_DISCONNECTED)
+            }
+        val packageFilter =
+            IntentFilter().apply {
+                addAction(Intent.ACTION_PACKAGE_ADDED)
+                addAction(Intent.ACTION_PACKAGE_REMOVED)
+                addDataScheme("package")
+            }
         runCatching {
             ContextCompat.registerReceiver(
                 this,
                 systemEventReceiver,
                 filter,
-                ContextCompat.RECEIVER_EXPORTED
+                ContextCompat.RECEIVER_EXPORTED,
             )
         }
         runCatching {
@@ -563,32 +610,35 @@ class PersistentNotificationService : Service() {
                 this,
                 packageEventReceiver,
                 packageFilter,
-                ContextCompat.RECEIVER_EXPORTED
+                ContextCompat.RECEIVER_EXPORTED,
             )
         }
     }
 
     private fun acquireWakeLock() {
-        val powerManager = runCatching {
-            getSystemService(Context.POWER_SERVICE) as PowerManager
-        }.getOrNull() ?: return
-        wakeLock = runCatching {
-            powerManager.newWakeLock(
-                PowerManager.PARTIAL_WAKE_LOCK,
-                "${javaClass.name}:Persistent"
-            ).apply {
-                runCatching { acquire(WAKE_LOCK_TIMEOUT_MS) }
-            }
-        }.getOrNull()
+        val powerManager =
+            runCatching {
+                getSystemService(Context.POWER_SERVICE) as PowerManager
+            }.getOrNull() ?: return
+        wakeLock =
+            runCatching {
+                powerManager
+                    .newWakeLock(
+                        PowerManager.PARTIAL_WAKE_LOCK,
+                        "${javaClass.name}:Persistent",
+                    ).apply {
+                        runCatching { acquire(WAKE_LOCK_TIMEOUT_MS) }
+                    }
+            }.getOrNull()
     }
 
     companion object {
         val isRunning: Boolean
             get() = _isRunning.get()
         private val _isRunning = AtomicBoolean(false)
-        private val _startInFlight = AtomicBoolean(false)
-        private val _stopRequested = AtomicBoolean(false)
-        private val _appInForeground = AtomicBoolean(true)
+        private val startInFlight = AtomicBoolean(false)
+        private val stopRequested = AtomicBoolean(false)
+        private val appInForeground = AtomicBoolean(true)
         private val mainHandler = Handler(Looper.getMainLooper())
 
         private const val ACTION_START = "com.quickcleanpro.phonecleaner.notification.START"
@@ -620,9 +670,10 @@ class PersistentNotificationService : Service() {
         private const val KEY_LAST_TRIGGER_PREFIX = "last_trigger_"
         private const val KEY_NEXT_TOOL_INDEX = "next_tool_index"
         private const val PUSH_WINDOW_MS = 24L * 60L * 60L * 1000L
+
 //        private const val GLOBAL_TRIGGER_INTERVAL_MS = 30L * 60L * 1000L
         private const val GLOBAL_TRIGGER_INTERVAL_MS = 0L
-        private const val DEFAULT_TRIGGER_INTERVAL_MS = 2L  * 60L * 60L * 1000L
+        private const val DEFAULT_TRIGGER_INTERVAL_MS = 2L * 60L * 60L * 1000L
         private const val BACKGROUND_TRIGGER_INTERVAL_MS = 60L * 60L * 1000L
         private const val POWER_TRIGGER_INTERVAL_MS = 3L * 60L * 60L * 1000L
         private const val SCREEN_ON_TRIGGER_DELAY_MS = 8_000L
@@ -630,10 +681,11 @@ class PersistentNotificationService : Service() {
 
         fun start(context: Context) {
             val appContext = context.applicationContext
-            _stopRequested.set(false)
-            val intent = Intent(appContext, PersistentNotificationService::class.java).apply {
-                action = ACTION_START
-            }
+            stopRequested.set(false)
+            val intent =
+                Intent(appContext, PersistentNotificationService::class.java).apply {
+                    action = ACTION_START
+                }
             if (_isRunning.get()) {
                 sendCommandBroadcast(appContext, ACTION_START)
                 return
@@ -643,10 +695,11 @@ class PersistentNotificationService : Service() {
 
         fun enableMonitoring(context: Context) {
             val appContext = context.applicationContext
-            _stopRequested.set(false)
-            val intent = Intent(appContext, PersistentNotificationService::class.java).apply {
-                action = ACTION_ENABLE_MONITORING
-            }
+            stopRequested.set(false)
+            val intent =
+                Intent(appContext, PersistentNotificationService::class.java).apply {
+                    action = ACTION_ENABLE_MONITORING
+                }
             if (_isRunning.get()) {
                 sendCommandBroadcast(appContext, ACTION_ENABLE_MONITORING)
                 return
@@ -656,52 +709,59 @@ class PersistentNotificationService : Service() {
 
         fun disableMonitoring(context: Context) {
             val appContext = context.applicationContext
-            _stopRequested.set(false)
+            stopRequested.set(false)
             sendCommandBroadcast(appContext, ACTION_DISABLE_MONITORING)
         }
 
-
         fun stop(context: Context) {
             val appContext = context.applicationContext
-            _stopRequested.set(true)
+            stopRequested.set(true)
             sendCommandBroadcast(appContext, ACTION_STOP_SERVICE)
             if (_isRunning.get()) {
                 runCatching {
                     appContext.stopService(
-                        Intent(appContext, PersistentNotificationService::class.java)
+                        Intent(appContext, PersistentNotificationService::class.java),
                     )
                 }
             }
         }
+
         fun setAppInForeground(inForeground: Boolean) {
-            _appInForeground.set(inForeground)
+            appInForeground.set(inForeground)
         }
 
         fun notifyAppBackground(context: Context) {
             val appContext = context.applicationContext
-            _appInForeground.set(false)
+            appInForeground.set(false)
             sendCommandBroadcast(appContext, ACTION_APP_BACKGROUND)
         }
 
-        private fun startForegroundCompat(appContext: Context, intent: Intent) {
-            if (!_startInFlight.compareAndSet(false, true)) return
-            val started = runCatching {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    ContextCompat.startForegroundService(appContext, intent)
-                } else {
-                    appContext.startService(intent)
-                }
-            }.isSuccess
+        private fun startForegroundCompat(
+            appContext: Context,
+            intent: Intent,
+        ) {
+            if (!startInFlight.compareAndSet(false, true)) return
+            val started =
+                runCatching {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        ContextCompat.startForegroundService(appContext, intent)
+                    } else {
+                        appContext.startService(intent)
+                    }
+                }.isSuccess
             if (!started) {
-                _startInFlight.set(false)
+                startInFlight.set(false)
                 return
             }
             mainHandler.postDelayed({
-                if (!_isRunning.get()) _startInFlight.set(false)
+                if (!_isRunning.get()) startInFlight.set(false)
             }, START_IN_FLIGHT_RESET_MS)
         }
 
-        private fun sendCommandBroadcast(appContext: Context, action: String) {
+        private fun sendCommandBroadcast(
+            appContext: Context,
+            action: String,
+        ) {
             runCatching {
                 appContext.sendBroadcast(Intent(action).setPackage(appContext.packageName))
             }
@@ -711,7 +771,7 @@ class PersistentNotificationService : Service() {
     private enum class NotificationTrigger(
         val key: String,
         val intervalMs: Long,
-        val delayMs: Long = 0L
+        val delayMs: Long = 0L,
     ) {
         ScreenOn("screen_on", DEFAULT_TRIGGER_INTERVAL_MS, SCREEN_ON_TRIGGER_DELAY_MS),
         UserPresent("user_present", DEFAULT_TRIGGER_INTERVAL_MS),
@@ -719,7 +779,7 @@ class PersistentNotificationService : Service() {
         PowerConnected("power_connected", POWER_TRIGGER_INTERVAL_MS),
         PowerDisconnected("power_disconnected", POWER_TRIGGER_INTERVAL_MS),
         PackageAdded("package_added", DEFAULT_TRIGGER_INTERVAL_MS),
-        PackageRemoved("package_removed", DEFAULT_TRIGGER_INTERVAL_MS)
+        PackageRemoved("package_removed", DEFAULT_TRIGGER_INTERVAL_MS),
     }
 }
 

@@ -16,8 +16,8 @@ import com.quickcleanpro.phonecleaner.data.local.readLastAutoRatePromptAt
 import com.quickcleanpro.phonecleaner.data.local.readTemperatureUnit
 import com.quickcleanpro.phonecleaner.data.local.saveLastAutoRatePromptAt
 import com.quickcleanpro.phonecleaner.data.local.saveLocationRuntimePermissionDenied
-import com.quickcleanpro.phonecleaner.data.local.saveNotificationRuntimePermissionDenied
 import com.quickcleanpro.phonecleaner.data.local.saveNotificationBarExitPromptShown
+import com.quickcleanpro.phonecleaner.data.local.saveNotificationRuntimePermissionDenied
 import com.quickcleanpro.phonecleaner.data.local.saveOnboardingScanCompleted
 import com.quickcleanpro.phonecleaner.data.local.saveTemperatureUnit
 import com.quickcleanpro.phonecleaner.domain.repository.FileRepository
@@ -28,48 +28,41 @@ import com.quickcleanpro.phonecleaner.utils.AppLockPermissionUtils
 class SettingsRepositoryImpl(
     context: Context,
     private val fileRepository: FileRepository,
-    private val toolboxRepository: ToolboxRepository
+    private val toolboxRepository: ToolboxRepository,
 ) : SettingsRepository {
-
     private val appContext = context.applicationContext
 
-    override fun readTemperatureUnit(): String =
-        readTemperatureUnit(appContext)
+    override fun readTemperatureUnit(): String = readTemperatureUnit(appContext)
 
     override fun saveTemperatureUnit(unit: String) {
         saveTemperatureUnit(appContext, unit)
     }
 
-    override fun readLastAutoRatePromptAt(): Long =
-        readLastAutoRatePromptAt(appContext)
+    override fun readLastAutoRatePromptAt(): Long = readLastAutoRatePromptAt(appContext)
 
     override fun saveLastAutoRatePromptAt(timestampMillis: Long) {
         saveLastAutoRatePromptAt(appContext, timestampMillis)
     }
 
-    override fun hasShownNotificationBarExitPrompt(): Boolean =
-        hasShownNotificationBarExitPrompt(appContext)
+    override fun hasShownNotificationBarExitPrompt(): Boolean = hasShownNotificationBarExitPrompt(appContext)
 
     override fun saveNotificationBarExitPromptShown() {
         saveNotificationBarExitPromptShown(appContext)
     }
 
-    override fun hasCompletedOnboardingScan(): Boolean =
-        hasCompletedOnboardingScan(appContext)
+    override fun hasCompletedOnboardingScan(): Boolean = hasCompletedOnboardingScan(appContext)
 
     override fun saveOnboardingScanCompleted() {
         saveOnboardingScanCompleted(appContext)
     }
 
-    override fun hasDeniedLocationRuntimePermission(): Boolean =
-        hasDeniedLocationRuntimePermission(appContext)
+    override fun hasDeniedLocationRuntimePermission(): Boolean = hasDeniedLocationRuntimePermission(appContext)
 
     override fun saveLocationRuntimePermissionDenied() {
         saveLocationRuntimePermissionDenied(appContext)
     }
 
-    override fun hasDeniedNotificationRuntimePermission(): Boolean =
-        hasDeniedNotificationRuntimePermission(appContext)
+    override fun hasDeniedNotificationRuntimePermission(): Boolean = hasDeniedNotificationRuntimePermission(appContext)
 
     override fun saveNotificationRuntimePermissionDenied() {
         saveNotificationRuntimePermissionDenied(appContext)
@@ -100,8 +93,7 @@ class SettingsRepositoryImpl(
             }
         }.getOrNull()
 
-    override fun hasAppUsageAccess(): Boolean =
-        runCatching { toolboxRepository.hasAppUsageAccess() }.getOrDefault(false)
+    override fun hasAppUsageAccess(): Boolean = runCatching { toolboxRepository.hasAppUsageAccess() }.getOrDefault(false)
 
     override fun resetAppUsagePermissionCache() {
         runCatching { toolboxRepository.resetAppUsagePermissionCache() }
@@ -126,8 +118,7 @@ class SettingsRepositoryImpl(
         runCatching { toolboxRepository.notificationListenerSettingsIntent() }
             .getOrElse { appSettingsIntent() }
 
-    override fun hasOverlayPermission(): Boolean =
-        runCatching { AppLockPermissionUtils.canDrawOverlays(appContext) }.getOrDefault(false)
+    override fun hasOverlayPermission(): Boolean = runCatching { AppLockPermissionUtils.canDrawOverlays(appContext) }.getOrDefault(false)
 
     override fun overlayPermissionIntent(): Intent? =
         runCatching { AppLockPermissionUtils.getOverlayPermissionIntent(appContext) }.getOrNull()

@@ -13,12 +13,12 @@ class CleanKit private constructor(
     val repository: CleanRepository,
     val scanJunkUseCase: ScanJunkUseCase,
     val cleanJunkUseCase: CleanJunkUseCase,
-    val memoryCleanUseCase: MemoryCleanUseCase
+    val memoryCleanUseCase: MemoryCleanUseCase,
 ) {
     companion object {
         fun create(
             context: Context,
-            sharedScanState: SharedScanState = SharedScanState()
+            sharedScanState: SharedScanState = SharedScanState(),
         ): CleanKit {
             val repository = CleanRepositoryImpl(context.applicationContext, sharedScanState)
             return CleanKit(
@@ -26,7 +26,7 @@ class CleanKit private constructor(
                 repository = repository,
                 scanJunkUseCase = ScanJunkUseCase(repository),
                 cleanJunkUseCase = CleanJunkUseCase(repository),
-                memoryCleanUseCase = MemoryCleanUseCase(repository)
+                memoryCleanUseCase = MemoryCleanUseCase(repository),
             )
         }
     }

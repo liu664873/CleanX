@@ -6,7 +6,6 @@ import android.os.Process
 import com.quickcleanpro.phonecleaner.domain.model.clean.MemoryCleanResult
 
 object MemoryCleaner {
-
     /**
      * Attempts a conservative background-process cleanup.
      */
@@ -19,11 +18,12 @@ object MemoryCleaner {
         var killedCount = 0
         val myPid = Process.myPid()
 
-        val runningProcesses = try {
-            activityManager.runningAppProcesses
-        } catch (_: SecurityException) {
-            null
-        }
+        val runningProcesses =
+            try {
+                activityManager.runningAppProcesses
+            } catch (_: SecurityException) {
+                null
+            }
 
         runningProcesses?.forEach { info ->
             if (info.pid == myPid) return@forEach
@@ -31,12 +31,14 @@ object MemoryCleaner {
             try {
                 activityManager.killBackgroundProcesses(info.processName)
                 killedCount++
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
 
         try {
             Thread.sleep(300)
-        } catch (_: InterruptedException) {}
+        } catch (_: InterruptedException) {
+        }
 
         val afterMem = ActivityManager.MemoryInfo().also { activityManager.getMemoryInfo(it) }
         val afterAvail = afterMem.availMem

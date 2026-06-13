@@ -1,4 +1,3 @@
 package com.quickcleanpro.phonecleaner.utils
 
-class PermissionHelper {
-}
+class PermissionHelper

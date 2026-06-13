@@ -1,13 +1,11 @@
 ﻿package com.quickcleanpro.phonecleaner.data.source.device
 
-import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.os.storage.StorageManager
-import android.os.storage.StorageVolume
-import java.io.File
 import com.quickcleanpro.phonecleaner.domain.model.device.StorageInfo
 import com.quickcleanpro.phonecleaner.util.FileSizeFormatter
+import java.io.File
 
 /**
  * 存储空间数据源。
@@ -16,7 +14,6 @@ import com.quickcleanpro.phonecleaner.util.FileSizeFormatter
  * 使用 [StatFs] 对文件系统进行统计。
  */
 object StorageDataSource {
-
     /**
      * 将字节数格式化为可读的字符串（如 "12.5 MB"）。
      *
@@ -92,7 +89,8 @@ object StorageDataSource {
             .orEmpty()
             .forEach { candidate ->
                 val primaryPath = primaryExternal?.absolutePath
-                if (candidate.isDirectory && candidate.canRead() &&
+                if (candidate.isDirectory &&
+                    candidate.canRead() &&
                     candidate.absolutePath != primaryPath
                 ) {
                     dirs.add(candidate)
@@ -107,8 +105,8 @@ object StorageDataSource {
      * @param path 要查询的目录路径（如 /data 或 /storage/emulated/0）
      * @return [StorageInfo] 包含总容量、可用容量和已用容量；若异常则返回零值。
      */
-    private fun getStorageInfo(path: File): StorageInfo {
-        return try {
+    private fun getStorageInfo(path: File): StorageInfo =
+        try {
             val stat = StatFs(path.absolutePath)
             val blockSize = stat.blockSizeLong
             val totalBlocks = stat.blockCountLong
@@ -119,5 +117,4 @@ object StorageDataSource {
         } catch (e: Exception) {
             StorageInfo(0, 0, 0)
         }
-    }
 }

@@ -8,14 +8,14 @@ import com.quickcleanpro.phonecleaner.domain.repository.NetworkRepository
 
 class NetworkKit private constructor(
     val appUsageRepository: AppUsageRepository,
-    val networkRepository: NetworkRepository
+    val networkRepository: NetworkRepository,
 ) {
     companion object {
         fun create(context: Context): NetworkKit {
             val appContext = context.applicationContext
             return NetworkKit(
                 appUsageRepository = AppUsageRepositoryImpl(appContext),
-                networkRepository = NetworkRepositoryImpl(appContext)
+                networkRepository = NetworkRepositoryImpl(appContext),
             )
         }
     }

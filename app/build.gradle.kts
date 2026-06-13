@@ -1,14 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktlint)
 }
 
 android {
     namespace = "com.quickcleanpro.phonecleaner"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+        version =
+            release(36) {
+                minorApiLevel = 1
+            }
     }
 
     defaultConfig {
@@ -27,7 +29,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -38,10 +40,17 @@ android {
     buildFeatures {
         compose = true
     }
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
 }
 
 kotlin {
     jvmToolchain(17)
+}
+
+ktlint {
+    android.set(true)
 }
 
 dependencies {

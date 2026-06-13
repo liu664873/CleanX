@@ -4,11 +4,9 @@ import com.quickcleanpro.phonecleaner.domain.model.JunkCategory
 import java.io.File
 
 class TempFileScanner : BaseFileScanner() {
-
     override val category: JunkCategory = JunkCategory.TEMP_FILE
 
-    override fun getRootDirectories(): List<File> =
-        ScanDirectoryHelper.commonPublicDirectories() + File("/data/local/tmp")
+    override fun getRootDirectories(): List<File> = ScanDirectoryHelper.commonPublicDirectories() + File("/data/local/tmp")
 
     override fun isJunkFile(file: File): Boolean {
 //        if (!file.isFile || file.length() < MIN_TEMP_BYTES) return false

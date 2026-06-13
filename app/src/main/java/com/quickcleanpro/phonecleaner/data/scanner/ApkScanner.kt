@@ -4,24 +4,23 @@ import com.quickcleanpro.phonecleaner.domain.model.JunkCategory
 import java.io.File
 
 class ApkScanner : BaseFileScanner() {
-
     override val category: JunkCategory = JunkCategory.APK
 
-    override fun getRootDirectories(): List<File> =
-        ScanDirectoryHelper.commonPublicDirectories()
+    override fun getRootDirectories(): List<File> = ScanDirectoryHelper.commonPublicDirectories()
 
     override fun isJunkFile(file: File): Boolean {
         if (!file.isFile || !file.extension.equals("apk", ignoreCase = true)) return false
         if (isSystemApk(file)) return false
 
         val name = file.name.lowercase()
-        val isDuplicate = name.contains("(1)") ||
-            name.contains("(2)") ||
-            name.contains("copy") ||
-            name.contains("duplicate") ||
-            name.contains("backup") ||
-            name.matches(Regex(".*\\s\\(\\d+\\).*\\.apk$", RegexOption.IGNORE_CASE)) ||
-            name.matches(Regex(".*_\\d+\\.apk$", RegexOption.IGNORE_CASE))
+        val isDuplicate =
+            name.contains("(1)") ||
+                name.contains("(2)") ||
+                name.contains("copy") ||
+                name.contains("duplicate") ||
+                name.contains("backup") ||
+                name.matches(Regex(".*\\s\\(\\d+\\).*\\.apk$", RegexOption.IGNORE_CASE)) ||
+                name.matches(Regex(".*_\\d+\\.apk$", RegexOption.IGNORE_CASE))
 
         return file.length() >= MIN_APK_BYTES && (isDuplicate || isOldDownloadedApk(file) || isFileTooOld(file))
     }
@@ -40,8 +39,7 @@ class ApkScanner : BaseFileScanner() {
             path.contains("/priv-app/")
     }
 
-    private fun isFileTooOld(file: File): Boolean =
-        file.lastModified() < System.currentTimeMillis() - THIRTY_DAYS_MS
+    private fun isFileTooOld(file: File): Boolean = file.lastModified() < System.currentTimeMillis() - THIRTY_DAYS_MS
 
     private fun isOldDownloadedApk(file: File): Boolean {
         val path = file.absolutePath.lowercase()

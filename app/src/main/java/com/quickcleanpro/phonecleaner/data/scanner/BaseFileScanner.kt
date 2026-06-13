@@ -10,7 +10,6 @@ import java.io.File
  * Template scanner for file-system based junk categories.
  */
 abstract class BaseFileScanner : JunkScanner {
-
     @Volatile
     private var progress: Float = 0f
 
@@ -20,39 +19,41 @@ abstract class BaseFileScanner : JunkScanner {
 
     protected open fun isJunkDirectory(directory: File): Boolean = false
 
-    override suspend fun scan(): List<JunkFile> = withContext(Dispatchers.IO) {
-        progress = 0f
-        val junkFiles = mutableListOf<JunkFile>()
+    override suspend fun scan(): List<JunkFile> =
+        withContext(Dispatchers.IO) {
+            progress = 0f
+            val junkFiles = mutableListOf<JunkFile>()
 
-        val validDirs = runCatching { getRootDirectories() }
-            .getOrDefault(emptyList())
-            .filter { file -> runCatching { file.exists() && file.isDirectory }.getOrDefault(false) }
-        if (validDirs.isEmpty()) {
-            progress = 100f
-            return@withContext junkFiles
-        }
-
-        var totalFiles = 0
-        for (dir in validDirs) {
-            totalFiles += countFiles(dir)
-        }
-        if (totalFiles == 0) {
-            progress = 100f
-            return@withContext junkFiles
-        }
-
-        var processedFiles = 0
-        for (dir in validDirs) {
-            collectJunkFiles(dir, junkFiles) {
-                processedFiles++
-                progress = (processedFiles * 100f / totalFiles).coerceIn(0f, 99f)
-                coroutineContext.ensureActive()
+            val validDirs =
+                runCatching { getRootDirectories() }
+                    .getOrDefault(emptyList())
+                    .filter { file -> runCatching { file.exists() && file.isDirectory }.getOrDefault(false) }
+            if (validDirs.isEmpty()) {
+                progress = 100f
+                return@withContext junkFiles
             }
-        }
 
-        progress = 100f
-        junkFiles
-    }
+            var totalFiles = 0
+            for (dir in validDirs) {
+                totalFiles += countFiles(dir)
+            }
+            if (totalFiles == 0) {
+                progress = 100f
+                return@withContext junkFiles
+            }
+
+            var processedFiles = 0
+            for (dir in validDirs) {
+                collectJunkFiles(dir, junkFiles) {
+                    processedFiles++
+                    progress = (processedFiles * 100f / totalFiles).coerceIn(0f, 99f)
+                    coroutineContext.ensureActive()
+                }
+            }
+
+            progress = 100f
+            junkFiles
+        }
 
     override fun getProgress(): Float = progress
 
@@ -73,7 +74,7 @@ abstract class BaseFileScanner : JunkScanner {
     private fun collectJunkFiles(
         directory: File,
         result: MutableList<JunkFile>,
-        onFileProcessed: () -> Unit
+        onFileProcessed: () -> Unit,
     ) {
         val files = safeListFiles(directory)
         for (file in files) {
@@ -102,18 +103,18 @@ abstract class BaseFileScanner : JunkScanner {
                 fileName = file.name,
                 fileSize = fileSize,
                 category = category,
-                lastModified = lastModified
+                lastModified = lastModified,
             )
         }.getOrNull()
 
     private fun directorySize(directory: File): Long =
         runCatching {
-            directory.walkTopDown()
+            directory
+                .walkTopDown()
                 .filter { it.isFile }
                 .take(500)
                 .sumOf { it.length() }
         }.getOrDefault(0L)
 
-    private fun safeListFiles(directory: File): List<File> =
-        runCatching { directory.listFiles()?.toList() }.getOrNull().orEmpty()
+    private fun safeListFiles(directory: File): List<File> = runCatching { directory.listFiles()?.toList() }.getOrNull().orEmpty()
 }

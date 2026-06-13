@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.asStateFlow
  * UI display state, animation state, and navigation remain outside this module.
  */
 class SharedScanState {
-
     private val _scanProgress = MutableStateFlow(ScanProgress.IDLE)
     private val _scanResult = MutableStateFlow<ScanResult?>(null)
     private val _sessionState = MutableStateFlow(ScanSessionState())
@@ -43,18 +42,20 @@ class SharedScanState {
 
     fun setScanProgress(value: ScanProgress) {
         _scanProgress.value = value
-        _sessionState.value = _sessionState.value.copy(
-            progress = value,
-            scanResult = _scanResult.value
-        )
+        _sessionState.value =
+            _sessionState.value.copy(
+                progress = value,
+                scanResult = _scanResult.value,
+            )
     }
 
     fun setScanResult(value: ScanResult) {
         _scanResult.value = value
-        _sessionState.value = _sessionState.value.copy(
-            progress = _scanProgress.value,
-            scanResult = value
-        )
+        _sessionState.value =
+            _sessionState.value.copy(
+                progress = _scanProgress.value,
+                scanResult = value,
+            )
     }
 
     fun setPendingDeleteAuthorization(value: PendingDeleteAuthorization?) {
@@ -80,26 +81,29 @@ class SharedScanState {
         val cleanedPaths = cleanedFiles.map { it.filePath }.toSet()
         val remainingFiles = current.junkFiles.filterNot { it.filePath in cleanedPaths }
         val remainingSize = remainingFiles.sumOf { it.fileSize }
-        val updatedResult = current.copy(
-            junkFiles = remainingFiles,
-            totalSize = remainingSize,
-            totalCount = remainingFiles.size,
-            categoryBreakdown = remainingFiles.groupBy { it.category }
-        )
+        val updatedResult =
+            current.copy(
+                junkFiles = remainingFiles,
+                totalSize = remainingSize,
+                totalCount = remainingFiles.size,
+                categoryBreakdown = remainingFiles.groupBy { it.category },
+            )
 
         _scanResult.value = updatedResult
-        _sessionState.value = _sessionState.value.copy(
-            progress = if (remainingFiles.isEmpty()) {
-                ScanProgress.IDLE
-            } else {
-                ScanProgress(
-                    percent = 100f,
-                    foundCount = remainingFiles.size,
-                    foundSize = remainingSize
-                )
-            },
-            scanResult = updatedResult
-        )
+        _sessionState.value =
+            _sessionState.value.copy(
+                progress =
+                    if (remainingFiles.isEmpty()) {
+                        ScanProgress.IDLE
+                    } else {
+                        ScanProgress(
+                            percent = 100f,
+                            foundCount = remainingFiles.size,
+                            foundSize = remainingSize,
+                        )
+                    },
+                scanResult = updatedResult,
+            )
         _scanProgress.value = _sessionState.value.progress
     }
 
@@ -123,13 +127,13 @@ class SharedScanState {
 
 data class ScanSessionState(
     val progress: ScanProgress = ScanProgress.IDLE,
-    val scanResult: ScanResult? = null
+    val scanResult: ScanResult? = null,
 )
 
 data class PendingDeleteAuthorization(
     val request: PendingIntent,
     val message: String,
-    val pendingCount: Int
+    val pendingCount: Int,
 )
 
 data class CleanupSummary(
@@ -137,7 +141,7 @@ data class CleanupSummary(
     val cleanedCount: Int,
     val failedCount: Int,
     val memoryFreedBytes: Long,
-    val memoryProcessesKilled: Int
+    val memoryProcessesKilled: Int,
 ) {
     val totalFreedBytes: Long
         get() = freedSpace + memoryFreedBytes

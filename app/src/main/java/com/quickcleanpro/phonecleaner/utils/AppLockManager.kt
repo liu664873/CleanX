@@ -15,8 +15,7 @@ object AppLockManager {
         PersistentNotificationService.disableMonitoring(context)
     }
 
-    fun isMonitoringEnabled(): Boolean =
-        AppPrefsUtils.getBoolean(AppLockRepositoryImpl.KEY_MONITORING_ENABLED, true)
+    fun isMonitoringEnabled(): Boolean = AppPrefsUtils.getBoolean(AppLockRepositoryImpl.KEY_MONITORING_ENABLED, true)
 
     fun isAppLocked(packageName: String): Boolean {
         val lockedStr = AppPrefsUtils.getString(AppLockRepositoryImpl.KEY_LOCKED_PACKAGES, "")

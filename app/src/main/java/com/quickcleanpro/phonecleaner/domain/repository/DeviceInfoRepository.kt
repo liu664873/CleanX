@@ -14,7 +14,6 @@ import com.quickcleanpro.phonecleaner.domain.model.device.StorageInfo
  * 便于单元测试、预览以及将来替换实现。
  */
 interface DeviceInfoRepository {
-
     /**
      * 获取当前电池的基础信息。
      *

@@ -7,7 +7,7 @@ data class ScanResult(
     val junkFiles: List<JunkFile>,
     val totalSize: Long,
     val totalCount: Int,
-    val categoryBreakdown: Map<JunkCategory, List<JunkFile>>
+    val categoryBreakdown: Map<JunkCategory, List<JunkFile>>,
 ) {
     /** 鏍煎紡鍖栧悗鐨勬€诲ぇ灏忔枃妗堛€?*/
     val formattedTotalSize: String
@@ -15,11 +15,12 @@ data class ScanResult(
 
     companion object {
         /** 绌烘壂鎻忕粨鏋溿€?*/
-        val EMPTY = ScanResult(
-            junkFiles = emptyList(),
-            totalSize = 0,
-            totalCount = 0,
-            categoryBreakdown = emptyMap()
-        )
+        val EMPTY =
+            ScanResult(
+                junkFiles = emptyList(),
+                totalSize = 0,
+                totalCount = 0,
+                categoryBreakdown = emptyMap(),
+            )
     }
 }

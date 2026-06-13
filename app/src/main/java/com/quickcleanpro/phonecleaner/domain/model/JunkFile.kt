@@ -9,7 +9,7 @@ data class JunkFile(
     val fileName: String,
     val fileSize: Long,
     val category: JunkCategory,
-    val lastModified: Long = System.currentTimeMillis()
+    val lastModified: Long = System.currentTimeMillis(),
 ) {
     /** 鏍煎紡鍖栧悗鐨勬枃浠跺ぇ灏忔枃妗堛€?*/
     val formattedSize: String
@@ -18,13 +18,12 @@ data class JunkFile(
     companion object {
         /**
          * 灏嗗瓧鑺傛暟鏍煎紡鍖栦负闈㈠悜 UI 鐨勭煭鏂囨湰銆?         */
-        fun formatFileSize(bytes: Long): String {
-            return when {
+        fun formatFileSize(bytes: Long): String =
+            when {
                 bytes < 1024 -> "$bytes B"
                 bytes < 1024 * 1024 -> "${"%.1f".format(bytes / 1024.0)} KB"
                 bytes < 1024 * 1024 * 1024 -> "${"%.1f".format(bytes / (1024.0 * 1024))} MB"
                 else -> "${"%.1f".format(bytes / (1024.0 * 1024 * 1024))} GB"
             }
-        }
     }
 }

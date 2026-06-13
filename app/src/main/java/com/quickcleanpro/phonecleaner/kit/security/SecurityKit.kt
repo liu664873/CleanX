@@ -2,9 +2,10 @@
 
 import android.content.Context
 
-class SecurityKit private constructor(val appPackageName: String) {
+class SecurityKit private constructor(
+    val appPackageName: String,
+) {
     companion object {
-        fun create(context: Context): SecurityKit =
-            SecurityKit(context.applicationContext.packageName)
+        fun create(context: Context): SecurityKit = SecurityKit(context.applicationContext.packageName)
     }
 }

@@ -6,34 +6,35 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build
-import java.lang.reflect.Method
 import com.quickcleanpro.phonecleaner.domain.model.device.BatteryInfo
 import com.quickcleanpro.phonecleaner.domain.model.device.MemoryInfo
-
+import java.lang.reflect.Method
 
 object DeviceInfoDataSource {
-
     fun getBatteryInfo(context: Context): BatteryInfo {
-        val intent = getBatteryStatusIntent(context)
-            ?: return BatteryInfo(-1, "Unknown", 0f, -1, "Unknown", 0, "Unknown")
+        val intent =
+            getBatteryStatusIntent(context)
+                ?: return BatteryInfo(-1, "Unknown", 0f, -1, "Unknown", 0, "Unknown")
 
         val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
         val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 1)
-        val levelPercent = if (level >= 0 && scale > 0) {
-            (level * 100 / scale.toFloat()).toInt().coerceIn(0, 100)
-        } else {
-            -1
-        }
+        val levelPercent =
+            if (level >= 0 && scale > 0) {
+                (level * 100 / scale.toFloat()).toInt().coerceIn(0, 100)
+            } else {
+                -1
+            }
 
-        val health = when (intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1)) {
-            BatteryManager.BATTERY_HEALTH_COLD -> "Cold"
-            BatteryManager.BATTERY_HEALTH_DEAD -> "Dead"
-            BatteryManager.BATTERY_HEALTH_GOOD -> "Good"
-            BatteryManager.BATTERY_HEALTH_OVERHEAT -> "Overheat"
-            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "Overvoltage"
-            BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "Failure"
-            else -> "Unknown"
-        }
+        val health =
+            when (intent.getIntExtra(BatteryManager.EXTRA_HEALTH, -1)) {
+                BatteryManager.BATTERY_HEALTH_COLD -> "Cold"
+                BatteryManager.BATTERY_HEALTH_DEAD -> "Dead"
+                BatteryManager.BATTERY_HEALTH_GOOD -> "Good"
+                BatteryManager.BATTERY_HEALTH_OVERHEAT -> "Overheat"
+                BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "Overvoltage"
+                BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "Failure"
+                else -> "Unknown"
+            }
 
         val tempRaw = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1)
         val temperature = if (tempRaw >= 0) tempRaw / 10f else 0f
@@ -48,7 +49,7 @@ object DeviceInfoDataSource {
             voltage = voltage,
             technology = technology,
             capacity = capacity,
-            availableTime = estimateAvailableTime(levelPercent)
+            availableTime = estimateAvailableTime(levelPercent),
         )
     }
 
@@ -58,11 +59,12 @@ object DeviceInfoDataSource {
         activityManager.getMemoryInfo(memInfo)
         val avail = memInfo.availMem
 
-        val total = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            memInfo.totalMem
-        } else {
-            (avail * 3).coerceAtMost(1024L * 1024 * 1024)
-        }
+        val total =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                memInfo.totalMem
+            } else {
+                (avail * 3).coerceAtMost(1024L * 1024 * 1024)
+            }
         val isTotalValid = Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
         val used = if (total > 0) total - avail else 0L
         val percent = if (total > 0) ((used.toFloat() / total) * 100).toInt() else 0
@@ -75,7 +77,7 @@ object DeviceInfoDataSource {
                 context.registerReceiver(
                     null,
                     IntentFilter(Intent.ACTION_BATTERY_CHANGED),
-                    Context.RECEIVER_NOT_EXPORTED
+                    Context.RECEIVER_NOT_EXPORTED,
                 )
             } else {
                 context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -99,30 +101,29 @@ object DeviceInfoDataSource {
         }
     }
 
-    private fun getBatteryCapacityByReflection(context: Context): Int? {
-        return try {
+    private fun getBatteryCapacityByReflection(context: Context): Int? =
+        try {
             val powerProfileClass = Class.forName("com.android.internal.os.PowerProfile")
             val constructor = powerProfileClass.getConstructor(Context::class.java)
             val instance = constructor.newInstance(context)
             val method = getBatteryCapacityMethod(powerProfileClass)
-            val capacity = if (method.parameterTypes.isEmpty()) {
-                method.invoke(instance) as Double
-            } else {
-                method.invoke(instance, "battery.capacity") as Double
-            }
+            val capacity =
+                if (method.parameterTypes.isEmpty()) {
+                    method.invoke(instance) as Double
+                } else {
+                    method.invoke(instance, "battery.capacity") as Double
+                }
             capacity.takeIf { it > 0.0 }?.toInt()
         } catch (_: Exception) {
             null
         }
-    }
 
-    private fun getBatteryCapacityMethod(powerProfileClass: Class<*>): Method {
-        return try {
+    private fun getBatteryCapacityMethod(powerProfileClass: Class<*>): Method =
+        try {
             powerProfileClass.getMethod("getBatteryCapacity")
         } catch (_: NoSuchMethodException) {
             powerProfileClass.getMethod("getAveragePower", String::class.java)
         }
-    }
 
     private fun estimateAvailableTime(levelPercent: Int): String {
         val validLevel = levelPercent.coerceIn(0, 100)

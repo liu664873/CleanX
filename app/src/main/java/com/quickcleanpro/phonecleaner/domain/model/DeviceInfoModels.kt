@@ -5,7 +5,7 @@
  * Repository 灏嗙郴缁熷箍鎾腑鐨勭姸鎬佺爜杞崲鎴愰〉闈㈠彲鐩存帴浣跨敤鐨勬枃鏈拰鍏呯數鏍囪锛? * 閬垮厤椤甸潰灞傜悊瑙?Android 鐢垫睜鐘舵€佸父閲忋€? */
 data class BatteryStatusInfo(
     val statusText: String,
-    val isCharging: Boolean
+    val isCharging: Boolean,
 )
 
 /**
@@ -17,7 +17,7 @@ data class DeviceHardwareInfo(
     val screenDensity: String,
     val multiTouchSupported: Boolean,
     val sensors: DeviceSensorInfo,
-    val cpu: DeviceCpuInfo
+    val cpu: DeviceCpuInfo,
 )
 
 /**
@@ -30,7 +30,7 @@ data class DeviceSensorInfo(
     val gyroscope: Boolean,
     val light: Boolean,
     val proximity: Boolean,
-    val ambientTemperature: Boolean
+    val ambientTemperature: Boolean,
 )
 
 /**
@@ -40,5 +40,5 @@ data class DeviceCpuInfo(
     val hardware: String,
     val model: String,
     val cores: Int,
-    val maxFrequency: String
+    val maxFrequency: String,
 )

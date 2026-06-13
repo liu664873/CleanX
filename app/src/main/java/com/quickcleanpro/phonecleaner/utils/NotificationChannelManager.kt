@@ -26,7 +26,7 @@ object NotificationChannelManager {
         NotificationChannel(
             TOOLS_CHANNEL_ID,
             context.getString(R.string.notification_channel_tools),
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_DEFAULT,
         ).apply {
             description = context.getString(R.string.notification_channel_tools_desc)
             setShowBadge(true)
@@ -38,7 +38,7 @@ object NotificationChannelManager {
         NotificationChannel(
             TRIGGERED_TOOLS_CHANNEL_ID,
             context.getString(R.string.notification_channel_tools),
-            NotificationManager.IMPORTANCE_HIGH
+            NotificationManager.IMPORTANCE_HIGH,
         ).apply {
             description = context.getString(R.string.notification_channel_tools_desc)
             setShowBadge(true)
@@ -52,7 +52,7 @@ object NotificationChannelManager {
         NotificationChannel(
             PERSISTENT_CHANNEL_ID,
             context.getString(R.string.running_in_background),
-            NotificationManager.IMPORTANCE_LOW
+            NotificationManager.IMPORTANCE_LOW,
         ).apply {
             description = context.getString(R.string.running_in_background)
             setShowBadge(false)

@@ -21,94 +21,121 @@ import java.security.MessageDigest
 import java.util.Locale
 
 object FileManagerDataSource {
-
-    suspend fun loadImages(context: Context) = withContext(Dispatchers.IO) {
-        queryMedia(context.contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ManagedFileType.Image)
-    }
-
-    suspend fun loadVideos(context: Context) = withContext(Dispatchers.IO) {
-        queryMedia(context.contentResolver, MediaStore.Video.Media.EXTERNAL_CONTENT_URI, ManagedFileType.Video)
-    }
-
-    suspend fun loadAudios(context: Context) = withContext(Dispatchers.IO) {
-        queryMedia(context.contentResolver, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, ManagedFileType.Audio)
-    }
-
-    suspend fun loadScreenshots(context: Context) = withContext(Dispatchers.IO) {
-        loadImages(context).filter {
-            it.bucketName?.contains("screenshot", true) == true ||
-                it.path?.contains("screenshot", true) == true
+    suspend fun loadImages(context: Context) =
+        withContext(Dispatchers.IO) {
+            queryMedia(context.contentResolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ManagedFileType.Image)
         }
-    }
 
-    suspend fun loadPrivacyImages(context: Context) = withContext(Dispatchers.IO) {
-        loadImages(context).filter { hasGpsLocation(context, it) }
-    }
+    suspend fun loadVideos(context: Context) =
+        withContext(Dispatchers.IO) {
+            queryMedia(context.contentResolver, MediaStore.Video.Media.EXTERNAL_CONTENT_URI, ManagedFileType.Video)
+        }
 
-    suspend fun loadDocuments(context: Context) = withContext(Dispatchers.IO) {
-        (queryFiles(context.contentResolver) + discoverDocumentFilesFromFileSystemIfAllowed())
-            .filter { item -> isAllowedDocumentCandidate(item.name, item.mimeType) }
-            .distinctBy(::fileIdentity)
-            .sortedByDescending { it.modifiedSeconds }
-    }
+    suspend fun loadAudios(context: Context) =
+        withContext(Dispatchers.IO) {
+            queryMedia(context.contentResolver, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, ManagedFileType.Audio)
+        }
 
-    suspend fun loadLargeFiles(context: Context, minBytes: Long = 10L * 1024 * 1024) = withContext(Dispatchers.IO) {
+    suspend fun loadScreenshots(context: Context) =
+        withContext(Dispatchers.IO) {
+            loadImages(context).filter {
+                it.bucketName?.contains("screenshot", true) == true ||
+                    it.path?.contains("screenshot", true) == true
+            }
+        }
+
+    suspend fun loadPrivacyImages(context: Context) =
+        withContext(Dispatchers.IO) {
+            loadImages(context).filter { hasGpsLocation(context, it) }
+        }
+
+    suspend fun loadDocuments(context: Context) =
+        withContext(Dispatchers.IO) {
+            (queryFiles(context.contentResolver) + discoverDocumentFilesFromFileSystemIfAllowed())
+                .filter { item -> isAllowedDocumentCandidate(item.name, item.mimeType) }
+                .distinctBy(::fileIdentity)
+                .sortedByDescending { it.modifiedSeconds }
+        }
+
+    suspend fun loadLargeFiles(
+        context: Context,
+        minBytes: Long = 10L * 1024 * 1024,
+    ) = withContext(Dispatchers.IO) {
         discoverFiles(context)
             .filter { it.sizeBytes >= minBytes }
             .sortedByDescending { it.sizeBytes }
     }
 
-    suspend fun loadDuplicateFiles(context: Context): List<List<ManagedFileItem>> = withContext(Dispatchers.IO) {
-        buildDuplicateFileGroups(
-            files = discoverFiles(context),
-            contentHash = { item -> computeContentHash(context, item) }
-        )
-    }
-
-    suspend fun loadWhatsAppFiles(context: Context) = withContext(Dispatchers.IO) {
-        runCatching {
-            (queryFiles(context.contentResolver).filter(::isWhatsAppCandidate) +
-                scanWhatsAppFilesFromFileSystem())
-                .filter { it.sizeBytes > 0L }
-                .distinctBy(::fileIdentity)
-                .sortedByDescending { it.modifiedSeconds }
-        }.getOrElse { emptyList() }
-    }
-
-    suspend fun deleteFiles(context: Context, items: List<ManagedFileItem>): Long = withContext(Dispatchers.IO) {
-        var freed = 0L
-        items.forEach { item ->
-            val deleted = runCatching {
-                context.contentResolver.delete(item.uri, null, null) > 0
-            }.getOrDefault(false)
-            val deletedFromPath = !deleted && item.path != null && runCatching {
-                File(item.path).delete()
-            }.getOrDefault(false)
-            if (deleted || deletedFromPath || !fileStillExists(context, item)) {
-                freed += item.sizeBytes
-            }
+    suspend fun loadDuplicateFiles(context: Context): List<List<ManagedFileItem>> =
+        withContext(Dispatchers.IO) {
+            buildDuplicateFileGroups(
+                files = discoverFiles(context),
+                contentHash = { item -> computeContentHash(context, item) },
+            )
         }
-        freed
-    }
 
-    suspend fun removeLocationData(context: Context, items: List<ManagedFileItem>): Int = withContext(Dispatchers.IO) {
-        var changed = 0
-        items.forEach { item ->
-            val path = item.path
-            if (!path.isNullOrBlank()) {
-                val removed = runCatching {
-                    val exif = ExifInterface(path)
-                    clearGpsAttributes(exif)
-                    exif.saveAttributes()
-                    true
-                }.getOrDefault(false)
-                if (removed) changed++
-            }
+    suspend fun loadWhatsAppFiles(context: Context) =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                (
+                    queryFiles(context.contentResolver).filter(::isWhatsAppCandidate) +
+                        scanWhatsAppFilesFromFileSystem()
+                ).filter { it.sizeBytes > 0L }
+                    .distinctBy(::fileIdentity)
+                    .sortedByDescending { it.modifiedSeconds }
+            }.getOrElse { emptyList() }
         }
-        changed
-    }
 
-    fun isDocumentFile(name: String, mimeType: String?): Boolean {
+    suspend fun deleteFiles(
+        context: Context,
+        items: List<ManagedFileItem>,
+    ): Long =
+        withContext(Dispatchers.IO) {
+            var freed = 0L
+            items.forEach { item ->
+                val deleted =
+                    runCatching {
+                        context.contentResolver.delete(item.uri, null, null) > 0
+                    }.getOrDefault(false)
+                val deletedFromPath =
+                    !deleted &&
+                        item.path != null &&
+                        runCatching {
+                            File(item.path).delete()
+                        }.getOrDefault(false)
+                if (deleted || deletedFromPath || !fileStillExists(context, item)) {
+                    freed += item.sizeBytes
+                }
+            }
+            freed
+        }
+
+    suspend fun removeLocationData(
+        context: Context,
+        items: List<ManagedFileItem>,
+    ): Int =
+        withContext(Dispatchers.IO) {
+            var changed = 0
+            items.forEach { item ->
+                val path = item.path
+                if (!path.isNullOrBlank()) {
+                    val removed =
+                        runCatching {
+                            val exif = ExifInterface(path)
+                            clearGpsAttributes(exif)
+                            exif.saveAttributes()
+                            true
+                        }.getOrDefault(false)
+                    if (removed) changed++
+                }
+            }
+            changed
+        }
+
+    fun isDocumentFile(
+        name: String,
+        mimeType: String?,
+    ): Boolean {
         if (isMediaFileName(name, mimeType)) return false
         val lowerName = name.lowercase(Locale.US)
         val extension = lowerName.substringAfterLast('.', missingDelimiterValue = "")
@@ -118,7 +145,10 @@ object FileManagerDataSource {
             DOCUMENT_MIME_KEYWORDS.any { keyword -> mime.contains(keyword) }
     }
 
-    fun isMediaFileName(name: String, mimeType: String?): Boolean {
+    fun isMediaFileName(
+        name: String,
+        mimeType: String?,
+    ): Boolean {
         val extension = name.lowercase(Locale.US).substringAfterLast('.', missingDelimiterValue = "")
         val mime = mimeType.orEmpty().lowercase(Locale.US)
         return extension in MEDIA_EXTENSIONS ||
@@ -127,8 +157,10 @@ object FileManagerDataSource {
             mime.startsWith("audio/")
     }
 
-    fun isAllowedDocumentCandidate(name: String, mimeType: String?): Boolean =
-        isDocumentFile(name, mimeType) && !isMediaFileName(name, mimeType)
+    fun isAllowedDocumentCandidate(
+        name: String,
+        mimeType: String?,
+    ): Boolean = isDocumentFile(name, mimeType) && !isMediaFileName(name, mimeType)
 
     fun hasAllFilesAccess(): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.R ||
@@ -154,11 +186,12 @@ object FileManagerDataSource {
 
     fun buildDuplicateFileGroups(
         files: List<ManagedFileItem>,
-        contentHash: (ManagedFileItem) -> String?
+        contentHash: (ManagedFileItem) -> String?,
     ): List<List<ManagedFileItem>> {
-        val uniqueFiles = files
-            .filter { it.sizeBytes > 0L }
-            .distinctBy(::fileIdentity)
+        val uniqueFiles =
+            files
+                .filter { it.sizeBytes > 0L }
+                .distinctBy(::fileIdentity)
 
         val hashGroups = mutableListOf<List<ManagedFileItem>>()
         val fallbackCandidates = mutableListOf<ManagedFileItem>()
@@ -181,14 +214,14 @@ object FileManagerDataSource {
                     .forEach { group ->
                         hashGroups += group.sortedByDescending { it.modifiedSeconds }
                     }
-
             }
 
-        val fallbackGroups = fallbackCandidates
-            .groupBy { "${it.name.lowercase(Locale.US)}#${it.sizeBytes}" }
-            .values
-            .filter { it.size > 1 }
-            .map { group -> group.sortedByDescending { it.modifiedSeconds } }
+        val fallbackGroups =
+            fallbackCandidates
+                .groupBy { "${it.name.lowercase(Locale.US)}#${it.sizeBytes}" }
+                .values
+                .filter { it.size > 1 }
+                .map { group -> group.sortedByDescending { it.modifiedSeconds } }
 
         return (hashGroups + fallbackGroups)
             .distinctBy { group -> group.joinToString("|") { fileIdentity(it) } }
@@ -240,9 +273,10 @@ object FileManagerDataSource {
     }
 
     private fun discoverFiles(context: Context): List<ManagedFileItem> =
-        (runCatching { queryFiles(context.contentResolver) }.getOrElse { emptyList() } +
-            discoverPublicFilesFromFileSystemIfAllowed())
-            .distinctBy(::fileIdentity)
+        (
+            runCatching { queryFiles(context.contentResolver) }.getOrElse { emptyList() } +
+                discoverPublicFilesFromFileSystemIfAllowed()
+        ).distinctBy(::fileIdentity)
 
     private fun discoverPublicFilesFromFileSystemIfAllowed(): List<ManagedFileItem> =
         if (hasAllFilesAccess()) {
@@ -258,108 +292,120 @@ object FileManagerDataSource {
             emptyList()
         }
 
-    private fun externalStorageDirectoryOrNull(): File? =
-        runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
+    private fun externalStorageDirectoryOrNull(): File? = runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
 
-    private fun queryMedia(resolver: ContentResolver, collection: Uri, type: ManagedFileType): List<ManagedFileItem> {
-        val projection = arrayOf(
-            MediaStore.MediaColumns._ID,
-            MediaStore.MediaColumns.DISPLAY_NAME,
-            MediaStore.MediaColumns.SIZE,
-            MediaStore.MediaColumns.DATE_MODIFIED,
-            MediaStore.MediaColumns.MIME_TYPE,
-            MediaStore.MediaColumns.DATA,
-            MediaStore.MediaColumns.BUCKET_DISPLAY_NAME
-        )
+    private fun queryMedia(
+        resolver: ContentResolver,
+        collection: Uri,
+        type: ManagedFileType,
+    ): List<ManagedFileItem> {
+        val projection =
+            arrayOf(
+                MediaStore.MediaColumns._ID,
+                MediaStore.MediaColumns.DISPLAY_NAME,
+                MediaStore.MediaColumns.SIZE,
+                MediaStore.MediaColumns.DATE_MODIFIED,
+                MediaStore.MediaColumns.MIME_TYPE,
+                MediaStore.MediaColumns.DATA,
+                MediaStore.MediaColumns.BUCKET_DISPLAY_NAME,
+            )
         return runCatching {
-            resolver.query(collection, projection, null, null, "${MediaStore.MediaColumns.DATE_MODIFIED} DESC")
-            ?.use { cursor ->
-                val idCol = cursor.getColumnIndex(MediaStore.MediaColumns._ID)
-                val nameCol = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
-                val sizeCol = cursor.getColumnIndex(MediaStore.MediaColumns.SIZE)
-                val modCol = cursor.getColumnIndex(MediaStore.MediaColumns.DATE_MODIFIED)
-                val mimeCol = cursor.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)
-                val pathCol = cursor.getColumnIndex(MediaStore.MediaColumns.DATA)
-                val bucketCol = cursor.getColumnIndex(MediaStore.MediaColumns.BUCKET_DISPLAY_NAME)
-                if (idCol < 0 || nameCol < 0) return@use emptyList()
-                buildList {
-                    while (cursor.moveToNext()) {
-                        val path = cursor.getStringOrNull(pathCol)
-                        val name = cursor.getStringOrNull(nameCol) ?: "Unknown"
-                        if (shouldSkipPath(path, name)) continue
+            resolver
+                .query(collection, projection, null, null, "${MediaStore.MediaColumns.DATE_MODIFIED} DESC")
+                ?.use { cursor ->
+                    val idCol = cursor.getColumnIndex(MediaStore.MediaColumns._ID)
+                    val nameCol = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
+                    val sizeCol = cursor.getColumnIndex(MediaStore.MediaColumns.SIZE)
+                    val modCol = cursor.getColumnIndex(MediaStore.MediaColumns.DATE_MODIFIED)
+                    val mimeCol = cursor.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)
+                    val pathCol = cursor.getColumnIndex(MediaStore.MediaColumns.DATA)
+                    val bucketCol = cursor.getColumnIndex(MediaStore.MediaColumns.BUCKET_DISPLAY_NAME)
+                    if (idCol < 0 || nameCol < 0) return@use emptyList()
+                    buildList {
+                        while (cursor.moveToNext()) {
+                            val path = cursor.getStringOrNull(pathCol)
+                            val name = cursor.getStringOrNull(nameCol) ?: "Unknown"
+                            if (shouldSkipPath(path, name)) continue
 
-                        add(
-                            ManagedFileItem(
-                                id = cursor.getLongOrZero(idCol),
-                                uri = ContentUris.withAppendedId(collection, cursor.getLongOrZero(idCol)),
-                                path = path,
-                                name = name,
-                                sizeBytes = cursor.getLongOrZero(sizeCol),
-                                modifiedSeconds = cursor.getLongOrZero(modCol),
-                                mimeType = cursor.getStringOrNull(mimeCol),
-                                bucketName = cursor.getStringOrNull(bucketCol),
-                                type = type
+                            add(
+                                ManagedFileItem(
+                                    id = cursor.getLongOrZero(idCol),
+                                    uri = ContentUris.withAppendedId(collection, cursor.getLongOrZero(idCol)),
+                                    path = path,
+                                    name = name,
+                                    sizeBytes = cursor.getLongOrZero(sizeCol),
+                                    modifiedSeconds = cursor.getLongOrZero(modCol),
+                                    mimeType = cursor.getStringOrNull(mimeCol),
+                                    bucketName = cursor.getStringOrNull(bucketCol),
+                                    type = type,
+                                ),
                             )
-                        )
+                        }
                     }
-                }
-            } ?: emptyList()
+                } ?: emptyList()
         }.getOrElse { emptyList() }
     }
 
     private fun queryFiles(resolver: ContentResolver): List<ManagedFileItem> {
         val collection = MediaStore.Files.getContentUri("external")
-        val projection = arrayOf(
-            MediaStore.Files.FileColumns._ID,
-            MediaStore.Files.FileColumns.DISPLAY_NAME,
-            MediaStore.Files.FileColumns.SIZE,
-            MediaStore.Files.FileColumns.DATE_MODIFIED,
-            MediaStore.Files.FileColumns.MIME_TYPE,
-            MediaStore.Files.FileColumns.DATA,
-            MediaStore.Files.FileColumns.MEDIA_TYPE
-        )
+        val projection =
+            arrayOf(
+                MediaStore.Files.FileColumns._ID,
+                MediaStore.Files.FileColumns.DISPLAY_NAME,
+                MediaStore.Files.FileColumns.SIZE,
+                MediaStore.Files.FileColumns.DATE_MODIFIED,
+                MediaStore.Files.FileColumns.MIME_TYPE,
+                MediaStore.Files.FileColumns.DATA,
+                MediaStore.Files.FileColumns.MEDIA_TYPE,
+            )
         return runCatching {
-            resolver.query(collection, projection, null, null, "${MediaStore.Files.FileColumns.DATE_MODIFIED} DESC")
-            ?.use { cursor ->
-                val idCol = cursor.getColumnIndex(MediaStore.Files.FileColumns._ID)
-                val nameCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME)
-                val sizeCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.SIZE)
-                val modCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_MODIFIED)
-                val mimeCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.MIME_TYPE)
-                val pathCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA)
-                val mediaTypeCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.MEDIA_TYPE)
-                if (idCol < 0 || nameCol < 0) return@use emptyList()
-                buildList {
-                    while (cursor.moveToNext()) {
-                        val path = cursor.getStringOrNull(pathCol)
-                        val name = cursor.getStringOrNull(nameCol) ?: "Unknown"
-                        if (shouldSkipPath(path, name)) continue
+            resolver
+                .query(collection, projection, null, null, "${MediaStore.Files.FileColumns.DATE_MODIFIED} DESC")
+                ?.use { cursor ->
+                    val idCol = cursor.getColumnIndex(MediaStore.Files.FileColumns._ID)
+                    val nameCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.DISPLAY_NAME)
+                    val sizeCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.SIZE)
+                    val modCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_MODIFIED)
+                    val mimeCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.MIME_TYPE)
+                    val pathCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA)
+                    val mediaTypeCol = cursor.getColumnIndex(MediaStore.Files.FileColumns.MEDIA_TYPE)
+                    if (idCol < 0 || nameCol < 0) return@use emptyList()
+                    buildList {
+                        while (cursor.moveToNext()) {
+                            val path = cursor.getStringOrNull(pathCol)
+                            val name = cursor.getStringOrNull(nameCol) ?: "Unknown"
+                            if (shouldSkipPath(path, name)) continue
 
-                        add(
-                            ManagedFileItem(
-                                id = cursor.getLongOrZero(idCol),
-                                uri = ContentUris.withAppendedId(collection, cursor.getLongOrZero(idCol)),
-                                path = path,
-                                name = name,
-                                sizeBytes = cursor.getLongOrZero(sizeCol),
-                                modifiedSeconds = cursor.getLongOrZero(modCol),
-                                mimeType = cursor.getStringOrNull(mimeCol),
-                                bucketName = path?.substringBeforeLast('/'),
-                                type = when (cursor.getIntOrZero(mediaTypeCol)) {
-                                    MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> ManagedFileType.Image
-                                    MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> ManagedFileType.Video
-                                    MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO -> ManagedFileType.Audio
-                                    else -> ManagedFileType.Document
-                                }
+                            add(
+                                ManagedFileItem(
+                                    id = cursor.getLongOrZero(idCol),
+                                    uri = ContentUris.withAppendedId(collection, cursor.getLongOrZero(idCol)),
+                                    path = path,
+                                    name = name,
+                                    sizeBytes = cursor.getLongOrZero(sizeCol),
+                                    modifiedSeconds = cursor.getLongOrZero(modCol),
+                                    mimeType = cursor.getStringOrNull(mimeCol),
+                                    bucketName = path?.substringBeforeLast('/'),
+                                    type =
+                                        when (cursor.getIntOrZero(mediaTypeCol)) {
+                                            MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> ManagedFileType.Image
+                                            MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> ManagedFileType.Video
+                                            MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO -> ManagedFileType.Audio
+                                            else -> ManagedFileType.Document
+                                        },
+                                ),
                             )
-                        )
+                        }
                     }
-                }
-            } ?: emptyList()
+                } ?: emptyList()
         }.getOrElse { emptyList() }
     }
 
-    private fun collectPublicFiles(directory: File, results: MutableList<ManagedFileItem>, maxDepth: Int) {
+    private fun collectPublicFiles(
+        directory: File,
+        results: MutableList<ManagedFileItem>,
+        maxDepth: Int,
+    ) {
         if (maxDepth < 0 || results.size >= MAX_FILE_SYSTEM_RESULTS) return
         val children = runCatching { directory.listFiles() }.getOrNull().orEmpty()
         children.forEach { file ->
@@ -373,7 +419,11 @@ object FileManagerDataSource {
         }
     }
 
-    private fun collectDocumentFiles(directory: File, results: MutableList<ManagedFileItem>, maxDepth: Int) {
+    private fun collectDocumentFiles(
+        directory: File,
+        results: MutableList<ManagedFileItem>,
+        maxDepth: Int,
+    ) {
         if (maxDepth < 0 || results.size >= MAX_DOCUMENT_FILE_SYSTEM_RESULTS) return
         val children = runCatching { directory.listFiles() }.getOrNull().orEmpty()
         children.forEach { file ->
@@ -387,7 +437,11 @@ object FileManagerDataSource {
         }
     }
 
-    private fun collectWhatsAppFiles(directory: File, results: MutableList<ManagedFileItem>, maxDepth: Int) {
+    private fun collectWhatsAppFiles(
+        directory: File,
+        results: MutableList<ManagedFileItem>,
+        maxDepth: Int,
+    ) {
         if (maxDepth < 0 || results.size >= MAX_WHATSAPP_FILE_SYSTEM_RESULTS) return
         val children = runCatching { directory.listFiles() }.getOrNull().orEmpty()
         children.forEach { file ->
@@ -411,10 +465,13 @@ object FileManagerDataSource {
             modifiedSeconds = lastModified(),
             mimeType = null,
             bucketName = parentFile?.name,
-            type = fileTypeForName(name)
+            type = fileTypeForName(name),
         )
 
-    private fun fileStillExists(context: Context, item: ManagedFileItem): Boolean {
+    private fun fileStillExists(
+        context: Context,
+        item: ManagedFileItem,
+    ): Boolean {
         item.path?.takeIf { it.isNotBlank() }?.let { path ->
             if (File(path).exists()) return true
         }
@@ -433,12 +490,16 @@ object FileManagerDataSource {
         }
     }
 
-    private fun computeContentHash(context: Context, item: ManagedFileItem): String? =
+    private fun computeContentHash(
+        context: Context,
+        item: ManagedFileItem,
+    ): String? =
         runCatching {
-            val stream = when {
-                !item.path.isNullOrBlank() && File(item.path).isFile -> FileInputStream(item.path)
-                else -> context.contentResolver.openInputStream(item.uri)
-            }
+            val stream =
+                when {
+                    !item.path.isNullOrBlank() && File(item.path).isFile -> FileInputStream(item.path)
+                    else -> context.contentResolver.openInputStream(item.uri)
+                }
             stream?.use(::hashStream)
         }.getOrNull()
 
@@ -453,18 +514,22 @@ object FileManagerDataSource {
         return digest.digest().joinToString("") { "%02x".format(it) }
     }
 
-    private fun hasGpsLocation(context: Context, item: ManagedFileItem): Boolean {
-        return runCatching {
+    private fun hasGpsLocation(
+        context: Context,
+        item: ManagedFileItem,
+    ): Boolean =
+        runCatching {
             if (!item.path.isNullOrBlank()) {
                 val exif = ExifInterface(item.path)
                 FloatArray(2).let { exif.getLatLong(it) } ||
                     exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE) != null
             } else {
-                val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    MediaStore.setRequireOriginal(item.uri)
-                } else {
-                    item.uri
-                }
+                val uri =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        MediaStore.setRequireOriginal(item.uri)
+                    } else {
+                        item.uri
+                    }
                 context.contentResolver.openInputStream(uri)?.use { stream ->
                     val exif = ExifInterface(stream)
                     FloatArray(2).let { exif.getLatLong(it) } ||
@@ -472,7 +537,6 @@ object FileManagerDataSource {
                 } ?: false
             }
         }.getOrDefault(false)
-    }
 
     private fun clearGpsAttributes(exif: ExifInterface) {
         listOf(
@@ -484,47 +548,49 @@ object FileManagerDataSource {
             ExifInterface.TAG_GPS_ALTITUDE_REF,
             ExifInterface.TAG_GPS_DATESTAMP,
             ExifInterface.TAG_GPS_TIMESTAMP,
-            ExifInterface.TAG_GPS_PROCESSING_METHOD
+            ExifInterface.TAG_GPS_PROCESSING_METHOD,
         ).forEach { exif.setAttribute(it, null) }
     }
 
-    private fun android.database.Cursor.getStringOrNull(index: Int): String? =
-        if (index >= 0 && !isNull(index)) getString(index) else null
+    private fun android.database.Cursor.getStringOrNull(index: Int): String? = if (index >= 0 && !isNull(index)) getString(index) else null
 
-    private fun android.database.Cursor.getLongOrZero(index: Int): Long =
-        if (index >= 0 && !isNull(index)) getLong(index) else 0L
+    private fun android.database.Cursor.getLongOrZero(index: Int): Long = if (index >= 0 && !isNull(index)) getLong(index) else 0L
 
-    private fun android.database.Cursor.getIntOrZero(index: Int): Int =
-        if (index >= 0 && !isNull(index)) getInt(index) else 0
+    private fun android.database.Cursor.getIntOrZero(index: Int): Int = if (index >= 0 && !isNull(index)) getInt(index) else 0
 
-    private fun shouldSkipPath(path: String?, name: String): Boolean {
+    private fun shouldSkipPath(
+        path: String?,
+        name: String,
+    ): Boolean {
         val lowerName = name.lowercase(Locale.US)
         val lowerPath = path?.lowercase(Locale.US).orEmpty()
         if (lowerName.startsWith(".") || lowerName == "lost+found") return true
         if (lowerPath.isBlank()) return false
 
-        val systemDirs = listOf(
-            "/system",
-            "/lost+found",
-            "/preload",
-            "/vendor",
-            "/mnt",
-            "/proc",
-            "/sys",
-            "/acct",
-            "/dev",
-            "/config",
-            "/oem",
-            "/firmware",
-            "/cache"
-        )
+        val systemDirs =
+            listOf(
+                "/system",
+                "/lost+found",
+                "/preload",
+                "/vendor",
+                "/mnt",
+                "/proc",
+                "/sys",
+                "/acct",
+                "/dev",
+                "/config",
+                "/oem",
+                "/firmware",
+                "/cache",
+            )
         return systemDirs.any { lowerPath == it || lowerPath.startsWith("$it/") }
     }
 
     private fun isWhatsAppCandidate(item: ManagedFileItem): Boolean {
-        val source = listOfNotNull(item.path, item.bucketName, item.name)
-            .joinToString("/")
-            .lowercase(Locale.US)
+        val source =
+            listOfNotNull(item.path, item.bucketName, item.name)
+                .joinToString("/")
+                .lowercase(Locale.US)
         return WHATSAPP_PATH_MARKERS.any { marker -> marker in source }
     }
 
@@ -537,64 +603,221 @@ object FileManagerDataSource {
     private fun duplicateReclaimableBytes(group: List<ManagedFileItem>): Long =
         group.sortedByDescending { it.modifiedSeconds }.drop(1).sumOf { it.sizeBytes }
 
-    private val DOCUMENT_EXTENSIONS = setOf(
-        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "rtf",
-        "xml", "json", "md", "markdown", "epub", "mobi", "azw", "azw3", "fb2",
-        "zip", "rar", "7z", "tar", "gz", "tgz", "bz2", "xz",
-        "odt", "ods", "odp", "ott", "ots", "otp",
-        "wps", "et", "dps", "pages", "numbers", "key", "xps",
-        "log", "ini", "conf", "cfg", "yaml", "yml", "toml", "properties",
-        "sql", "db", "sqlite", "sqlite3",
-        "kt", "kts", "java", "js", "ts", "html", "htm", "css", "py", "sh", "bat",
-        "gradle", "c", "cpp", "h", "hpp", "cs", "go", "rs", "php", "rb", "swift"
-    )
+    private val DOCUMENT_EXTENSIONS =
+        setOf(
+            "pdf",
+            "doc",
+            "docx",
+            "xls",
+            "xlsx",
+            "ppt",
+            "pptx",
+            "txt",
+            "csv",
+            "rtf",
+            "xml",
+            "json",
+            "md",
+            "markdown",
+            "epub",
+            "mobi",
+            "azw",
+            "azw3",
+            "fb2",
+            "zip",
+            "rar",
+            "7z",
+            "tar",
+            "gz",
+            "tgz",
+            "bz2",
+            "xz",
+            "odt",
+            "ods",
+            "odp",
+            "ott",
+            "ots",
+            "otp",
+            "wps",
+            "et",
+            "dps",
+            "pages",
+            "numbers",
+            "key",
+            "xps",
+            "log",
+            "ini",
+            "conf",
+            "cfg",
+            "yaml",
+            "yml",
+            "toml",
+            "properties",
+            "sql",
+            "db",
+            "sqlite",
+            "sqlite3",
+            "kt",
+            "kts",
+            "java",
+            "js",
+            "ts",
+            "html",
+            "htm",
+            "css",
+            "py",
+            "sh",
+            "bat",
+            "gradle",
+            "c",
+            "cpp",
+            "h",
+            "hpp",
+            "cs",
+            "go",
+            "rs",
+            "php",
+            "rb",
+            "swift",
+        )
 
-    private val DOCUMENT_MIME_KEYWORDS = listOf(
-        "pdf", "document", "spreadsheet", "presentation", "msword", "officedocument",
-        "opendocument", "word", "excel", "powerpoint", "wps", "csv", "rtf", "epub",
-        "ebook", "markdown", "javascript", "xhtml", "html", "yaml", "json", "xml",
-        "sqlite", "database", "archive", "compressed", "gzip", "tar", "zip", "rar", "7z"
-    )
+    private val DOCUMENT_MIME_KEYWORDS =
+        listOf(
+            "pdf",
+            "document",
+            "spreadsheet",
+            "presentation",
+            "msword",
+            "officedocument",
+            "opendocument",
+            "word",
+            "excel",
+            "powerpoint",
+            "wps",
+            "csv",
+            "rtf",
+            "epub",
+            "ebook",
+            "markdown",
+            "javascript",
+            "xhtml",
+            "html",
+            "yaml",
+            "json",
+            "xml",
+            "sqlite",
+            "database",
+            "archive",
+            "compressed",
+            "gzip",
+            "tar",
+            "zip",
+            "rar",
+            "7z",
+        )
 
-    private val MEDIA_EXTENSIONS = setOf(
-        "jpg", "jpeg", "png", "gif", "webp", "bmp", "heic", "heif", "tif", "tiff", "svg",
-        "mp4", "mkv", "mov", "avi", "webm", "3gp", "m4v", "wmv", "flv", "mpeg", "mpg",
-        "mp3", "wav", "m4a", "aac", "ogg", "oga", "flac", "amr", "wma", "opus"
-    )
+    private val MEDIA_EXTENSIONS =
+        setOf(
+            "jpg",
+            "jpeg",
+            "png",
+            "gif",
+            "webp",
+            "bmp",
+            "heic",
+            "heif",
+            "tif",
+            "tiff",
+            "svg",
+            "mp4",
+            "mkv",
+            "mov",
+            "avi",
+            "webm",
+            "3gp",
+            "m4v",
+            "wmv",
+            "flv",
+            "mpeg",
+            "mpg",
+            "mp3",
+            "wav",
+            "m4a",
+            "aac",
+            "ogg",
+            "oga",
+            "flac",
+            "amr",
+            "wma",
+            "opus",
+        )
 
-    private val PUBLIC_SCAN_DIRECTORIES = listOf(
-        "Download", "Downloads", "Documents", "DCIM", "Pictures", "Movies", "Music",
-        "WhatsApp", "Telegram", "Android/media"
-    )
+    private val PUBLIC_SCAN_DIRECTORIES =
+        listOf(
+            "Download",
+            "Downloads",
+            "Documents",
+            "DCIM",
+            "Pictures",
+            "Movies",
+            "Music",
+            "WhatsApp",
+            "Telegram",
+            "Android/media",
+        )
 
-    private val DOCUMENT_SCAN_DIRECTORIES = listOf(
-        "Download", "Downloads", "Documents", "Desktop", "Android/media", "Android/data",
-        "WhatsApp", "WhatsApp/Media/WhatsApp Documents", "Telegram", "Telegram/Telegram Documents",
-        "Tencent", "Tencent/QQfile_recv", "Tencent/MicroMsg", "WeChat", "DingTalk",
-        "Feishu", "Lark", "BaiduNetdisk", "UCDownloads", "Browser", "Chrome", "QQBrowser",
-        "WPS", "Kingsoft", "Office", "Documents/WeChat Files"
-    )
+    private val DOCUMENT_SCAN_DIRECTORIES =
+        listOf(
+            "Download",
+            "Downloads",
+            "Documents",
+            "Desktop",
+            "Android/media",
+            "Android/data",
+            "WhatsApp",
+            "WhatsApp/Media/WhatsApp Documents",
+            "Telegram",
+            "Telegram/Telegram Documents",
+            "Tencent",
+            "Tencent/QQfile_recv",
+            "Tencent/MicroMsg",
+            "WeChat",
+            "DingTalk",
+            "Feishu",
+            "Lark",
+            "BaiduNetdisk",
+            "UCDownloads",
+            "Browser",
+            "Chrome",
+            "QQBrowser",
+            "WPS",
+            "Kingsoft",
+            "Office",
+            "Documents/WeChat Files",
+        )
 
-    private val WHATSAPP_SCAN_DIRECTORIES = listOf(
-        "WhatsApp",
-        "WhatsApp Business",
-        "Android/media/com.whatsapp/WhatsApp",
-        "Android/media/com.whatsapp.w4b/WhatsApp Business",
-        "Android/media/com.whatsapp.w4b/WhatsApp",
-        "Android/media/com.gbwhatsapp/GBWhatsApp",
-        "Android/media/com.yowhatsapp/YoWhatsApp",
-        "Android/media/com.fmwhatsapp/FMWhatsApp"
-    )
+    private val WHATSAPP_SCAN_DIRECTORIES =
+        listOf(
+            "WhatsApp",
+            "WhatsApp Business",
+            "Android/media/com.whatsapp/WhatsApp",
+            "Android/media/com.whatsapp.w4b/WhatsApp Business",
+            "Android/media/com.whatsapp.w4b/WhatsApp",
+            "Android/media/com.gbwhatsapp/GBWhatsApp",
+            "Android/media/com.yowhatsapp/YoWhatsApp",
+            "Android/media/com.fmwhatsapp/FMWhatsApp",
+        )
 
-    private val WHATSAPP_PATH_MARKERS = listOf(
-        "/whatsapp/",
-        "/whatsapp business/",
-        "/gbwhatsapp/",
-        "/yowhatsapp/",
-        "/fmwhatsapp/",
-        "com.whatsapp",
-        "com.whatsapp.w4b"
-    )
+    private val WHATSAPP_PATH_MARKERS =
+        listOf(
+            "/whatsapp/",
+            "/whatsapp business/",
+            "/gbwhatsapp/",
+            "/yowhatsapp/",
+            "/fmwhatsapp/",
+            "com.whatsapp",
+            "com.whatsapp.w4b",
+        )
 
     private const val MAX_FILE_SYSTEM_RESULTS = 10_000
     private const val MAX_DOCUMENT_FILE_SYSTEM_RESULTS = 30_000

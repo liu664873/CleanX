@@ -4,13 +4,13 @@ import android.content.Context
 import com.quickcleanpro.phonecleaner.domain.model.JunkCategory
 import java.io.File
 
-class AdJunkScanner(context: Context) : BaseFileScanner() {
-
+class AdJunkScanner(
+    context: Context,
+) : BaseFileScanner() {
     override val category: JunkCategory = JunkCategory.CACHE
     private val appContext = context.applicationContext
 
-    override fun getRootDirectories(): List<File> =
-        ScanDirectoryHelper.prioritizedDirectories(appContext)
+    override fun getRootDirectories(): List<File> = ScanDirectoryHelper.prioritizedDirectories(appContext)
 
     override fun isJunkFile(file: File): Boolean {
         if (!file.isFile || file.length() < MIN_AD_BYTES) return false
@@ -58,49 +58,52 @@ class AdJunkScanner(context: Context) : BaseFileScanner() {
 
     private companion object {
         const val MIN_AD_BYTES = 1024L
-        val AD_PATTERNS = setOf(
-            "ad",
-            "ads",
-            "advert",
-            "advertisement",
-            "adcache",
-            "admob",
-            "mopub",
-            "facebookad",
-            "unityad",
-            "advertising",
-            "adsense",
-            "gad",
-            "iad",
-            "adcolony",
-            "vungle",
-            "chartboost",
-            "ironsource",
-            "applovin",
-            "tapjoy",
-            "inmobi"
-        )
-        val AD_DIR_PATTERNS = setOf(
-            "adcache",
-            "adcaches",
-            "advertising",
-            "ad_data",
-            "ads_data",
-            "ad_images",
-            "ad_videos",
-            "ad_logs",
-            "ads_cache",
-            "advertising_cache",
-            "ad_sdk",
-            "ads_sdk"
-        )
-        val AD_FILE_PATTERNS = listOf(
-            Regex(".*[._\\-]ad[._\\-].*", RegexOption.IGNORE_CASE),
-            Regex(".*ads?\\d*\\.(cache|data|tmp|log|db)$", RegexOption.IGNORE_CASE),
-            Regex("^ad_.*", RegexOption.IGNORE_CASE),
-            Regex(".*_ad_.*", RegexOption.IGNORE_CASE),
-            Regex(".*\\.ad\\..*", RegexOption.IGNORE_CASE),
-            Regex("ads?_.*\\.(jpg|png|gif|mp4|webp)$", RegexOption.IGNORE_CASE)
-        )
+        val AD_PATTERNS =
+            setOf(
+                "ad",
+                "ads",
+                "advert",
+                "advertisement",
+                "adcache",
+                "admob",
+                "mopub",
+                "facebookad",
+                "unityad",
+                "advertising",
+                "adsense",
+                "gad",
+                "iad",
+                "adcolony",
+                "vungle",
+                "chartboost",
+                "ironsource",
+                "applovin",
+                "tapjoy",
+                "inmobi",
+            )
+        val AD_DIR_PATTERNS =
+            setOf(
+                "adcache",
+                "adcaches",
+                "advertising",
+                "ad_data",
+                "ads_data",
+                "ad_images",
+                "ad_videos",
+                "ad_logs",
+                "ads_cache",
+                "advertising_cache",
+                "ad_sdk",
+                "ads_sdk",
+            )
+        val AD_FILE_PATTERNS =
+            listOf(
+                Regex(".*[._\\-]ad[._\\-].*", RegexOption.IGNORE_CASE),
+                Regex(".*ads?\\d*\\.(cache|data|tmp|log|db)$", RegexOption.IGNORE_CASE),
+                Regex("^ad_.*", RegexOption.IGNORE_CASE),
+                Regex(".*_ad_.*", RegexOption.IGNORE_CASE),
+                Regex(".*\\.ad\\..*", RegexOption.IGNORE_CASE),
+                Regex("ads?_.*\\.(jpg|png|gif|mp4|webp)$", RegexOption.IGNORE_CASE),
+            )
     }
 }

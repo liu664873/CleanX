@@ -15,11 +15,10 @@ import java.io.File
 import java.io.FileOutputStream
 
 class BatteryHistoryRepositoryImpl(
-    private val historyFile: File
+    private val historyFile: File,
 ) : BatteryHistoryRepository {
-
     constructor(context: Context) : this(
-        File(context.applicationContext.filesDir, HISTORY_FILE_NAME)
+        File(context.applicationContext.filesDir, HISTORY_FILE_NAME),
     )
 
     private val lock = Any()
@@ -34,17 +33,21 @@ class BatteryHistoryRepositoryImpl(
             loadRecentLocked(nowMillis, compact = true)
         }
 
-    override fun append(sample: BatteryHistorySample, nowMillis: Long): List<BatteryHistorySample> =
+    override fun append(
+        sample: BatteryHistorySample,
+        nowMillis: Long,
+    ): List<BatteryHistorySample> =
         synchronized(lock) {
             val current = if (loaded) _samples.value else loadRecentLocked(nowMillis, compact = false)
             if (!sample.isUsable()) {
                 return@synchronized current
             }
 
-            val next = normalize(
-                samples = current.filterNot { it.timestampMillis == sample.timestampMillis } + sample,
-                nowMillis = nowMillis
-            )
+            val next =
+                normalize(
+                    samples = current.filterNot { it.timestampMillis == sample.timestampMillis } + sample,
+                    nowMillis = nowMillis,
+                )
             if (sample.timestampMillis >= nowMillis - BATTERY_HISTORY_WINDOW_MILLIS) {
                 appendRecord(sample)
             }
@@ -57,7 +60,10 @@ class BatteryHistoryRepositoryImpl(
             next
         }
 
-    private fun loadRecentLocked(nowMillis: Long, compact: Boolean): List<BatteryHistorySample> {
+    private fun loadRecentLocked(
+        nowMillis: Long,
+        compact: Boolean,
+    ): List<BatteryHistorySample> {
         val raw = readAllRecords()
         val recent = normalize(raw, nowMillis)
         loaded = true
@@ -78,11 +84,12 @@ class BatteryHistoryRepositoryImpl(
                     val timestamp = input.readLong()
                     val rawCurrent = input.readFloat()
                     val temperature = input.readFloat()
-                    result += BatteryHistorySample(
-                        timestampMillis = timestamp,
-                        currentMa = rawCurrent.takeIf { it.isFiniteValue() },
-                        temperatureC = temperature
-                    )
+                    result +=
+                        BatteryHistorySample(
+                            timestampMillis = timestamp,
+                            currentMa = rawCurrent.takeIf { it.isFiniteValue() },
+                            temperatureC = temperature,
+                        )
                 }
             }
         } catch (_: EOFException) {
@@ -124,13 +131,16 @@ class BatteryHistoryRepositoryImpl(
         }
     }
 
-    private fun shouldCompact(nowMillis: Long, sampleCount: Int): Boolean =
+    private fun shouldCompact(
+        nowMillis: Long,
+        sampleCount: Int,
+    ): Boolean =
         sampleCount > MAX_BATTERY_HISTORY_SAMPLES ||
             nowMillis - lastCompactAtMillis >= BATTERY_HISTORY_COMPACT_INTERVAL_MILLIS
 
     private fun normalize(
         samples: List<BatteryHistorySample>,
-        nowMillis: Long
+        nowMillis: Long,
     ): List<BatteryHistorySample> {
         val cutoff = nowMillis - BATTERY_HISTORY_WINDOW_MILLIS
         val latestAllowed = nowMillis + BATTERY_HISTORY_FUTURE_TOLERANCE_MILLIS
@@ -163,5 +173,4 @@ private fun BatteryHistorySample.isUsable(): Boolean =
         temperatureC.isFiniteValue() &&
         currentMa?.isFiniteValue() != false
 
-private fun Float.isFiniteValue(): Boolean =
-    !isNaN() && !isInfinite()
+private fun Float.isFiniteValue(): Boolean = !isNaN() && !isInfinite()

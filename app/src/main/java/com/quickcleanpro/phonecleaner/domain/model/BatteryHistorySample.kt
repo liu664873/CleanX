@@ -3,5 +3,5 @@
 data class BatteryHistorySample(
     val timestampMillis: Long,
     val currentMa: Float?,
-    val temperatureC: Float
+    val temperatureC: Float,
 )

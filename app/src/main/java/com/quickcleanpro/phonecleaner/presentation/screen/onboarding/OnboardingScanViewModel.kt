@@ -15,13 +15,12 @@ data class OnboardingUiState(
     val screenSize: String = "",
     val batteryHealth: String = "",
     val batteryStatusText: String = "",
-    val storageInfo: StorageInfo = StorageInfo(0, 0, 0)
+    val storageInfo: StorageInfo = StorageInfo(0, 0, 0),
 )
 
 class OnboardingScanViewModel(
-    private val repository: DeviceInfoRepository
+    private val repository: DeviceInfoRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(OnboardingUiState())
     val uiState: StateFlow<OnboardingUiState> = _uiState.asStateFlow()
 
@@ -35,14 +34,15 @@ class OnboardingScanViewModel(
             val battery = repository.batteryInfo()
             val batteryStatus = repository.batteryStatusInfo()
             val storage = repository.internalStorageInfo()
-            _uiState.value = OnboardingUiState(
-                deviceModel = hardware.model,
-                androidVersion = hardware.androidVersion,
-                screenSize = hardware.screenSize,
-                batteryHealth = battery.health,
-                batteryStatusText = batteryStatus.statusText,
-                storageInfo = storage
-            )
+            _uiState.value =
+                OnboardingUiState(
+                    deviceModel = hardware.model,
+                    androidVersion = hardware.androidVersion,
+                    screenSize = hardware.screenSize,
+                    batteryHealth = battery.health,
+                    batteryStatusText = batteryStatus.statusText,
+                    storageInfo = storage,
+                )
         }
     }
 }

@@ -10,7 +10,7 @@ data class AppUsageInfo(
     val packageName: String,
     val appName: String,
     val totalForegroundMs: Long,
-    val launchCount: Int
+    val launchCount: Int,
 ) {
     /** 宸叉牸寮忓寲鐨勫墠鍙颁娇鐢ㄦ椂闀裤€?*/
     val formattedTime: String get() = formatDuration(totalForegroundMs)
@@ -23,7 +23,7 @@ data class NetworkUsageApp(
     val packageName: String,
     val uid: Int,
     val rxBytes: Long,
-    val txBytes: Long
+    val txBytes: Long,
 ) {
     /** 涓嬭浇涓庝笂浼犲悎璁″瓧鑺傛暟銆?*/
     val totalBytes: Long get() = rxBytes + txBytes
@@ -41,7 +41,7 @@ data class NetworkUsageInfo(
     val cellularApps: List<NetworkUsageApp> = emptyList(),
     val fallbackApps: List<NetworkUsageApp> = emptyList(),
     val isToday: Boolean,
-    val needsUsageAccess: Boolean
+    val needsUsageAccess: Boolean,
 ) {
     /** Wi-Fi 涓嬭浇鍜屼笂浼犵殑鎬诲瓧鑺傛暟銆?*/
     val wifiTotalBytes: Long get() = wifiRxBytes + wifiTxBytes
@@ -56,7 +56,7 @@ data class NetworkSpeedResult(
     val downloadMbps: String,
     val uploadMbps: String,
     val latencyMs: Long?,
-    val measured: Boolean
+    val measured: Boolean,
 )
 
 /**
@@ -65,7 +65,7 @@ data class NetworkSpeedProgress(
     val downloadMbps: String? = null,
     val uploadMbps: String? = null,
     val latencyMs: Long? = null,
-    val phase: String = "idle"
+    val phase: String = "idle",
 )
 
 /**
@@ -73,7 +73,7 @@ data class NetworkSpeedProgress(
 data class NetworkDeviceInfo(
     val ip: String,
     val hostName: String,
-    val macAddress: String
+    val macAddress: String,
 )
 
 /**
@@ -84,7 +84,7 @@ data class NetworkScanResult(
     val dnsIp: String,
     val deviceIp: String,
     val devices: List<NetworkDeviceInfo>,
-    val hasWifi: Boolean
+    val hasWifi: Boolean,
 )
 
 /**

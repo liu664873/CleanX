@@ -18,7 +18,7 @@ data class ManagedFileItem(
     val modifiedSeconds: Long,
     val mimeType: String?,
     val bucketName: String?,
-    val type: ManagedFileType
+    val type: ManagedFileType,
 ) {
     /** 宸叉牸寮忓寲鐨勬枃浠跺ぇ灏忔枃妗堛€?*/
     val formattedSize: String get() = FileSizeFormatter.format(sizeBytes)
