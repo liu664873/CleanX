@@ -3,23 +3,24 @@ package com.quickcleanpro.phonecleaner.presentation.screen.settings
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.os.Build
+import androidx.compose.foundation.background
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -29,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -48,11 +50,12 @@ import org.koin.compose.koinInject
 
 private val CardBg = Color(0xFFF6F7FB)
 private val Navy = Color(0xFF1D2959)
-private val Divider15 = Color(0x261D2959)
+private val Divider15 = Color(0x332D3748)
 private val CardRadius = 20.dp
-private val ToggleTrackOn = Color(0xFF4179FC)
+private val ToggleTrackOn = Color(0xFFBADDFF)
 private val ToggleTrackOff = Color(0xFFECF0F4)
-private val ToggleThumb = Color(0xFFAFBBD0)
+private val ToggleThumbOn = Color(0xFF4179FC)
+private val ToggleThumbOff = Color(0xFFAFBBD0)
 
 @Composable
 fun ManagePermissionsScreen(
@@ -125,6 +128,7 @@ fun ManagePermissionsScreen(
 
     CleanXScaffoldPage(
         title = stringResource(R.string.settings_manage_permissions),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 28.dp),
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -157,16 +161,12 @@ fun ManagePermissionsScreen(
 
 @Composable
 private fun buildPermissionRows(): List<PermissionRow> =
-    buildList {
-        add(PermissionRow(stringResource(R.string.settings_storage_permission), CleanXPermissionType.StorageFiles))
-        add(PermissionRow(stringResource(R.string.settings_usage_data_permission), CleanXPermissionType.UsageAccess))
-        add(PermissionRow(stringResource(R.string.settings_location_permission), CleanXPermissionType.Location))
-        add(PermissionRow(stringResource(R.string.settings_notification_permission), CleanXPermissionType.NotificationListener))
-        add(PermissionRow(stringResource(R.string.settings_overlay_permission), CleanXPermissionType.Overlay))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            add(PermissionRow(stringResource(R.string.settings_post_notifications_permission), CleanXPermissionType.PostNotifications))
-        }
-    }
+    listOf(
+        PermissionRow("Storage Permissions", CleanXPermissionType.StorageFiles),
+        PermissionRow("Usage Data Permissions", CleanXPermissionType.UsageAccess),
+        PermissionRow("Location Management", CleanXPermissionType.Location),
+        PermissionRow("Notification Toolbar", CleanXPermissionType.NotificationListener),
+    )
 
 private data class PermissionRow(
     val label: String,
@@ -197,25 +197,33 @@ private fun PermissionToggleRow(
             fontWeight = FontWeight.Normal,
             lineHeight = 24.sp,
         )
-        Switch(
+        PermissionMiniSwitch(
             checked = checked,
-            onCheckedChange = { onClick() },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = ToggleTrackOn,
-                uncheckedThumbColor = ToggleThumb,
-                uncheckedTrackColor = ToggleTrackOff,
-                checkedBorderColor = Color.Transparent,
-                uncheckedBorderColor = Color.Transparent,
-            ),
         )
     }
 }
 
 @Composable
-private fun SettingsDivider() {
-    HorizontalDivider(
-        color = Divider15,
-        thickness = 1.dp,
-    )
+private fun PermissionMiniSwitch(
+    checked: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier.size(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(width = 22.dp, height = 9.dp)
+                .clip(RoundedCornerShape(50))
+                .background(if (checked) ToggleTrackOn else ToggleTrackOff)
+        )
+        Box(
+            modifier = Modifier
+                .align(if (checked) Alignment.CenterStart else Alignment.CenterEnd)
+                .size(10.5.dp)
+                .clip(CircleShape)
+                .background(if (checked) ToggleThumbOn else ToggleThumbOff)
+        )
+    }
 }

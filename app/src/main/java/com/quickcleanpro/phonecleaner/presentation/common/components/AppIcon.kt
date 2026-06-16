@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -129,8 +130,7 @@ fun PackageAppIcon(
     }
 
     Box(
-        modifier = modifier
-            .background(CleanXBlue),
+        modifier = modifier.size(44.dp).clip(CircleShape),
         contentAlignment = Alignment.Center
     ) {
         if (appIcon != null) {
@@ -138,8 +138,7 @@ fun PackageAppIcon(
                 bitmap = appIcon,
                 contentDescription = null,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
+                    .fillMaxSize(),
                 contentScale = ContentScale.Fit
             )
         } else {
@@ -148,8 +147,7 @@ fun PackageAppIcon(
                 painter = painterResource(id = R.drawable.app_logo),
                 contentDescription = null,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(9.dp),
+                    .fillMaxSize(),
                 contentScale = ContentScale.Fit
             )
         }

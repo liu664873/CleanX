@@ -1,0 +1,36 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android" android:autoMirrored="true" android:height="44dp" android:viewportHeight="44" android:viewportWidth="44" android:width="44dp">
+      
+    <path android:pathData="M8.8,0L35.2,0A8.8,8.8 0,0 1,44 8.8L44,35.2A8.8,8.8 0,0 1,35.2 44L8.8,44A8.8,8.8 0,0 1,0 35.2L0,8.8A8.8,8.8 0,0 1,8.8 0z">
+            
+        <aapt:attr name="android:fillColor">
+                  
+            <gradient android:endX="22" android:endY="44" android:startX="22" android:startY="0" android:type="linear">
+                        
+                <item android:color="#FF504AFF" android:offset="0"/>
+                        
+                <item android:color="#FF1D15FE" android:offset="1"/>
+                      
+            </gradient>
+                
+        </aapt:attr>
+          
+    </path>
+      
+    <path android:fillColor="#ffffff" android:pathData="M20.5,25V20.5H23.5V25H31C31.828,25 32.5,25.672 32.5,26.5V35.5C32.5,36.328 31.828,37 31,37H13C12.171,37 11.5,36.328 11.5,35.5V26.5C11.5,25.672 12.171,25 13,25H20.5ZM7.766,17.255C9.751,11.296 15.374,7 22,7C28.626,7 34.249,11.296 36.234,17.255L33.387,18.204C31.799,13.437 27.301,10 22,10C16.699,10 12.201,13.437 10.612,18.204L7.766,17.255ZM13.459,19.153C14.651,15.578 18.024,13 22,13C25.975,13 29.349,15.578 30.54,19.153L27.693,20.102C26.899,17.719 24.65,16 22,16C19.349,16 17.1,17.719 16.306,20.102L13.459,19.153Z"/>
+    
+</vector>

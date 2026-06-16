@@ -45,7 +45,7 @@ private val VirusCardBlue =
     Brush.linearGradient(
         colors = listOf(Color(0xFF90B2FB), Color(0xFF88ABFB)),
     )
-private val VirusCardLightBlue =
+private val AppLockCardBlue =
     Brush.linearGradient(
         colors = listOf(Color(0xFF90E7FB), Color(0xFF88DAFB)),
     )
@@ -167,24 +167,26 @@ fun HomeTabContent(summaryState: HomeSummaryUiState) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Virus Scan Card 1
         EntryCard(
             gradient = VirusCardBlue,
             imageRes = R.drawable.virus_shield,
             imageWidth = 98.dp,
             imageHeight = 81.dp,
+            title = stringResource(R.string.home_virus_title),
+            description = stringResource(R.string.home_virus_desc),
             onClick = { router.navigate(Screen.AntiVirus) },
         )
 
         Spacer(modifier = Modifier.height(15.dp))
 
-        // Virus Scan Card 2
         EntryCard(
-            gradient = VirusCardLightBlue,
+            gradient = AppLockCardBlue,
             imageRes = R.drawable.app_lock,
             imageWidth = 81.dp,
             imageHeight = 81.dp,
-            onClick = { router.navigate(Screen.AntiVirus) },
+            title = stringResource(R.string.home_app_lock_title),
+            description = stringResource(R.string.home_app_lock_desc),
+            onClick = { router.navigate(Screen.AppLock) },
         )
 
         Spacer(modifier = Modifier.height(100.dp))
@@ -197,6 +199,8 @@ private fun EntryCard(
     imageRes: Int,
     imageWidth: Dp,
     imageHeight: Dp,
+    title: String,
+    description: String,
     onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(20.dp)
@@ -217,14 +221,14 @@ private fun EntryCard(
             ) {
                 Column(modifier = Modifier.width(193.dp)) {
                     Text(
-                        text = stringResource(R.string.home_virus_title),
+                        text = title,
                         color = Color.White,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Medium,
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = stringResource(R.string.home_virus_desc),
+                        text = description,
                         color = Color.White,
                         fontSize = 16.sp,
                         lineHeight = 22.sp,

@@ -29,6 +29,7 @@ fun CleanXTopAppBar(
     titleFontSize: TextUnit = 20.sp,
     fontWeight: FontWeight = FontWeight.Medium,
     showBack: Boolean = true,
+    onBack: (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit)? = null,
 ) {
     val router = LocalRouter.current
@@ -45,7 +46,7 @@ fun CleanXTopAppBar(
         },
         navigationIcon = {
             if (showBack) {
-                IconButton(onClick = { router.goBack() }) {
+                IconButton(onClick = { onBack?.invoke() ?: router.goBack() }) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_left),
                         contentDescription = "Back",

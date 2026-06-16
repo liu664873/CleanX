@@ -35,7 +35,9 @@ fun CleanXScaffoldPage(
     titleFontSize: TextUnit = 22.sp,
     fontWeight: FontWeight = FontWeight.SemiBold,
     showBack: Boolean = true,
+    onBack: (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit)? = null,
+    bottomBar: @Composable () -> Unit = {},
     backgroundBrush: Brush = Brush.linearGradient(
         colors = listOf(Color(0xFFE3ECFD), Color(0xFFDFEBF5)),
     ),
@@ -65,9 +67,11 @@ fun CleanXScaffoldPage(
                 titleFontSize = titleFontSize,
                 fontWeight = fontWeight,
                 showBack = showBack,
+                onBack = onBack,
                 actions = actions,
             )
         },
+        bottomBar = bottomBar,
     ) { paddingValues ->
         val contentModifier = Modifier
             .fillMaxSize()

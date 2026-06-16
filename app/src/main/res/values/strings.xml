@@ -83,6 +83,8 @@
     <string name="home_remove_junk">Remove Junk</string>
     <string name="home_virus_title">Virus</string>
     <string name="home_virus_desc">Deep-scan for viruses,\nmalicious apps &amp; risky files</string>
+    <string name="home_app_lock_title">AppLock</string>
+    <string name="home_app_lock_desc">App lock for privacy protection</string>
     
     <string name="home_locked_apps_desc">App lock for privacy protection</string>
     <string name="app_lock">App Lock</string>
@@ -298,12 +300,13 @@
     <!-- File manager -->
     <string name="file_select_all">Select all</string>
     <string name="file_select">Select</string>
+    <string name="file_unselect">Unselect</string>
     <string name="file_unselect_all">Unselect all</string>
     
     <string name="file_delete">Delete</string>
     <string name="file_delete_count">Delete (%1$d)</string>
     <string name="file_delete_size">Delete(%1$s)</string>
-    <string name="file_clean_up_size">Clean up %1$s</string>
+    <string name="file_clean_up_size">Clean up(%1$s)</string>
     <string name="file_remove_location_data">Remove Location Data</string>
     <string name="file_remove_location_title">Remove location data?</string>
     <string name="file_remove_location_message">Location data will be removed from the selected photos.</string>
@@ -327,6 +330,7 @@
     <string name="file_photos">Photos</string>
     <string name="file_pictures">Pictures</string>
     <string name="file_download">Download</string>
+    <string name="file_music">Music</string>
     <string name="file_other">Other</string>
     <string name="file_similar">Similar</string>
     <string name="file_best_photo">Best Photo</string>
