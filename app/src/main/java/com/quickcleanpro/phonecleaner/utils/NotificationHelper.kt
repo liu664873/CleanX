@@ -1,4 +1,4 @@
-﻿package com.quickcleanpro.phonecleaner.utils
+package com.quickcleanpro.phonecleaner.utils
 
 import android.Manifest
 import android.app.Notification
@@ -17,7 +17,7 @@ import androidx.core.content.ContextCompat
 import com.quickcleanpro.phonecleaner.MainActivity
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.data.source.notification.QuickCleanNotificationListener
-import com.quickcleanpro.phonecleaner.presentation.navigation.Screen
+import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
 data class BlockableNotificationApp(
     val appName: String,

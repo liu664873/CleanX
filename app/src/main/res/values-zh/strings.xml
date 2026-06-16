@@ -200,6 +200,8 @@
     <string name="settings_usage_data_permission">使用数据</string>
     <string name="settings_location_permission">位置</string>
     <string name="settings_notification_permission">通知</string>
+    <string name="settings_overlay_permission">悬浮窗</string>
+    <string name="settings_post_notifications_permission">应用通知</string>
     
 
     <!-- Rating -->

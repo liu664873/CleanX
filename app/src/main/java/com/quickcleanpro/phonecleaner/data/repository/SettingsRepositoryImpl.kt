@@ -68,6 +68,22 @@ class SettingsRepositoryImpl(
         saveNotificationRuntimePermissionDenied(appContext)
     }
 
+    override fun hasPostNotificationsPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true
+        return hasPermission(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
+    override fun postNotificationsSettingsIntent(): Intent =
+        runCatching {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                    putExtra(Settings.EXTRA_APP_PACKAGE, appContext.packageName)
+                }
+            } else {
+                appSettingsIntent()
+            }
+        }.getOrElse { appSettingsIntent() }
+
     override fun hasStoragePermission(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return runCatching { fileRepository.hasAllFilesAccess() }.getOrDefault(false)

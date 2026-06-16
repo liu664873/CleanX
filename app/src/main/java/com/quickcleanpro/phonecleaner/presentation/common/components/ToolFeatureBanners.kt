@@ -28,136 +28,63 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.navigation.AppNavigationEvent
-import com.quickcleanpro.phonecleaner.presentation.navigation.Screen
+import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
+import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import kotlin.random.Random
 
-// --- Color Constants ---
 private val CardBg = Color(0xFFF6F7FB)
 private val Navy = Color(0xFF1D2959)
 private val NavyMuted = Color(0xA61D2959)
 private val Blue = Color(0xFF4179FC)
 private val CardRadius = 12.dp
 
-/**
- * Data class representing a toolbox feature for the result page banner.
- */
 data class ToolFeature(
     val title: String,
     val subtitle: String,
-    val route: String,
+    val screen: Screen,
     val iconRes: Int,
     val gradient: Brush,
     val actionLabel: String,
 )
 
-/** All 8 toolbox module features available for random selection. */
 val AllToolFeatures
     get() = listOf(
-        ToolFeature(
-            title = "Device Info",
-            subtitle = "View detailed specs of your phone",
-            route = Screen.DeviceInfo.route,
-            iconRes = R.drawable.ic_ok,
-            gradient = Brush.linearGradient(
-                colors = listOf(Color(0xFF7F6CFF), Color(0xFF462BF9)),
-            ),
-            actionLabel = "View Now",
-        ),
-        ToolFeature(
-            title = "Battery Info",
-            subtitle = "View battery health and status",
-            route = Screen.BatteryInfo.route,
-            iconRes = R.drawable.ic_ok,
-            gradient = Brush.linearGradient(
-                colors = listOf(Color(0xFF90FB9C), Color(0xFF8AFB88)),
-            ),
-            actionLabel = "View Now",
-        ),
-        ToolFeature(
-            title = "App Usage",
-            subtitle = "See your app usage statistics",
-            route = Screen.AppUsage.route,
-            iconRes = R.drawable.ic_ok,
-            gradient = Brush.linearGradient(
-                colors = listOf(Color(0xFF6EC6FF), Color(0xFF2196F3)),
-            ),
-            actionLabel = "View Now",
-        ),
-        ToolFeature(
-            title = "Notification Bar",
-            subtitle = "Manage notification settings",
-            route = Screen.NotificationBar.route,
-            iconRes = R.drawable.ic_ok,
-            gradient = Brush.linearGradient(
-                colors = listOf(Color(0xFFFF9A80), Color(0xFFFF6E40)),
-            ),
-            actionLabel = "View Now",
-        ),
-        ToolFeature(
-            title = "WhatsApp Cleaner",
-            subtitle = "Free up space from WhatsApp",
-            route = Screen.WhatsAppCleaner.route,
-            iconRes = R.drawable.ic_ok,
-            gradient = Brush.linearGradient(
-                colors = listOf(Color(0xFF81C784), Color(0xFF4CAF50)),
-            ),
-            actionLabel = "View Now",
-        ),
-        ToolFeature(
-            title = "Network Usage",
-            subtitle = "Monitor your data usage",
-            route = Screen.NetworkUsage.route,
-            iconRes = R.drawable.ic_ok,
-            gradient = Brush.linearGradient(
-                colors = listOf(Color(0xFF64B5F6), Color(0xFF1976D2)),
-            ),
-            actionLabel = "View Now",
-        ),
-        ToolFeature(
-            title = "Network Scan",
-            subtitle = "Network Scan",
-            route = Screen.NetworkScan.route,
-            iconRes = R.drawable.ic_ok,
-            gradient = Brush.linearGradient(
-                colors = listOf(Color(0xFFFFC745), Color(0xFFFE9915)),
-            ),
-            actionLabel = "Scan Now",
-        ),
-        ToolFeature(
-            title = "Network Speed",
-            subtitle = "Test your internet speed",
-            route = Screen.NetworkSpeed.route,
-            iconRes = R.drawable.ic_ok,
-            gradient = Brush.linearGradient(
-                colors = listOf(Color(0xFFCE93D8), Color(0xFF9C27B0)),
-            ),
-            actionLabel = "Test Now",
-        ),
+        ToolFeature("Device Info", "View detailed specs of your phone", Screen.DeviceInfo, R.drawable.ic_ok,
+            Brush.linearGradient(listOf(Color(0xFF7F6CFF), Color(0xFF462BF9))), "View Now"),
+        ToolFeature("Battery Info", "View battery health and status", Screen.BatteryInfo, R.drawable.ic_ok,
+            Brush.linearGradient(listOf(Color(0xFF90FB9C), Color(0xFF8AFB88))), "View Now"),
+        ToolFeature("App Usage", "See your app usage statistics", Screen.AppUsage, R.drawable.ic_ok,
+            Brush.linearGradient(listOf(Color(0xFF6EC6FF), Color(0xFF2196F3))), "View Now"),
+        ToolFeature("Notification Bar", "Manage notification settings", Screen.NotificationBar, R.drawable.ic_ok,
+            Brush.linearGradient(listOf(Color(0xFFFF9A80), Color(0xFFFF6E40))), "View Now"),
+        ToolFeature("WhatsApp Cleaner", "Free up space from WhatsApp", Screen.WhatsAppCleaner, R.drawable.ic_ok,
+            Brush.linearGradient(listOf(Color(0xFF81C784), Color(0xFF4CAF50))), "View Now"),
+        ToolFeature("Network Usage", "Monitor your data usage", Screen.NetworkUsage, R.drawable.ic_ok,
+            Brush.linearGradient(listOf(Color(0xFF64B5F6), Color(0xFF1976D2))), "View Now"),
+        ToolFeature("Network Scan", "Network Scan", Screen.NetworkScan, R.drawable.ic_ok,
+            Brush.linearGradient(listOf(Color(0xFFFFC745), Color(0xFFFE9915))), "Scan Now"),
+        ToolFeature("Network Speed", "Test your internet speed", Screen.NetworkSpeed, R.drawable.ic_ok,
+            Brush.linearGradient(listOf(Color(0xFFCE93D8), Color(0xFF9C27B0))), "Test Now"),
     )
 
-/**
- * Displays 2 randomly-picked feature banners from the 8 toolbox modules.
- * Used in result pages (JunkClean, NetworkSpeed, etc.) to promote other features.
- */
 @Composable
 fun ToolFeatureBanners(
-    onNavigate: (AppNavigationEvent) -> Unit = {},
     modifier: Modifier = Modifier,
     excludeRoutes: Set<String> = emptySet(),
     seed: Long = System.currentTimeMillis(),
 ) {
+    val router = LocalRouter.current
+
     val features = remember(seed) {
-        val pool = AllToolFeatures.filter { it.route !in excludeRoutes }
-        val shuffled = pool.shuffled(Random(seed))
-        shuffled.take(2)
+        val pool = AllToolFeatures.filter { it.screen.route !in excludeRoutes }
+        pool.shuffled(Random(seed)).take(2)
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
         features.forEach { feature ->
             ToolFeatureBanner(
                 feature = feature,
-                onClick = { onNavigate(AppNavigationEvent.ToolFromResult(feature.route)) },
+                onClick = { router.navigateAndClearStack(feature.screen) },
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -165,66 +92,32 @@ fun ToolFeatureBanners(
 }
 
 @Composable
-private fun ToolFeatureBanner(
-    feature: ToolFeature,
-    onClick: () -> Unit,
-) {
+private fun ToolFeatureBanner(feature: ToolFeature, onClick: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = CardBg,
         shape = RoundedCornerShape(CardRadius),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 8.dp, top = 16.dp, bottom = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 16.dp, bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(9.dp))
-                        .background(feature.gradient),
+                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(9.dp)).background(feature.gradient),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        painter = painterResource(id = feature.iconRes),
-                        contentDescription = null,
-                        modifier = Modifier.size(28.dp),
-                        tint = Color.White,
-                    )
+                    Icon(painterResource(feature.iconRes), null, Modifier.size(28.dp), tint = Color.White)
                 }
-
-                Spacer(modifier = Modifier.width(10.dp))
-
+                Spacer(Modifier.width(10.dp))
                 Column {
-                    Text(
-                        text = feature.title,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Navy,
-                    )
-                    Text(
-                        text = feature.subtitle,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = NavyMuted,
-                    )
+                    Text(feature.title, fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Navy)
+                    Text(feature.subtitle, fontSize = 16.sp, fontWeight = FontWeight.Normal, color = NavyMuted)
                 }
             }
-
             TextButton(onClick = onClick) {
-                Text(
-                    text = feature.actionLabel,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Blue,
-                )
+                Text(feature.actionLabel, fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Blue)
             }
         }
     }

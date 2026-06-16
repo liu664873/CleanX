@@ -37,31 +37,55 @@ import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.navigation.AppNavigationEvent
-import com.quickcleanpro.phonecleaner.presentation.navigation.Screen
+import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
+import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
 private val StorageYellow = Color(0xFFFDBB22)
-private val VirusCardBlue = Brush.linearGradient(
-    colors = listOf(Color(0xFF90B2FB), Color(0xFF88ABFB)),
-)
-private val VirusCardLightBlue = Brush.linearGradient(
-    colors = listOf(Color(0xFF90E7FB), Color(0xFF88DAFB)),
-)
+private val VirusCardBlue =
+    Brush.linearGradient(
+        colors = listOf(Color(0xFF90B2FB), Color(0xFF88ABFB)),
+    )
+private val VirusCardLightBlue =
+    Brush.linearGradient(
+        colors = listOf(Color(0xFF90E7FB), Color(0xFF88DAFB)),
+    )
 
 @Composable
-fun HomeTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
+fun HomeTabContent() {
+    HomeTabContent(summaryState = HomeSummaryUiState())
+}
+
+@Composable
+fun HomeTabContent(summaryState: HomeSummaryUiState) {
+    val router = LocalRouter.current
+    val storageInfo = summaryState.storageInfo
+    val usedStorageText =
+        if (summaryState.isLoading && storageInfo.totalBytes <= 0L) {
+            "--"
+        } else {
+            storageInfo.formattedUsed
+        }
+    val totalStorageText =
+        if (summaryState.isLoading && storageInfo.totalBytes <= 0L) {
+            "--"
+        } else {
+            storageInfo.formattedTotal
+        }
+    val storageProgress = (storageInfo.usagePercent / 100f).coerceIn(0f, 1f)
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
-            .padding(top = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+                .padding(top = 32.dp),
     ) {
         // Storage Card (Yellow)
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(160.dp),
         ) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
@@ -70,11 +94,12 @@ fun HomeTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
             ) {}
 
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 20.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 20.dp),
             ) {
-                Row() {
+                Row {
                     Text(
                         text = stringResource(R.string.home_storage_label),
                         color = Color.White,
@@ -84,13 +109,13 @@ fun HomeTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
-                            text = "40.5GB",
+                            text = usedStorageText,
                             color = Color.White,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Text(
-                            text = " / 109.7GB",
+                            text = " / $totalStorageText",
                             color = Color.White,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Normal,
@@ -100,7 +125,7 @@ fun HomeTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 RoundedProgressBar(
-                    progress = 0.37f,
+                    progress = storageProgress,
                     width = 311.dp,
                     height = 16.dp,
                     trackColor = Color(0xA6FFFFFF),
@@ -108,15 +133,17 @@ fun HomeTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
-                    onClick = { onNavigate(AppNavigationEvent.Destination(Screen.Scan.route)) },
+                    onClick = { router.navigate(Screen.Scan) },
                     shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = StorageYellow,
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = StorageYellow,
+                        ),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
                 ) {
                     Text(
                         text = stringResource(R.string.home_remove_junk),
@@ -129,10 +156,11 @@ fun HomeTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
             Image(
                 painter = painterResource(id = R.drawable.robot),
                 contentDescription = null,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = (-16).dp, y = (-32).dp)
-                    .size(width = 90.dp, height = 84.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = (-16).dp, y = (-32).dp)
+                        .size(width = 90.dp, height = 84.dp),
                 contentScale = ContentScale.Fit,
             )
         }
@@ -140,21 +168,23 @@ fun HomeTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Virus Scan Card 1
-        VirusScanCard(
+        EntryCard(
             gradient = VirusCardBlue,
-            imageRes = R.drawable.ic_virus_shield,
+            imageRes = R.drawable.virus_shield,
             imageWidth = 98.dp,
             imageHeight = 81.dp,
+            onClick = { router.navigate(Screen.AntiVirus) },
         )
 
         Spacer(modifier = Modifier.height(15.dp))
 
         // Virus Scan Card 2
-        VirusScanCard(
+        EntryCard(
             gradient = VirusCardLightBlue,
-            imageRes = R.drawable.ic_virus_shield,
+            imageRes = R.drawable.app_lock,
             imageWidth = 81.dp,
             imageHeight = 81.dp,
+            onClick = { router.navigate(Screen.AntiVirus) },
         )
 
         Spacer(modifier = Modifier.height(100.dp))
@@ -162,65 +192,69 @@ fun HomeTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
 }
 
 @Composable
-private fun VirusScanCard(
+private fun EntryCard(
     gradient: Brush,
     imageRes: Int,
     imageWidth: Dp,
     imageHeight: Dp,
+    onClick: () -> Unit,
 ) {
     val shape = RoundedCornerShape(20.dp)
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(brush = gradient, shape = shape)
-            .clip(shape)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(brush = gradient, shape = shape)
+                .clip(shape),
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(20.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.width(193.dp)) {
                     Text(
                         text = stringResource(R.string.home_virus_title),
                         color = Color.White,
                         fontSize = 24.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = stringResource(R.string.home_virus_desc),
                         color = Color.White,
                         fontSize = 16.sp,
-                        lineHeight = 22.sp
+                        lineHeight = 22.sp,
                     )
                 }
                 Image(
                     painter = painterResource(id = imageRes),
                     contentDescription = null,
                     modifier = Modifier.size(width = imageWidth, height = imageHeight),
-                    contentScale = ContentScale.Fit
+                    contentScale = ContentScale.Fit,
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
             Button(
-                onClick = { },
+                onClick = onClick,
                 shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = CleanXBlue
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = CleanXBlue,
+                    ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
             ) {
                 Text(
                     text = stringResource(R.string.clean_now),
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
             }
         }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -39,134 +40,61 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.navigation.AppNavigationEvent
-import com.quickcleanpro.phonecleaner.presentation.navigation.Screen
+import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
+import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
 private val OnboardingNavy = Color(0xFF1D2959)
 private val DividerColor = Color(0x0D1D2959)
 private val LabelMuted = Color(0xA61D2959)
 
-private val DeviceInfoGradient = Brush.linearGradient(
-    colors = listOf(Color(0xFF90C5FB), Color(0xFF88C9FB)),
-)
-private val DeviceInfoDarkGradient = Brush.linearGradient(
-    colors = listOf(Color(0xFF90FB9C), Color(0xFF8AFB88)),
-)
+private val DeviceInfoGradient =
+    Brush.linearGradient(
+        colors = listOf(Color(0xFF90C5FB), Color(0xFF88C9FB)),
+    )
+private val DeviceInfoDarkGradient =
+    Brush.linearGradient(
+        colors = listOf(Color(0xFF90FB9C), Color(0xFF8AFB88)),
+    )
 
 @Composable
-fun ToolBoxTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
+fun ToolBoxTabContent() {
+    ToolBoxTabContent(summaryState = HomeSummaryUiState())
+}
+
+@Composable
+fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
+    val router = LocalRouter.current
+    val batteryCapacity =
+        summaryState.batteryInfo.levelPercent
+            .takeIf { it >= 0 }
+            ?.let { "$it%" }
+            ?: "--"
+    val batteryStatus = localizedBatteryStatus(summaryState.batteryStatusText)
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
-            .padding(top = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+                .padding(top = 32.dp),
     ) {
-        // Device Info Card（圆角渐变背景，使用 Box 修正）
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
-                .background(brush = DeviceInfoGradient)
-        ) {
-            Row(
-                modifier = Modifier.padding(20.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column {
-                    DeviceInfoRow(
-                        label = stringResource(R.string.device_model),
-                        value = "SM-A165F",
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    DeviceInfoRow(
-                        label = stringResource(R.string.home_system_version),
-                        value = "Android 14",
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Button(
-                        onClick = { onNavigate(AppNavigationEvent.Destination(Screen.DeviceInfo.route)) },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = CleanXBlue,
-                        ),
-                        modifier = Modifier
-                            .width(107.dp)
-                            .height(40.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.check_now),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
-                }
-                Image(
-                    painter = painterResource(id = R.drawable.ic_device_phone),
-                    contentDescription = null,
-                    modifier = Modifier.size(98.dp),
-                    contentScale = ContentScale.Fit,
-                )
-            }
-        }
+        DeviceInfoCard(
+            model = summaryState.deviceModel,
+            androidVersion = summaryState.androidVersion,
+            onClick = { router.navigate(Screen.DeviceInfo) },
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Battery Info Card（圆角渐变背景，使用 Box 修正）
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
-                .background(brush = DeviceInfoDarkGradient)
-        ) {
-            Row(
-                modifier = Modifier.padding(20.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column {
-                    DeviceInfoRow(
-                        label = stringResource(R.string.battery_status),
-                        value = stringResource(R.string.battery_discharging),
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    DeviceInfoRow(
-                        label = stringResource(R.string.battery_capacity),
-                        value = "59%",
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Button(
-                        onClick = { onNavigate(AppNavigationEvent.Destination(Screen.BatteryInfo.route)) },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = CleanXBlue,
-                        ),
-                        modifier = Modifier
-                            .width(107.dp)
-                            .height(40.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.check_now),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
-                }
-                Image(
-                    painter = painterResource(id = R.drawable.ic_battery),
-                    contentDescription = null,
-                    modifier = Modifier.size(98.dp),
-                    contentScale = ContentScale.Fit,
-                )
-            }
-        }
+        BatteryInfoCard(
+            status = batteryStatus,
+            capacity = batteryCapacity,
+            onClick = { router.navigate(Screen.BatteryInfo) },
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ToolBox Card（白色，无渐变）
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = Color.White,
@@ -182,37 +110,35 @@ fun ToolBoxTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 12.dp),
                 )
-                // Row 1
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     ToolItem(R.drawable.ic_app_usage, stringResource(R.string.app_usage)) {
-                        onNavigate(AppNavigationEvent.Destination(Screen.AppUsage.route))
+                        router.navigate(Screen.AppUsage)
                     }
                     ToolItem(R.drawable.ic_notification_bar, stringResource(R.string.notification_bar)) {
-                        onNavigate(AppNavigationEvent.Destination(Screen.NotificationBar.route))
+                        router.navigate(Screen.NotificationBar)
                     }
                     ToolItem(R.drawable.ic_whatsapp_cleaner, stringResource(R.string.whatsapp_cleaner)) {
-                        onNavigate(AppNavigationEvent.Destination(Screen.WhatsAppCleaner.route))
+                        router.navigate(Screen.WhatsAppCleaner)
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = DividerColor, thickness = 1.dp)
                 Spacer(modifier = Modifier.height(16.dp))
-                // Row 2
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     ToolItem(R.drawable.ic_network_usage, stringResource(R.string.network_usage)) {
-                        onNavigate(AppNavigationEvent.Destination(Screen.NetworkUsage.route))
+                        router.navigate(Screen.NetworkUsage)
                     }
                     ToolItem(R.drawable.ic_network_scan, stringResource(R.string.network_scan)) {
-                        onNavigate(AppNavigationEvent.Destination(Screen.NetworkScan.route))
+                        router.navigate(Screen.NetworkScan)
                     }
                     ToolItem(R.drawable.ic_network_speed, stringResource(R.string.network_speed)) {
-                        onNavigate(AppNavigationEvent.Destination(Screen.NetworkSpeed.route))
+                        router.navigate(Screen.NetworkSpeed)
                     }
                 }
             }
@@ -223,15 +149,126 @@ fun ToolBoxTabContent(onNavigate: (AppNavigationEvent) -> Unit = {}) {
 }
 
 @Composable
-private fun ToolItem(iconRes: Int, label: String, onClick: () -> Unit = {}) {
-    Column(
+private fun DeviceInfoCard(
+    model: String,
+    androidVersion: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(brush = DeviceInfoGradient),
+    ) {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                DeviceInfoRow(
+                    label = stringResource(R.string.device_model),
+                    value = model,
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                DeviceInfoRow(
+                    label = stringResource(R.string.home_system_version),
+                    value = androidVersion,
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                CheckNowButton(onClick = onClick)
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Image(
+                painter = painterResource(id = R.drawable.ic_device_phone),
+                contentDescription = null,
+                modifier = Modifier.size(98.dp),
+                contentScale = ContentScale.Fit,
+            )
+        }
+    }
+}
+
+@Composable
+private fun BatteryInfoCard(
+    status: String,
+    capacity: String,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(brush = DeviceInfoDarkGradient),
+    ) {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                DeviceInfoRow(
+                    label = stringResource(R.string.battery_status),
+                    value = status,
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                DeviceInfoRow(
+                    label = stringResource(R.string.battery_capacity),
+                    value = capacity,
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                CheckNowButton(onClick = onClick)
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Image(
+                painter = painterResource(id = R.drawable.battery),
+                contentDescription = null,
+                modifier = Modifier.size(98.dp),
+                contentScale = ContentScale.Fit,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CheckNowButton(onClick: () -> Unit) {
+    Button(
         modifier = Modifier
-            .width(80.dp)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            ),
+            .wrapContentWidth()
+            .height(40.dp),
+        onClick = onClick,
+        shape = RoundedCornerShape(10.dp),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = CleanXBlue,
+            )
+    ) {
+        Text(
+            text = stringResource(R.string.check_now),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium,
+        )
+    }
+}
+
+@Composable
+private fun ToolItem(
+    iconRes: Int,
+    label: String,
+    onClick: () -> Unit = {},
+) {
+    Column(
+        modifier =
+            Modifier
+                .width(80.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick,
+                ),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
@@ -253,15 +290,22 @@ private fun ToolItem(iconRes: Int, label: String, onClick: () -> Unit = {}) {
 }
 
 @Composable
-private fun DeviceInfoRow(label: String, value: String) {
-    Column {
+private fun DeviceInfoRow(
+    label: String,
+    value: String,
+) {
+    Row(
+        modifier = Modifier
+            .width(203.dp)
+            .height(21.dp)
+    ) {
         Text(
             text = label,
             color = LabelMuted,
             fontSize = 14.sp,
             fontWeight = FontWeight.Normal,
         )
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.weight(1f))
         Text(
             text = value,
             color = OnboardingNavy,
@@ -270,3 +314,13 @@ private fun DeviceInfoRow(label: String, value: String) {
         )
     }
 }
+
+@Composable
+private fun localizedBatteryStatus(statusText: String): String =
+    when (statusText) {
+        "Charging" -> stringResource(R.string.battery_charging)
+        "Discharging" -> stringResource(R.string.battery_discharging)
+        "Full" -> stringResource(R.string.battery_full)
+        "Not Charging" -> stringResource(R.string.battery_not_charging)
+        else -> stringResource(R.string.unknown)
+    }

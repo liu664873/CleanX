@@ -5,7 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.compose.rememberNavController
-import com.quickcleanpro.phonecleaner.presentation.navigation.AppNavGraph
+import com.quickcleanpro.phonecleaner.presentation.common.route.AppNavGraph
 import com.quickcleanpro.phonecleaner.presentation.theme.CleanXTheme
 
 class MainActivity : AppCompatActivity() {

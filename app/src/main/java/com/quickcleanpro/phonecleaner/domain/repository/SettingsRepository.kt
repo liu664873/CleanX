@@ -27,6 +27,10 @@ interface SettingsRepository {
 
     fun saveNotificationRuntimePermissionDenied()
 
+    fun hasPostNotificationsPermission(): Boolean
+
+    fun postNotificationsSettingsIntent(): Intent
+
     fun hasStoragePermission(): Boolean
 
     fun storagePermissionIntent(): Intent

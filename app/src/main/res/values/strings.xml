@@ -260,6 +260,8 @@
     <string name="settings_usage_data_permission">Usage Data</string>
     <string name="settings_location_permission">Location</string>
     <string name="settings_notification_permission">Notification</string>
+    <string name="settings_overlay_permission">Floating Window</string>
+    <string name="settings_post_notifications_permission">App Notifications</string>
     
 
     <!-- Rating -->
@@ -444,6 +446,7 @@
     <string name="app_usage_permission_desc">Allow usage access to show real app opening times and time spent.</string>
     <string name="app_usage_legend_storage_clean">Storage Clean</string>
     <string name="app_usage_legend_one_ui_home">One UI Home</string>
+    <string name="app_usage_legend_other">Feishu</string>
     <string name="app_usage_legend_feishu">Feishu</string>
     <string name="duration_hours_minutes">%1$dh %2$dm</string>
     <string name="duration_hours">%1$dh</string>

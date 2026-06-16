@@ -151,14 +151,22 @@ object AppUsageDataSource {
                 events.getNextEvent(event)
                 val packageName = event.packageName ?: continue
                 when (event.eventType) {
-                    UsageEvents.Event.MOVE_TO_FOREGROUND -> {
-                        foregroundStartByPackage[packageName] = event.timeStamp.coerceAtLeast(startMillis)
-                        if (event.timeStamp >= startMillis) {
+                    UsageEvents.Event.MOVE_TO_FOREGROUND,
+                    UsageEvents.Event.ACTIVITY_RESUMED,
+                    -> {
+                        val wasForeground = packageName in foregroundStartByPackage
+                        if (!wasForeground) {
+                            foregroundStartByPackage[packageName] = event.timeStamp.coerceAtLeast(startMillis)
+                        }
+                        if (!wasForeground && event.timeStamp >= startMillis) {
                             launchCounts[packageName] = (launchCounts[packageName] ?: 0) + 1
                         }
                     }
 
-                    UsageEvents.Event.MOVE_TO_BACKGROUND -> {
+                    UsageEvents.Event.MOVE_TO_BACKGROUND,
+                    UsageEvents.Event.ACTIVITY_PAUSED,
+                    UsageEvents.Event.ACTIVITY_STOPPED,
+                    -> {
                         val start = foregroundStartByPackage.remove(packageName) ?: continue
                         val end = event.timeStamp.coerceAtMost(endMillis)
                         if (end > start) {

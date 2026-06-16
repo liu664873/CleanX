@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.quickcleanpro.phonecleaner.domain.model.device.StorageInfo
 import com.quickcleanpro.phonecleaner.domain.repository.DeviceInfoRepository
+import com.quickcleanpro.phonecleaner.utils.SharedPreferencesUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,5 +45,12 @@ class OnboardingScanViewModel(
                     storageInfo = storage,
                 )
         }
+    }
+
+    fun markOnboardingScanCompleted() {
+        SharedPreferencesUtils.putBoolean(
+            key = SharedPreferencesUtils.KEY_ONBOARDING_SCAN_COMPLETED,
+            value = true,
+        )
     }
 }

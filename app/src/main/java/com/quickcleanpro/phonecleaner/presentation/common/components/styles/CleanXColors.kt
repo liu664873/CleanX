@@ -15,3 +15,5 @@ val CleanXDivider = Color(0xFFE2EAF3)
 val CleanXSuccess = Color(0xFF19C979)
 val CleanXWarning = Color(0xFFECAD1A)
 val CleanXDanger = Color(0xFFFF6B3D)
+
+//#E3ECFD

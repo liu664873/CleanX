@@ -10,14 +10,12 @@ internal const val KEY_ONBOARDING_SCAN_COMPLETED = "onboarding_scan_completed"
 internal const val KEY_LOCATION_RUNTIME_PERMISSION_DENIED = "location_runtime_permission_denied"
 internal const val KEY_NOTIFICATION_RUNTIME_PERMISSION_DENIED = "notification_runtime_permission_denied"
 
-/** 璇诲彇褰撳墠淇濆瓨鐨勬俯搴﹀崟浣嶅亸濂姐€?*/
 internal fun readTemperatureUnit(context: Context): String =
     context
         .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
         .getString(KEY_TEMPERATURE_UNIT, "C")
         ?: "C"
 
-/** 淇濆瓨鐢ㄦ埛閫夋嫨鐨勬俯搴﹀崟浣嶅亸濂姐€?*/
 internal fun saveTemperatureUnit(
     context: Context,
     unit: String,

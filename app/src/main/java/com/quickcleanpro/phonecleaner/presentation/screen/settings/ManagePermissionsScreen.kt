@@ -1,48 +1,51 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.settings
 
+import android.Manifest
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXTopAppBar
-import com.quickcleanpro.phonecleaner.presentation.navigation.LocalNavController
+import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionRequestManager
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionType
+import org.koin.compose.koinInject
 
-private val PageBgGradient = Brush.linearGradient(
-    colors = listOf(Color(0xFFE3ECFD), Color(0xFFDFEBF5)),
-)
 private val CardBg = Color(0xFFF6F7FB)
 private val Navy = Color(0xFF1D2959)
 private val Divider15 = Color(0x261D2959)
@@ -52,92 +55,138 @@ private val ToggleTrackOff = Color(0xFFECF0F4)
 private val ToggleThumb = Color(0xFFAFBBD0)
 
 @Composable
-fun ManagePermissionsScreen(onBack: () -> Unit = {}) {
+fun ManagePermissionsScreen(
+    settingsRepository: SettingsRepository = koinInject(),
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var refreshKey by remember { mutableIntStateOf(0) }
+    val permissionRows = buildPermissionRows()
 
-    var storagePermission by remember { mutableStateOf(true) }
-    var usageDataPermission by remember { mutableStateOf(true) }
-    var locationManagement by remember { mutableStateOf(true) }
-    var notificationToolbar by remember { mutableStateOf(false) }
+    fun refresh() {
+        refreshKey++
+    }
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        topBar = {
-            CleanXTopAppBar(
-                title = stringResource(R.string.settings_manage_permissions),
-                onBack = onBack,
-                modifier = Modifier.systemBarsPadding(),
-            )
-        },
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(PageBgGradient),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp),
-            ) {
-                Spacer(modifier = Modifier.height(8.dp))
+    val settingsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) {
+        refresh()
+    }
+    val runtimeLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { grants ->
+        if (grants[Manifest.permission.ACCESS_FINE_LOCATION] == false) {
+            runCatching { settingsRepository.saveLocationRuntimePermissionDenied() }
+        }
+        if (grants[Manifest.permission.POST_NOTIFICATIONS] == false) {
+            runCatching { settingsRepository.saveNotificationRuntimePermissionDenied() }
+        }
+        refresh()
+    }
 
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = CardBg,
-                    shape = RoundedCornerShape(CardRadius),
-                ) {
-                    Column(
-                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 20.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp),
-                    ) {
-                        PermissionToggleRow(
-                            label = stringResource(R.string.settings_storage_permission),
-                            checked = storagePermission,
-                            onCheckedChange = { storagePermission = it },
-                        )
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) refresh()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
-                        SettingsDivider()
-
-                        PermissionToggleRow(
-                            label = stringResource(R.string.settings_usage_data_permission),
-                            checked = usageDataPermission,
-                            onCheckedChange = { usageDataPermission = it },
-                        )
-
-                        SettingsDivider()
-
-                        PermissionToggleRow(
-                            label = "Location Management",
-                            checked = locationManagement,
-                            onCheckedChange = { locationManagement = it },
-                        )
-
-                        SettingsDivider()
-
-                        PermissionToggleRow(
-                            label = "Notification Toolbar",
-                            checked = notificationToolbar,
-                            onCheckedChange = { notificationToolbar = it },
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(100.dp))
+    fun openSettingsIntent(intent: Intent?) {
+        val fallback = runCatching { settingsRepository.appSettingsIntent() }.getOrNull()
+        listOfNotNull(intent, fallback).forEach { target ->
+            try {
+                settingsLauncher.launch(target)
+                return
+            } catch (_: ActivityNotFoundException) {
+            } catch (_: Exception) {
             }
         }
     }
+
+    fun requestPermission(type: CleanXPermissionType) {
+        val missingRuntimePermissions =
+            CleanXPermissionRequestManager.runtimePermissions(type)
+                .filter { permission ->
+                    ContextCompat.checkSelfPermission(context, permission) != android.content.pm.PackageManager.PERMISSION_GRANTED
+                }
+                .toTypedArray()
+
+        if (missingRuntimePermissions.isNotEmpty()) {
+            runtimeLauncher.launch(missingRuntimePermissions)
+            return
+        }
+
+        openSettingsIntent(
+            CleanXPermissionRequestManager.primarySettingsIntent(type, settingsRepository)
+                ?: CleanXPermissionRequestManager.fallbackSettingsIntent(type, settingsRepository),
+        )
+    }
+
+    CleanXScaffoldPage(
+        title = stringResource(R.string.settings_manage_permissions),
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = CardBg,
+            shape = RoundedCornerShape(CardRadius),
+        ) {
+            Column(
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                permissionRows.forEachIndexed { index, row ->
+                    val checked = remember(refreshKey, row.type) {
+                        CleanXPermissionRequestManager.isGranted(context, row.type, settingsRepository)
+                    }
+                    PermissionToggleRow(
+                        label = row.label,
+                        checked = checked,
+                        onClick = { requestPermission(row.type) },
+                    )
+                    if (index < permissionRows.lastIndex) {
+                        SettingsDivider()
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(100.dp))
+    }
 }
+
+@Composable
+private fun buildPermissionRows(): List<PermissionRow> =
+    buildList {
+        add(PermissionRow(stringResource(R.string.settings_storage_permission), CleanXPermissionType.StorageFiles))
+        add(PermissionRow(stringResource(R.string.settings_usage_data_permission), CleanXPermissionType.UsageAccess))
+        add(PermissionRow(stringResource(R.string.settings_location_permission), CleanXPermissionType.Location))
+        add(PermissionRow(stringResource(R.string.settings_notification_permission), CleanXPermissionType.NotificationListener))
+        add(PermissionRow(stringResource(R.string.settings_overlay_permission), CleanXPermissionType.Overlay))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            add(PermissionRow(stringResource(R.string.settings_post_notifications_permission), CleanXPermissionType.PostNotifications))
+        }
+    }
+
+private data class PermissionRow(
+    val label: String,
+    val type: CleanXPermissionType,
+)
 
 @Composable
 private fun PermissionToggleRow(
     label: String,
     checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+    onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -150,7 +199,7 @@ private fun PermissionToggleRow(
         )
         Switch(
             checked = checked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = { onClick() },
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
                 checkedTrackColor = ToggleTrackOn,

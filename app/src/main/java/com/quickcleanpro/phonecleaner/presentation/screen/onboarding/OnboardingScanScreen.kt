@@ -84,6 +84,10 @@ private fun OnboardingScanContent(onContinueToHome: () -> Unit) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var completedStep by remember { mutableIntStateOf(0) }
+    val completeOnboarding = {
+        viewModel.markOnboardingScanCompleted()
+        onContinueToHome()
+    }
 
     DisposableEffect(lifecycleOwner, viewModel) {
         val observer =
@@ -165,7 +169,7 @@ private fun OnboardingScanContent(onContinueToHome: () -> Unit) {
                         color = CleanXBlue,
                         fontSize = 14.sp,
                         modifier = Modifier
-                            .clickable { onContinueToHome() }
+                            .clickable { completeOnboarding() }
                             .padding(end = 12.dp)
                     )
                 }
@@ -187,7 +191,7 @@ private fun OnboardingScanContent(onContinueToHome: () -> Unit) {
             if (complete) {
                 CleanXPrimaryButton(
                     text = stringResource(R.string.onboarding_get_started),
-                    onClick = onContinueToHome,
+                    onClick = completeOnboarding,
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
             }
@@ -324,14 +328,14 @@ private fun StorageCard(storageInfo: StorageInfo) {
                 .fillMaxSize()
                 .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 20.dp)
         ) {
-            Text(
-                text = stringResource(R.string.home_storage_label),
-                color = OnboardingNavy,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = stringResource(R.string.home_storage_label),
+                    color = OnboardingNavy,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = storageInfo.formattedUsed,
                     color = OnboardingNavy,
