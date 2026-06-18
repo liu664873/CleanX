@@ -49,7 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.notification.BlockableNotificationApp
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
-import com.quickcleanpro.phonecleaner.presentation.common.components.animations.RotatingRingAnimation
+import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGatePresets
@@ -220,24 +220,23 @@ private fun ScanningContent(
             modifier = Modifier.size(252.dp),
             contentAlignment = Alignment.Center,
         ) {
-            RotatingRingAnimation(
-                modifier = Modifier.size(232.dp),
-                ringWidth = 18.dp,
-                ringColor = CleanXBlue,
-                backgroundColor = CleanXBlue.copy(alpha = 0.12f),
-            )
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = blockedCount.toString(),
-                    color = CleanXBlue,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = stringResource(R.string.scan_loading_fallback),
-                    color = NavyMuted,
-                    fontSize = 14.sp,
-                )
+            CleanSpiralAnimation(
+                modifier = Modifier.size(252.dp),
+                centerSize = 100.dp,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = blockedCount.toString(),
+                        color = CleanXBlue,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = stringResource(R.string.scan_loading_fallback),
+                        color = NavyMuted,
+                        fontSize = 14.sp,
+                    )
+                }
             }
         }
     }

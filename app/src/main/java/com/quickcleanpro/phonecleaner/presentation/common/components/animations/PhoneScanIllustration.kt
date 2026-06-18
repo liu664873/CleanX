@@ -1,4 +1,4 @@
-package com.quickcleanpro.phonecleaner.presentation.common.components
+package com.quickcleanpro.phonecleaner.presentation.common.components.animations
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box

@@ -8,6 +8,7 @@ import com.quickcleanpro.phonecleaner.presentation.screen.deviceinfo.DeviceInfoS
 import com.quickcleanpro.phonecleaner.presentation.screen.networkscan.NetworkScanDevicesScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.networkscan.NetworkScanScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.networkspeed.NetworkSpeedScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.notificationcleaner.NotificationCleanerScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.networkusage.NetworkUsageScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.notificationbar.NotificationBarScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.whatsappcleaner.WhatsAppCleanerScreen
@@ -40,10 +41,15 @@ internal fun NavGraphBuilder.registerToolboxRoutes() {
     composable(Screen.NotificationBar.route) {
         NotificationBarScreen()
     }
-    registerPlaceholderRoutes(
-        screens =
-            listOf(
-                Screen.NotificationCleaner,
-            ),
-    )
+    composable(Screen.NotificationCleaner.route) {
+        val router = LocalRouter.current
+        NotificationCleanerScreen(
+            onBack = { router.goBack() },
+            onDeviceInfo = { router.navigate(Screen.DeviceInfo) },
+            onJunkRemoval = { router.navigate(Screen.Scan) },
+            onBatteryInfo = { router.navigate(Screen.BatteryInfo) },
+            onNetworkScan = { router.navigate(Screen.NetworkScan) },
+            onNetworkUsage = { router.navigate(Screen.NetworkUsage) },
+        )
+    }
 }

@@ -35,8 +35,6 @@
     <string name="duplicate_scan_failed">Error al escanear archivos duplicados.</string>
     <string name="nav_home">Inicio</string>
     <string name="nav_scan">Escanear</string>
-    <string name="nav_result">Resultado del escaneo</string>
-    <string name="nav_clean_result">Resultado de limpieza</string>
     <string name="nav_settings">Ajustes</string>
     <string name="nav_manage_permissions">Gestionar permisos</string>
     <string name="nav_anti_virus">Antivirus</string>

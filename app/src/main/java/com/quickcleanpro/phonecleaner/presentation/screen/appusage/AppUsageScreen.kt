@@ -486,6 +486,8 @@ private fun AppUsageRow(
             onClick = { onStopApp(item.packageName) },
             enabled = item.isRunning,
             modifier = Modifier
+                .width(64.dp)
+                .height(32.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .height(32.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),

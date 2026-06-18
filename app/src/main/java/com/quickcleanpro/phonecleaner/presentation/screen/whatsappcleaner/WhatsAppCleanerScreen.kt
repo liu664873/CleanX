@@ -39,7 +39,7 @@ import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.ToolFeatureBanners
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanCompleteBadge
-import com.quickcleanpro.phonecleaner.presentation.common.components.animations.RotatingRingAnimation
+import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionFeature
@@ -98,18 +98,17 @@ private fun WhatsAppLoadingContent(text: String) {
             modifier = Modifier.size(252.dp),
             contentAlignment = Alignment.Center,
         ) {
-            RotatingRingAnimation(
-                modifier = Modifier.size(232.dp),
-                ringWidth = 18.dp,
-                ringColor = CleanXBlue,
-                backgroundColor = CleanXBlue.copy(alpha = 0.12f),
-            )
-            Icon(
-                painter = painterResource(R.drawable.ic_whatsapp_cleaner),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(84.dp),
-            )
+            CleanSpiralAnimation(
+                modifier = Modifier.size(252.dp),
+                centerSize = 100.dp,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_whatsapp_cleaner),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(84.dp),
+                )
+            }
         }
         Spacer(modifier = Modifier.height(28.dp))
         Text(

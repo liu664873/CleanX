@@ -15,7 +15,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.OvershootInterpolator
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -70,6 +69,13 @@ class LockScreenOverlayService : Service() {
     private fun showOverlay() {
         if (overlayView != null) return
         val view = LayoutInflater.from(this).inflate(R.layout.layout_lock_screen_pin, null)
+        view.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         overlayView = view
         view.findViewById<TextView>(R.id.tv_hint).text = getString(R.string.enter_pin_to_use)
         view.findViewById<TextView>(R.id.tv_error_hint).visibility = View.INVISIBLE
@@ -86,10 +92,16 @@ class LockScreenOverlayService : Service() {
                         @Suppress("DEPRECATION")
                         WindowManager.LayoutParams.TYPE_PHONE
                     },
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     PixelFormat.TRANSLUCENT,
                 ).apply {
                     gravity = Gravity.TOP or Gravity.START
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        layoutInDisplayCutoutMode =
+                            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                    }
                 }
         runCatching {
             windowManager.addView(view, params)
@@ -122,9 +134,9 @@ class LockScreenOverlayService : Service() {
                 R.id.btn_0 to '0',
             )
         digitButtons.forEach { (id, digit) ->
-            view.findViewById<Button>(id).setOnClickListener { onDigit(digit) }
+            view.findViewById<View>(id).setOnClickListener { onDigit(digit) }
         }
-        view.findViewById<Button>(R.id.btn_delete).setOnClickListener {
+        view.findViewById<View>(R.id.btn_delete).setOnClickListener {
             currentPin = currentPin.dropLast(1)
             updatePinDots()
         }
@@ -175,7 +187,7 @@ class LockScreenOverlayService : Service() {
         val view = overlayView ?: return
         listOf(R.id.circle1, R.id.circle2, R.id.circle3, R.id.circle4).forEachIndexed { index, id ->
             view.findViewById<View>(id).setBackgroundResource(
-                if (index < currentPin.length) R.drawable.circle_selected else R.drawable.circle_unselected,
+                if (index < currentPin.length) R.drawable.pin_dot_selected else R.drawable.pin_dot_unselected,
             )
         }
     }

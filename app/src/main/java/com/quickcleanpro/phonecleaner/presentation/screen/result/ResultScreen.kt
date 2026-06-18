@@ -27,15 +27,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Icon
@@ -57,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -75,15 +77,19 @@ import com.quickcleanpro.phonecleaner.domain.model.JunkCategory
 import com.quickcleanpro.phonecleaner.domain.model.JunkFile
 import com.quickcleanpro.phonecleaner.presentation.common.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.CleanXFullScreenDeleteAnimation
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXCheckBadge
+import com.quickcleanpro.phonecleaner.presentation.common.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXTopAppBar
-import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import kotlinx.coroutines.delay
 import java.util.concurrent.ConcurrentHashMap
 
 private val CleanXBackground = Color(0xFFF7FAFD)
 private val CleanXText = Color(0xFF2D3748)
 private val CleanXMutedText = Color(0xFF8190A5)
+private val ResultCardBg = Color(0xFFF6F7FB)
+private val ResultNavy = Color(0xFF1D2959)
+private val ResultOrange = Color(0xFFFC7941)
+private val ResultDivider = Color(0x261D2959)
+private val ResultIconBg = Color(0xA6FFFAEF)
 
 @Composable
 fun ResultScreen(
@@ -148,6 +154,7 @@ fun ResultScreen(
                     ResultListContent(
                         groups = state.groups,
                         checkedEmptyCategories = state.checkedEmptyCategories,
+                        selectedSummary = selectedSummary,
                         viewModel = viewModel,
                     )
                 is ResultViewModel.ScreenState.AwaitingDeleteAuthorization ->
@@ -165,7 +172,7 @@ fun ResultScreen(
 }
 
 @Composable
-private fun ResultBottomBar(
+internal fun ResultBottomBar(
     selectedSummary: SelectionSummary,
     onClean: () -> Unit,
 ) {
@@ -173,9 +180,9 @@ private fun ResultBottomBar(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .background(CleanXBackground)
+                .background(Color.Transparent)
                 .navigationBarsPadding()
-                .padding(horizontal = 13.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val onlyZeroByteSelection =
@@ -204,12 +211,14 @@ private fun ResultBottomBar(
             text = buttonText,
             onClick = onClean,
             enabled = selectedSummary.checkedCount > 0,
+            height = 52.dp,
+            cornerRadius = 10.dp,
         )
     }
 }
 
 @Composable
-private fun AwaitingAuthorizationContent(message: String) {
+internal fun AwaitingAuthorizationContent(message: String) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -233,46 +242,73 @@ private fun AwaitingAuthorizationContent(message: String) {
 }
 
 @Composable
-private fun ResultListContent(
+@OptIn(ExperimentalLayoutApi::class)
+internal fun ResultListContent(
     groups: List<CategoryCleanGroup>,
     checkedEmptyCategories: Set<JunkCategory>,
+    selectedSummary: SelectionSummary,
     viewModel: ResultViewModel,
 ) {
     val rows = displayGroups(groups)
-    var expandedIndex by remember { mutableStateOf(-1) }
+    var expandedIndex by remember { mutableStateOf(rows.indexOfFirst { it.group.items.isNotEmpty() }) }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         item {
-            SummaryCard(totalSize = groups.sumOf { it.totalSize })
-        }
-
-        itemsIndexed(rows) { rowIndex, row ->
-            val items = row.group.items
-            CategoryGroupCard(
-                row = row,
-                checked =
-                    row.group.items.takeIf { it.isNotEmpty() }?.all { it.isChecked }
-                        ?: (row.group.category in checkedEmptyCategories),
-                expanded = expandedIndex == rowIndex && items.isNotEmpty(),
-                onToggleExpanded = {
-                    expandedIndex = if (expandedIndex == rowIndex) -1 else rowIndex
-                },
-                onToggleCategorySelection = {
-                    viewModel.toggleCategorySelection(row.group.category)
-                },
-                onToggleItem = { itemIndex ->
-                    row.sourceIndex?.let { sourceIndex ->
-                        viewModel.toggleItemSelection(sourceIndex, itemIndex)
-                    }
-                },
-            )
+            Spacer(modifier = Modifier.height(20.dp))
+            SummaryCard(totalSize = selectedSummary.checkedSize)
         }
 
         item {
-            Spacer(modifier = Modifier.height(70.dp))
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = ResultCardBg,
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp)) {
+                    rows.forEachIndexed { rowIndex, row ->
+                        val items = row.group.items
+                        CategoryGroupSection(
+                            row = row,
+                            checked =
+                                row.group.items.takeIf { it.isNotEmpty() }?.all { it.isChecked }
+                                    ?: (row.group.category in checkedEmptyCategories),
+                            expanded = expandedIndex == rowIndex && items.isNotEmpty(),
+                            onToggleExpanded = {
+                                expandedIndex = if (expandedIndex == rowIndex) -1 else rowIndex
+                            },
+                            onToggleCategorySelection = {
+                                viewModel.toggleCategorySelection(row.group.category)
+                            },
+                            onToggleItem = { itemIndex ->
+                                row.sourceIndex?.let { sourceIndex ->
+                                    viewModel.toggleItemSelection(sourceIndex, itemIndex)
+                                }
+                            },
+                        )
+                        if (rowIndex < rows.lastIndex) {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(ResultDivider),
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(84.dp))
         }
     }
 }
@@ -283,53 +319,61 @@ private fun SummaryCard(totalSize: Long) {
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(92.dp),
-        color = Color.White,
-        shape = RoundedCornerShape(10.dp),
+                .height(79.dp),
+        color = ResultCardBg,
+        shape = RoundedCornerShape(12.dp),
     ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            TrashIcon()
-            Spacer(modifier = Modifier.width(24.dp))
-            Column {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Row(
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(start = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "${stringResource(R.string.occupying)}:",
+                    color = ResultNavy,
+                    fontSize = 18.sp,
+                    lineHeight = 24.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+                Spacer(modifier = Modifier.width(10.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
                         text = displayMainSize(totalSize),
-                        color = Color(0xFFFF8F2D),
-                        fontSize = 30.sp,
+                        color = ResultOrange,
+                        fontSize = 34.sp,
                         lineHeight = 34.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = FontWeight.Bold,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = displayUnit(totalSize),
-                        color = CleanXText,
-                        fontSize = 16.sp,
+                        color = ResultNavy,
+                        fontSize = 18.sp,
                         lineHeight = 22.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(bottom = 4.dp),
                     )
                 }
-                Text(
-                    text = stringResource(R.string.occupying),
-                    color = Color(0xFF7D8EA8),
-                    fontSize = 16.sp,
-                    lineHeight = 20.sp,
-                )
             }
+            Image(
+                painter = painterResource(R.drawable.junk_result_trash_bucket),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterEnd)
+                        .offset(x = (-16).dp, y = (-10).dp)
+                        .size(width = 75.dp, height = 97.dp),
+            )
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun CategoryGroupCard(
+private fun CategoryGroupSection(
     row: ResultDisplayRow,
     checked: Boolean,
     expanded: Boolean,
@@ -340,81 +384,68 @@ private fun CategoryGroupCard(
     val group = row.group
     val items = group.items
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFFEFF6FC),
-        shape = RoundedCornerShape(10.dp),
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = stringResource(row.titleRes),
-                    color = CleanXText,
+                    color = ResultNavy,
                     fontSize = 16.sp,
-                    lineHeight = 22.sp,
-                    modifier = Modifier.weight(1f),
+                    lineHeight = 24.sp,
+                    fontWeight = FontWeight.Medium,
                 )
+                Spacer(modifier = Modifier.width(10.dp))
+                Icon(
+                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = ResultNavy,
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .clickable(enabled = items.isNotEmpty()) { onToggleExpanded() },
+                )
+            }
+            Row(
+                modifier = Modifier.widthIn(min = 120.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     text = group.formattedTotalSize,
-                    color = CleanXText,
-                    fontSize = 17.sp,
-                    lineHeight = 22.sp,
+                    color = ResultNavy,
+                    fontSize = 16.sp,
+                    lineHeight = 24.sp,
                 )
-                Spacer(modifier = Modifier.width(7.dp))
-                Box(
+                Spacer(modifier = Modifier.width(8.dp))
+                RoundCheckButton(
+                    checked = checked,
                     modifier =
                         Modifier
                             .size(24.dp)
-                            .clip(RoundedCornerShape(50))
-                            .clickable(enabled = items.isNotEmpty()) { onToggleExpanded() },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = null,
-                        tint = CleanXText,
-                        modifier = Modifier.size(22.dp),
-                    )
-                }
-                Spacer(modifier = Modifier.width(7.dp))
-                Box(
-                    modifier =
-                        Modifier
-                            .size(24.dp)
-                            .clip(RoundedCornerShape(50))
                             .clickable { onToggleCategorySelection() },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CleanXCheckBadge(checked = checked, size = 21.dp)
-                }
-            }
-
-            if (expanded && items.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .height(1.dp)
-                            .background(Color(0xFFD0D9E4)),
                 )
-                Spacer(modifier = Modifier.height(10.dp))
+            }
+        }
 
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    items.forEachIndexed { index, item ->
-                        JunkItemCard(
-                            item = item,
-                            modifier = Modifier.width(50.dp),
-                            onClick = { onToggleItem(index) },
-                        )
-                    }
+        if (expanded && items.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                items.forEachIndexed { index, item ->
+                    JunkItemCard(
+                        item = item,
+                        modifier = Modifier.width(55.dp),
+                        onClick = { onToggleItem(index) },
+                    )
                 }
             }
         }
@@ -438,44 +469,37 @@ private fun JunkItemCard(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
-            modifier = Modifier.size(42.dp),
+            modifier = Modifier.size(40.dp),
             contentAlignment = Alignment.Center,
         ) {
             Box(
                 modifier =
                     Modifier
-                        .size(38.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(if (item.isChecked) Color(0xFFEAF8FF) else Color(0xFFF1F4F8)),
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(ResultIconBg),
                 contentAlignment = Alignment.Center,
             ) {
                 JunkItemIcon(item = item)
-            }
-            if (item.isChecked) {
-                CleanXCheckBadge(
-                    checked = true,
-                    size = 18.dp,
-                    modifier = Modifier.align(Alignment.TopEnd),
-                )
             }
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = item.fileName.ifBlank { stringResource(R.string.unnamed_file) },
-            color = CleanXText,
-            fontSize = 12.sp,
-            lineHeight = 14.sp,
+            color = Color(0xA62D3748),
+            fontSize = 14.sp,
+            lineHeight = 18.sp,
             maxLines = 1,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = item.formattedSize,
-            color = CleanXText,
-            fontSize = 11.sp,
-            lineHeight = 13.sp,
+            color = Color(0xA62D3748),
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
             maxLines = 1,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
@@ -508,24 +532,85 @@ private fun JunkItemIcon(item: CleanItem) {
             contentScale = ContentScale.Fit,
         )
     } else {
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.InsertDriveFile,
-            contentDescription = null,
-            tint = CleanXBlue,
-            modifier = Modifier.size(24.dp),
+        FileGlyph(modifier = Modifier.size(24.dp))
+    }
+}
+
+@Composable
+private fun RoundCheckButton(
+    checked: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier =
+            modifier
+                .clip(CircleShape)
+                .background(if (checked) CleanXBlue else Color.Transparent),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (checked) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp),
+            )
+        } else {
+            Canvas(modifier = Modifier.matchParentSize()) {
+                drawCircle(
+                    color = Color(0xFFC8D2DE),
+                    style = Stroke(width = 1.5.dp.toPx()),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FileGlyph(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val orange = Color(0xFFFFA31A)
+        val fold = Color(0xFFFFD17C)
+        drawRoundRect(
+            color = orange,
+            topLeft = Offset(size.width * 0.24f, size.height * 0.10f),
+            size = Size(size.width * 0.52f, size.height * 0.80f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(3.dp.toPx(), 3.dp.toPx()),
+        )
+        drawPath(
+            path =
+                androidx.compose.ui.graphics.Path().apply {
+                    moveTo(size.width * 0.56f, size.height * 0.10f)
+                    lineTo(size.width * 0.76f, size.height * 0.30f)
+                    lineTo(size.width * 0.56f, size.height * 0.30f)
+                    close()
+                },
+            color = fold,
+        )
+        drawRoundRect(
+            color = Color.White,
+            topLeft = Offset(size.width * 0.38f, size.height * 0.48f),
+            size = Size(size.width * 0.30f, 2.dp.toPx()),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.dp.toPx(), 1.dp.toPx()),
+        )
+        drawRoundRect(
+            color = Color.White,
+            topLeft = Offset(size.width * 0.38f, size.height * 0.62f),
+            size = Size(size.width * 0.22f, 2.dp.toPx()),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.dp.toPx(), 1.dp.toPx()),
         )
     }
 }
 
 @Composable
-private fun CleaningContent() {
+internal fun CleaningContent() {
     CleanXFullScreenDeleteAnimation(
         fallbackText = stringResource(R.string.cleaning_selected_files),
     )
 }
 
 @Composable
-private fun CleaningCompleteContent() {
+internal fun CleaningCompleteContent() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
@@ -595,7 +680,7 @@ private fun CleaningCompleteContent() {
 }
 
 @Composable
-private fun ErrorContent(message: String) {
+internal fun ErrorContent(message: String) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -627,47 +712,10 @@ private fun displayUnit(size: Long): String {
     return formatted.dropWhile { it.isDigit() || it == '.' }.trim().ifBlank { "B" }
 }
 
-private fun compactSizeLabel(size: Long): String {
+internal fun compactSizeLabel(size: Long): String {
     val mainSize = displayMainSize(size)
     val unit = displayUnit(size)
     return "$mainSize$unit"
-}
-
-@Composable
-private fun TrashIcon() {
-    Box(
-        modifier = Modifier.size(54.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Canvas(modifier = Modifier.matchParentSize()) {
-            drawRoundRect(
-                color = Color(0xFFFF3F42),
-                topLeft = Offset(size.width * 0.22f, size.height * 0.34f),
-                size = Size(size.width * 0.56f, size.height * 0.48f),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(6.dp.toPx(), 6.dp.toPx()),
-            )
-            drawRoundRect(
-                color = Color(0xFFFF3F42),
-                topLeft = Offset(size.width * 0.10f, size.height * 0.16f),
-                size = Size(size.width * 0.80f, size.height * 0.16f),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(12.dp.toPx(), 12.dp.toPx()),
-            )
-            drawLine(
-                color = Color.White,
-                start = Offset(size.width * 0.38f, size.height * 0.48f),
-                end = Offset(size.width * 0.62f, size.height * 0.68f),
-                strokeWidth = 4.dp.toPx(),
-                cap = StrokeCap.Round,
-            )
-            drawLine(
-                color = Color.White,
-                start = Offset(size.width * 0.62f, size.height * 0.48f),
-                end = Offset(size.width * 0.38f, size.height * 0.68f),
-                strokeWidth = 4.dp.toPx(),
-                cap = StrokeCap.Round,
-            )
-        }
-    }
 }
 
 private data class ResultDisplayRow(

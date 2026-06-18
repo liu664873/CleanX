@@ -199,10 +199,10 @@ class AppUsageViewModel(
                         )
                 }
 
-            val maxValue =
+            val totalValue =
                 when (selectedTab) {
-                    AppUsageMetricTab.Duration -> sorted.maxOf { it.totalForegroundMs }.coerceAtLeast(1L)
-                    AppUsageMetricTab.LaunchCount -> sorted.maxOf { it.launchCount }.coerceAtLeast(1).toLong()
+                    AppUsageMetricTab.Duration -> usages.sumOf { it.totalForegroundMs }
+                    AppUsageMetricTab.LaunchCount -> usages.sumOf { it.launchCount }.toLong()
                 }
 
             return sorted
@@ -218,7 +218,12 @@ class AppUsageViewModel(
                         packageName = usage.packageName,
                         totalForegroundMs = usage.totalForegroundMs,
                         launchCount = usage.launchCount,
-                        progress = (value.toFloat() / maxValue).coerceIn(0.08f, 1f),
+                        progress =
+                            if (totalValue > 0L) {
+                                (value.toFloat() / totalValue).coerceIn(0f, 1f)
+                            } else {
+                                0f
+                            },
                         iconText = usage.appName.take(1).ifBlank { "A" },
                         colorIndex = index,
                         isRunning = usage.packageName in runningPackages,

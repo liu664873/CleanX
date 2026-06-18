@@ -19,6 +19,7 @@ import com.quickcleanpro.phonecleaner.presentation.screen.networkscan.NetworkSca
 import com.quickcleanpro.phonecleaner.presentation.screen.networkscan.NetworkScanViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.networkscan.readNetworkInfo
 import com.quickcleanpro.phonecleaner.presentation.screen.networkspeed.NetworkSpeedViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.networkusage.NetworkUsageViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.notificationbar.NotificationBarViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.onboarding.OnboardingScanViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.result.ResultViewModel
@@ -39,6 +40,7 @@ val presentationModule =
         viewModel { NetworkScanViewModel(get(), { readNetworkInfo(androidContext()) }) }
         viewModel { NetworkScanDevicesViewModel(get()) }
         viewModel { NetworkSpeedViewModel(get(), { readNetworkInfo(androidContext()) }) }
+        viewModel { NetworkUsageViewModel(get(), Dispatchers.IO) }
         viewModel { WhatsAppCleanerViewModel(get()) }
         viewModel { NotificationBarViewModel(get()) }
         viewModel { OnboardingScanViewModel(get()) }

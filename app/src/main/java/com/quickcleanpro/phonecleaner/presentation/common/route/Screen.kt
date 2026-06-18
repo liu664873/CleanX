@@ -19,8 +19,6 @@ sealed class Screen(
     data object Settings : Screen("settings", R.string.nav_settings, Icons.Default.Settings)
     data object ManagePermissions : Screen("manage_permissions", R.string.nav_manage_permissions)
     data object Scan : Screen("scan", R.string.nav_scan, Icons.Default.CleaningServices)
-    data object Result : Screen("result", R.string.nav_result)
-    data object CleanResult : Screen("clean_result", R.string.nav_clean_result)
     data object AntiVirus : Screen("anti_virus", R.string.nav_anti_virus)
     data object VirusQuickScan : Screen("virus_quick_scan", R.string.nav_virus_quick_scan)
     data object VirusDeepScan : Screen("virus_deep_scan", R.string.nav_virus_deep_scan)

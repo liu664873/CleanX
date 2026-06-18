@@ -2,12 +2,6 @@ package com.quickcleanpro.phonecleaner.presentation.common
 
 import android.os.SystemClock
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -55,8 +49,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -67,16 +59,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.quickcleanpro.phonecleaner.R
-import android.graphics.Matrix as AndroidMatrix
-import android.graphics.Paint as AndroidPaint
-import android.graphics.RectF as AndroidRectF
-import android.graphics.SweepGradient as AndroidSweepGradient
+import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 
 val CleanXBackground = Color(0xFFF7FAFD)
 val CleanXText = Color(0xFF2D3748)
@@ -299,29 +283,6 @@ fun CleanXScaffold(
 }
 
 @Composable
-fun CleanXScaffold(
-    @StringRes titleRes: Int,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    containerColor: Color = CleanXBackground,
-    horizontalPadding: Dp = CleanXPagePadding,
-    actions: @Composable RowScope.() -> Unit = {},
-    bottomBar: @Composable () -> Unit = {},
-    content: @Composable (PaddingValues) -> Unit,
-) {
-    CleanXScaffold(
-        title = stringResource(titleRes),
-        onBack = onBack,
-        modifier = modifier,
-        containerColor = containerColor,
-        horizontalPadding = horizontalPadding,
-        actions = actions,
-        bottomBar = bottomBar,
-        content = content,
-    )
-}
-
-@Composable
 fun CleanXHeader(
     title: String,
     onBack: () -> Unit,
@@ -365,82 +326,6 @@ fun CleanXHeader(
 }
 
 @Composable
-fun CleanXSectionTitle(
-    text: String,
-    modifier: Modifier = Modifier,
-) {
-    Text(
-        text = text,
-        color = CleanXText,
-        fontSize = CleanXTextTitle,
-        lineHeight = CleanXLineTitle,
-        fontWeight = FontWeight.SemiBold,
-        modifier = modifier,
-    )
-}
-
-@Composable
-fun CleanXPrimaryTabs(
-    items: List<CleanXTabItem>,
-    selectedIndex: Int,
-    onSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    containerColor: Color = Color.White.copy(alpha = 0.92f),
-) {
-    if (items.isEmpty()) return
-    val safeSelectedIndex = selectedIndex.coerceIn(0, items.lastIndex)
-
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = containerColor,
-        shape = CleanXTileShape,
-    ) {
-        TabRow(
-            selectedTabIndex = safeSelectedIndex,
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = Color.Transparent,
-            contentColor = CleanXText,
-            indicator = {},
-        ) {
-            items.forEachIndexed { index, item ->
-                val selected = index == safeSelectedIndex
-                Tab(
-                    selected = selected,
-                    onClick = { onSelected(index) },
-                    selectedContentColor = CleanXText,
-                    unselectedContentColor = CleanXMutedText,
-                    text = {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = item.title,
-                                fontSize = if (selected) CleanXTextBody else CleanXTextCaption,
-                                lineHeight = if (selected) CleanXLineBody else CleanXLineCaption,
-                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                                textAlign = TextAlign.Center,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            item.value?.let { value ->
-                                Spacer(modifier = Modifier.height(CleanXCompactPadding / 2))
-                                Text(
-                                    text = value,
-                                    fontSize = if (selected) 13.sp else CleanXTextTiny,
-                                    lineHeight = if (selected) CleanXLineBody else CleanXLineCaption,
-                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                                    textAlign = TextAlign.Center,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-                        }
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun CleanXScanRingAnimation(
     modifier: Modifier = Modifier,
     ringModifier: Modifier? = null,
@@ -453,18 +338,6 @@ fun CleanXScanRingAnimation(
     tailSweepDegrees: Float = 180f,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
-    val infiniteTransition = rememberInfiniteTransition(label = "cleanXScanRing")
-    val startAngle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec =
-            infiniteRepeatable(
-                animation = tween(durationMillis = animationDurationMillis, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart,
-            ),
-        label = "cleanXScanRingAngle",
-    )
-
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         if (backgroundResId != null) {
             Image(
@@ -482,53 +355,12 @@ fun CleanXScanRingAnimation(
                 Modifier.matchParentSize()
             }
 
-        Canvas(modifier = resolvedRingModifier) {
-            val strokeWidth = ringWidth.toPx()
-            val radius = size.minDimension / 2f - strokeWidth / 2f
-            if (radius <= 0f) return@Canvas
-
-            val centerX = size.width / 2f
-            val centerY = size.height / 2f
-            val rect =
-                AndroidRectF(
-                    centerX - radius,
-                    centerY - radius,
-                    centerX + radius,
-                    centerY + radius,
-                )
-            val backgroundPaint =
-                AndroidPaint(AndroidPaint.ANTI_ALIAS_FLAG).apply {
-                    style = AndroidPaint.Style.STROKE
-                    strokeCap = AndroidPaint.Cap.ROUND
-                    this.strokeWidth = strokeWidth
-                    color = backgroundColor.toArgb()
-                }
-            val ringPaint =
-                AndroidPaint(AndroidPaint.ANTI_ALIAS_FLAG).apply {
-                    style = AndroidPaint.Style.STROKE
-                    strokeCap = AndroidPaint.Cap.ROUND
-                    this.strokeWidth = strokeWidth
-                }
-            val sweepAngle = tailSweepDegrees.coerceIn(0f, 360f)
-            val gradient =
-                AndroidSweepGradient(
-                    centerX,
-                    centerY,
-                    intArrayOf(backgroundColor.toArgb(), ringColor.toArgb(), backgroundColor.toArgb()),
-                    floatArrayOf(0f, sweepAngle / 360f, 1f),
-                )
-            val matrix =
-                AndroidMatrix().apply {
-                    setRotate(startAngle, centerX, centerY)
-                }
-            gradient.setLocalMatrix(matrix)
-            ringPaint.shader = gradient
-
-            drawContext.canvas.nativeCanvas.apply {
-                drawArc(rect, 0f, 360f, false, backgroundPaint)
-                drawArc(rect, startAngle, sweepAngle, false, ringPaint)
-            }
-        }
+        CleanSpiralAnimation(
+            modifier = resolvedRingModifier,
+            containerSize = null,
+            centerSize = 0.dp,
+            animationDurationMillis = animationDurationMillis,
+        )
 
         content()
     }
@@ -537,37 +369,19 @@ fun CleanXScanRingAnimation(
 @Composable
 fun CleanXDeleteAnimation(
     modifier: Modifier = Modifier,
-    iterations: Int = LottieConstants.IterateForever,
-    isPlaying: Boolean = true,
-    contentScale: ContentScale = ContentScale.Crop,
     fallbackText: String? = null,
 ) {
-    val composition by rememberLottieComposition(
-        spec = LottieCompositionSpec.Asset("delete_animation/delete_finish.json"),
-        imageAssetsFolder = "delete_animation/images/",
-    )
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = iterations,
-        isPlaying = isPlaying,
-        speed = 1f,
-    )
-
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        if (composition == null) {
-            Text(
-                fallbackText ?: stringResource(R.string.delete_loading_fallback),
-                color = CleanXMutedText,
-                fontSize = 16.sp,
-            )
-        } else {
-            LottieAnimation(
-                composition = composition,
-                progress = { progress },
-                modifier = Modifier.fillMaxSize(),
-                contentScale = contentScale,
-            )
-        }
+        CleanSpiralAnimation(
+            modifier = Modifier.size(252.dp),
+            centerSize = 0.dp,
+            animationDurationMillis = 1800,
+        )
+        Text(
+            text = fallbackText ?: stringResource(R.string.delete_loading_fallback),
+            color = CleanXMutedText,
+            fontSize = 16.sp,
+        )
     }
 }
 

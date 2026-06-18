@@ -283,15 +283,16 @@ private fun BatteryTemperatureCard(uiState: DeviceInfoUiState) {
                     formatBatteryTemperature(uiState.selectedTemperatureAverageC, includeSpace = false),
             ),
     ) {
+        val chartPoints =
+            uiState.selectedTemperatureSamples.map {
+                ChartPoint(
+                    timestampMillis = it.timestampMillis,
+                    value = it.temperatureC,
+                )
+            }
         BatteryLineChart(
-            points =
-                uiState.selectedTemperatureSamples.map {
-                    ChartPoint(
-                        timestampMillis = it.timestampMillis,
-                        value = it.temperatureC,
-                    )
-                },
-            latestTimestampMillis = uiState.latestSampleTimestampMillis,
+            points = chartPoints,
+            windowEndMillis = oneMinuteChartWindowEnd(chartPoints, uiState.latestSampleTimestampMillis),
             windowMillis = TEMPERATURE_CHART_WINDOW_MILLIS,
             xLabels = secondsAxisLabels(),
             axisBounds = temperatureAxisBounds(),
@@ -360,15 +361,21 @@ private fun BatteryCurrentChart(
     selectedRange: BatteryCurrentRange,
     latestSampleTimestampMillis: Long,
 ) {
+    val windowEndMillis =
+        currentChartWindowEndMillis(
+            samples = samples,
+            selectedRange = selectedRange,
+            latestSampleTimestampMillis = latestSampleTimestampMillis,
+        )
     val chartPoints =
         currentChartPoints(
             samples = samples,
             selectedRange = selectedRange,
-            latestTimestampMillis = latestSampleTimestampMillis,
+            windowEndMillis = windowEndMillis,
         )
     BatteryLineChart(
         points = chartPoints,
-        latestTimestampMillis = latestSampleTimestampMillis,
+        windowEndMillis = windowEndMillis,
         windowMillis = selectedRange.durationMillis,
         xLabels = currentAxisLabels(selectedRange),
         axisBounds = currentAxisBounds(chartPoints.map { it.value }),
@@ -418,7 +425,7 @@ private fun BatteryTimeTabs(
 @Composable
 private fun BatteryLineChart(
     points: List<ChartPoint>,
-    latestTimestampMillis: Long,
+    windowEndMillis: Long,
     windowMillis: Long,
     xLabels: List<String>,
     axisBounds: ChartAxisBounds,
@@ -478,17 +485,12 @@ private fun BatteryLineChart(
             textPaint.textAlign = Paint.Align.LEFT
         }
 
-        val resolvedLatestTimestamp =
-            resolveChartLatestTimestamp(
-                points = points,
-                latestTimestampMillis = latestTimestampMillis,
-                nowMillis = System.currentTimeMillis(),
-            )
+        if (windowEndMillis <= 0L) return@Canvas
         val visiblePoints =
             points
                 .asSequence()
-                .filter { it.timestampMillis >= resolvedLatestTimestamp - windowMillis }
-                .filter { it.timestampMillis <= resolvedLatestTimestamp }
+                .filter { it.timestampMillis >= windowEndMillis - windowMillis }
+                .filter { it.timestampMillis <= windowEndMillis }
                 .sortedBy { it.timestampMillis }
                 .toList()
         if (visiblePoints.isEmpty()) return@Canvas
@@ -499,7 +501,7 @@ private fun BatteryLineChart(
         val offsets =
             drawablePoints.map {
                 it.toOffset(
-                    latestTimestampMillis = resolvedLatestTimestamp,
+                    windowEndMillis = windowEndMillis,
                     windowMillis = windowMillis,
                     axisBounds = axisBounds,
                     chartLeft = chartLeft,
@@ -535,14 +537,14 @@ private fun BatteryLineChart(
             }
         }
 
-        val minPoint = visiblePoints.minByOrNull { it.value }
-        val maxPoint = visiblePoints.maxByOrNull { it.value }
+        val minPoint = drawablePoints.minByOrNull { it.value }
+        val maxPoint = drawablePoints.maxByOrNull { it.value }
         maxPoint?.let { point ->
             drawChartValueLabel(
                 label = valueLabelFormatter(point.value),
                 anchor =
                     point.toOffset(
-                        resolvedLatestTimestamp,
+                        windowEndMillis,
                         windowMillis,
                         axisBounds,
                         chartLeft,
@@ -561,7 +563,7 @@ private fun BatteryLineChart(
                 label = valueLabelFormatter(minPoint.value),
                 anchor =
                     minPoint.toOffset(
-                        resolvedLatestTimestamp,
+                        windowEndMillis,
                         windowMillis,
                         axisBounds,
                         chartLeft,
@@ -641,26 +643,21 @@ private fun currentAxisLabels(range: BatteryCurrentRange): List<String> =
 private fun currentChartMaxPoints(range: BatteryCurrentRange): Int? =
     when (range) {
         BatteryCurrentRange.OneMinute -> null
-        BatteryCurrentRange.OneHour,
-        BatteryCurrentRange.TwentyFourHours,
-        -> LONG_RANGE_CURRENT_CHART_MAX_POINTS
+        BatteryCurrentRange.OneHour -> ONE_HOUR_CURRENT_CHART_BUCKET_COUNT
+        BatteryCurrentRange.TwentyFourHours -> TWENTY_FOUR_HOUR_CURRENT_CHART_BUCKET_COUNT
     }
 
 private fun currentChartPoints(
     samples: List<BatteryCurrentSample>,
     selectedRange: BatteryCurrentRange,
-    latestTimestampMillis: Long,
+    windowEndMillis: Long,
 ): List<ChartPoint> {
-    val latestTimestamp =
-        latestTimestampMillis
-            .takeIf { it > 0L }
-            ?: samples.maxOfOrNull { it.timestampMillis }
-            ?: return emptyList()
-    val cutoff = latestTimestamp - selectedRange.durationMillis
+    if (windowEndMillis <= 0L) return emptyList()
+    val windowStartMillis = windowEndMillis - selectedRange.durationMillis
     val visibleSamples =
         samples
             .asSequence()
-            .filter { it.timestampMillis in cutoff..latestTimestamp }
+            .filter { it.timestampMillis in windowStartMillis..windowEndMillis }
             .sortedBy { it.timestampMillis }
             .toList()
 
@@ -674,12 +671,22 @@ private fun currentChartPoints(
         }
     }
 
+    val bucketCount = currentChartBucketCount(selectedRange)
     return visibleSamples
-        .groupBy { it.timestampMillis / bucketMillis }
+        .groupBy { sample ->
+            val elapsedMillis = sample.timestampMillis - windowStartMillis
+            if (elapsedMillis <= 0L) {
+                0
+            } else {
+                ((elapsedMillis - 1L) / bucketMillis)
+                    .toInt()
+                    .coerceIn(0, bucketCount - 1)
+            }
+        }
         .toSortedMap()
-        .map { (_, bucketSamples) ->
+        .map { (bucketIndex, bucketSamples) ->
             ChartPoint(
-                timestampMillis = bucketSamples.maxOf { it.timestampMillis },
+                timestampMillis = windowStartMillis + (bucketIndex + 1L) * bucketMillis,
                 value = bucketSamples.map { abs(it.currentMa) }.average().toFloat(),
             )
         }
@@ -692,6 +699,45 @@ private fun currentChartBucketMillis(range: BatteryCurrentRange): Long? =
         BatteryCurrentRange.TwentyFourHours -> TWENTY_FOUR_HOUR_CURRENT_CHART_BUCKET_MILLIS
     }
 
+private fun currentChartBucketCount(range: BatteryCurrentRange): Int =
+    when (range) {
+        BatteryCurrentRange.OneMinute -> 0
+        BatteryCurrentRange.OneHour -> ONE_HOUR_CURRENT_CHART_BUCKET_COUNT
+        BatteryCurrentRange.TwentyFourHours -> TWENTY_FOUR_HOUR_CURRENT_CHART_BUCKET_COUNT
+    }
+
+private fun currentChartWindowEndMillis(
+    samples: List<BatteryCurrentSample>,
+    selectedRange: BatteryCurrentRange,
+    latestSampleTimestampMillis: Long,
+): Long {
+    val latestTimestamp =
+        latestSampleTimestampMillis
+            .takeIf { it > 0L }
+            ?: samples.maxOfOrNull { it.timestampMillis }
+            ?: return 0L
+    val bucketMillis = currentChartBucketMillis(selectedRange) ?: return latestTimestamp
+    return alignUpToBucket(latestTimestamp, bucketMillis)
+}
+
+private fun oneMinuteChartWindowEnd(
+    points: List<ChartPoint>,
+    latestSampleTimestampMillis: Long,
+): Long =
+    latestSampleTimestampMillis
+        .takeIf { it > 0L }
+        ?: points.maxOfOrNull { it.timestampMillis }
+        ?: 0L
+
+private fun alignUpToBucket(
+    timestampMillis: Long,
+    bucketMillis: Long,
+): Long {
+    if (timestampMillis <= 0L || bucketMillis <= 0L) return timestampMillis
+    val remainder = timestampMillis % bucketMillis
+    return if (remainder == 0L) timestampMillis else timestampMillis + bucketMillis - remainder
+}
+
 private fun temperatureAxisBounds(): ChartAxisBounds =
     ChartAxisBounds(
         min = 0f,
@@ -700,47 +746,23 @@ private fun temperatureAxisBounds(): ChartAxisBounds =
     )
 
 private fun currentAxisBounds(values: List<Float>): ChartAxisBounds {
-    if (values.isEmpty()) {
-        return ChartAxisBounds(
-            min = 0f,
-            max = 1000f,
-            yLabels = listOf("1000", "800", "600", "400", "200", "0"),
-        )
-    }
-    val minValue = values.minOrNull() ?: 0f
     val maxValue = values.maxOrNull() ?: 0f
-    val padding = ((maxValue - minValue) * 0.16f).takeIf { it > 1f } ?: 120f
-    val min = floor(max(0f, minValue - padding) / 120f) * 120f
-    val max = ceil((maxValue + padding) / 120f) * 120f
-    val resolvedMax = if (max <= min) min + 600f else max
-    val step = (resolvedMax - min) / 5f
+    val resolvedMax =
+        if (maxValue <= DEFAULT_CURRENT_AXIS_MAX_MA) {
+            DEFAULT_CURRENT_AXIS_MAX_MA
+        } else {
+            ceil(maxValue / CURRENT_AXIS_MAX_STEP_MA) * CURRENT_AXIS_MAX_STEP_MA
+        }
+    val step = resolvedMax / 5f
     return ChartAxisBounds(
-        min = min,
+        min = 0f,
         max = resolvedMax,
         yLabels = (0..5).map { index -> ((resolvedMax - step * index).toInt()).toString() },
     )
 }
 
-private fun resolveChartLatestTimestamp(
-    points: List<ChartPoint>,
-    latestTimestampMillis: Long,
-    nowMillis: Long,
-): Long {
-    val latestPointTimestamp = points.maxOfOrNull { it.timestampMillis }
-    if (
-        latestPointTimestamp != null &&
-        nowMillis - latestPointTimestamp in 0L..CHART_LATEST_SAMPLE_FRESH_MILLIS
-    ) {
-        return latestPointTimestamp
-    }
-    return latestTimestampMillis
-        .takeIf { it > 0L }
-        ?: latestPointTimestamp
-        ?: nowMillis
-}
-
 private fun ChartPoint.toOffset(
-    latestTimestampMillis: Long,
+    windowEndMillis: Long,
     windowMillis: Long,
     axisBounds: ChartAxisBounds,
     chartLeft: Float,
@@ -748,7 +770,7 @@ private fun ChartPoint.toOffset(
     chartTop: Float,
     chartBottom: Float,
 ): Offset {
-    val elapsed = (latestTimestampMillis - timestampMillis).coerceIn(0L, windowMillis)
+    val elapsed = (windowEndMillis - timestampMillis).coerceIn(0L, windowMillis)
     val xFraction = 1f - elapsed / windowMillis.toFloat()
     val yFraction = ((value - axisBounds.min) / axisBounds.range).coerceIn(0f, 1f)
     return Offset(
@@ -832,7 +854,9 @@ private fun localizedBatteryStatus(status: String): String =
     }
 
 private const val TEMPERATURE_CHART_WINDOW_MILLIS = 60_000L
-private const val CHART_LATEST_SAMPLE_FRESH_MILLIS = 5_000L
-private const val LONG_RANGE_CURRENT_CHART_MAX_POINTS = 30
+private const val DEFAULT_CURRENT_AXIS_MAX_MA = 3000f
+private const val CURRENT_AXIS_MAX_STEP_MA = 1000f
+private const val ONE_HOUR_CURRENT_CHART_BUCKET_COUNT = 30
+private const val TWENTY_FOUR_HOUR_CURRENT_CHART_BUCKET_COUNT = 24
 private const val ONE_HOUR_CURRENT_CHART_BUCKET_MILLIS = 2L * 60L * 1000L
 private const val TWENTY_FOUR_HOUR_CURRENT_CHART_BUCKET_MILLIS = 60L * 60L * 1000L

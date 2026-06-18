@@ -2,28 +2,37 @@ package com.quickcleanpro.phonecleaner.presentation.screen.settings
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color as AndroidColor
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.view.WindowManager
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,8 +40,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +55,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.config.AppConfig
 import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
@@ -262,18 +278,44 @@ private fun TemperatureOption(
 @Composable
 private fun SettingsRateDialog(onDismiss: () -> Unit) {
     val context = LocalContext.current
-    var rating by remember { mutableIntStateOf(0) }
+    var rating by remember { mutableIntStateOf(4) }
     var showFeedback by remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
-            shape = RoundedCornerShape(16.dp),
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false,
+        ),
+    ) {
+        val dialogWindowProvider = LocalView.current.parent as? DialogWindowProvider
+        SideEffect {
+            dialogWindowProvider?.window?.run {
+                clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                setBackgroundDrawable(ColorDrawable(AndroidColor.TRANSPARENT))
+                setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onDismiss,
+                ),
+            contentAlignment = Alignment.Center,
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 22.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+            RateDialogFrame(
+                modifier = Modifier
+                    .offset(y = (-48).dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {},
+                    ),
             ) {
                 if (showFeedback) {
                     RateFeedbackContent(onDismiss = onDismiss)
@@ -297,6 +339,62 @@ private fun SettingsRateDialog(onDismiss: () -> Unit) {
 }
 
 @Composable
+private fun RateDialogFrame(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 343.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(top = 31.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            0f to Color(0xFFF7FAFD),
+                            0.2638f to Color.White,
+                            1f to Color.White,
+                        ),
+                    )
+                    .padding(start = 16.dp, top = 104.dp, end = 16.dp, bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                content = content,
+            )
+            RateHeroImage(
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
+    }
+}
+
+@Composable
+private fun RateHeroImage(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(251.dp)
+            .clipToBounds(),
+    ) {
+        Image(
+            painter = painterResource(R.drawable.rate_heart_hand),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .size(215.dp)
+                .offset(x = (20).dp, y = (-47).dp),
+        )
+    }
+}
+
+@Composable
 private fun RateSelectionContent(
     rating: Int,
     onRatingChange: (Int) -> Unit,
@@ -305,20 +403,23 @@ private fun RateSelectionContent(
     Text(
         text = stringResource(R.string.rate_title),
         color = SettingsNavy,
-        fontSize = 19.sp,
-        lineHeight = 24.sp,
-        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp,
+        lineHeight = 22.sp,
+        fontWeight = FontWeight.Medium,
         textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth(),
     )
-    Spacer(modifier = Modifier.height(18.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Spacer(modifier = Modifier.height(20.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         repeat(5) { index ->
-            Icon(
-                imageVector = Icons.Default.Star,
+            Image(
+                painter = painterResource(
+                    if (index < rating) R.drawable.rate_star_selected else R.drawable.rate_star_unselected,
+                ),
                 contentDescription = null,
-                tint = if (index < rating) Color(0xFFFFC52E) else Color(0xFFD3D6DC),
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(32.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -332,6 +433,9 @@ private fun RateSelectionContent(
         text = stringResource(R.string.submit),
         onClick = onSubmit,
         enabled = rating > 0,
+        height = 46.dp,
+        cornerRadius = 10.dp,
+        fontSize = 20.sp,
     )
 }
 

@@ -5,7 +5,6 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -24,7 +23,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,126 +34,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.koin.androidx.compose.koinViewModel
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.CleanXBottomActionBar
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXEmptyScanResult
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
-
-@Composable
-fun ScreenshotsManagerScreen() {
-    FileCollectionRoute(
-        kind = FileCollectionKind.Screenshots,
-    )
-}
-
-@Composable
-internal fun ScreenshotsManagerRoute() {
-    val viewModel: ScreenshotsManagerViewModel = koinViewModel()
-    FileCollectionRoute(
-        kind = FileCollectionKind.Screenshots,
-        viewModel = viewModel
-    )
-}
-
-@Composable
-fun VideosManagerScreen() {
-    FileCollectionRoute(
-        kind = FileCollectionKind.Videos,
-    )
-}
-
-@Composable
-internal fun VideosManagerRoute() {
-    val viewModel: VideosManagerViewModel = koinViewModel()
-    FileCollectionRoute(
-        kind = FileCollectionKind.Videos,
-        viewModel = viewModel
-    )
-}
-
-@Composable
-fun AudiosManagerScreen() {
-    FileCollectionRoute(
-        kind = FileCollectionKind.Audios,
-    )
-}
-
-@Composable
-internal fun AudiosManagerRoute() {
-    val viewModel: AudiosManagerViewModel = koinViewModel()
-    FileCollectionRoute(
-        kind = FileCollectionKind.Audios,
-        viewModel = viewModel
-    )
-}
-
-@Composable
-fun SimilarPhotosManagerScreen() {
-    FileCollectionRoute(
-        kind = FileCollectionKind.SimilarPhotos,
-    )
-}
-
-@Composable
-internal fun SimilarPhotosManagerRoute() {
-    val viewModel: SimilarPhotosManagerViewModel = koinViewModel()
-    FileCollectionRoute(
-        kind = FileCollectionKind.SimilarPhotos,
-        viewModel = viewModel
-    )
-}
-
-@Composable
-fun PhotoPrivacyManagerScreen() {
-    FileCollectionRoute(
-        kind = FileCollectionKind.PhotoPrivacy,
-    )
-}
-
-@Composable
-internal fun PhotoPrivacyManagerRoute() {
-    val viewModel: PhotoPrivacyManagerViewModel = koinViewModel()
-    FileCollectionRoute(
-        kind = FileCollectionKind.PhotoPrivacy,
-        viewModel = viewModel
-    )
-}
-
-@Composable
-fun LargeFilesManagerScreen() {
-    ManagedFileRoute(
-        kind = FileCollectionKind.LargeFiles,
-        refreshOnResume = true
-    )
-}
-
-@Composable
-internal fun LargeFilesManagerRoute() {
-    val viewModel: LargeFilesManagerViewModel = koinViewModel()
-    ManagedFileRoute(
-        kind = FileCollectionKind.LargeFiles,
-        refreshOnResume = true,
-        viewModel = viewModel
-    )
-}
-
-@Composable
-fun DocumentsManagerScreen() {
-    ManagedFileRoute(
-        kind = FileCollectionKind.Documents,
-        refreshOnResume = true
-    )
-}
-
-@Composable
-internal fun DocumentsManagerRoute() {
-    val viewModel: DocumentsManagerViewModel = koinViewModel()
-    ManagedFileRoute(
-        kind = FileCollectionKind.Documents,
-        refreshOnResume = true,
-        viewModel = viewModel
-    )
-}
 
 @Composable
 internal fun FileCollectionRoute(
@@ -307,11 +190,9 @@ internal fun FileCollectionRoute(
                             onContinue = viewModel::continueManaging,
                         )
                     }
-                    PhotosState.NoResults -> Image(
-                        painter = painterResource(R.drawable.files_blank),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize()
-                        )
+                    PhotosState.NoResults -> CleanXEmptyScanResult(
+                        message = stringResource(R.string.file_scan_completed_no_results),
+                    )
                 }
             }
         }
@@ -511,7 +392,9 @@ internal fun ManagedFileRoute(
                             onContinue = viewModel::continueManaging,
                         )
                     }
-                    PhotosState.NoResults -> Unit
+                    PhotosState.NoResults -> CleanXEmptyScanResult(
+                        message = stringResource(R.string.file_scan_completed_no_results),
+                    )
                 }
             }
         }
@@ -674,7 +557,9 @@ private fun DuplicateFilesManagerScreenState(
                         onContinue = viewModel::continueManaging,
                     )
                 }
-                PhotosState.NoResults -> Unit
+                PhotosState.NoResults -> CleanXEmptyScanResult(
+                    message = stringResource(R.string.file_scan_completed_no_results),
+                )
             }
         }
     }

@@ -30,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.koin.androidx.compose.koinViewModel
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.CleanXBottomActionBar
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXEmptyScanResult
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
@@ -201,7 +202,9 @@ private fun PhotosManagerScreenState(
                         onContinue = viewModel::continueManaging,
                         deletedSize = uiState.deletedBytes
                     )
-                    PhotosState.NoResults -> Unit
+                    PhotosState.NoResults -> CleanXEmptyScanResult(
+                        message = stringResource(R.string.file_scan_completed_no_results),
+                    )
                 }
             }
         }

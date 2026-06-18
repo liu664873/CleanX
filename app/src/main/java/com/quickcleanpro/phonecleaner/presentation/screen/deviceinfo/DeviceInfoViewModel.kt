@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 enum class DeviceInfoMode {
@@ -164,8 +165,9 @@ class DeviceInfoViewModel(
         viewModelScope.launch(ioDispatcher) {
             val timestamp = nowMillis()
             applyHistorySamples(batteryHistoryRepository.loadRecent(timestamp), timestamp)
+            val forceSample = shouldForceBatterySample(timestamp)
+            sampleBatterySnapshot(forceSample = forceSample)
             batteryHistorySampler.start(BatteryHistoryOwner.BatteryPage)
-            sampleBatterySnapshot()
         }
     }
 
@@ -194,8 +196,8 @@ class DeviceInfoViewModel(
         val memory = repository.memoryInfo()
         val storage = repository.internalStorageInfo()
         val hardware = repository.hardwareInfo()
-        val currentNow = repository.batteryCurrentNowMa()
-        val currentAverage = repository.batteryCurrentAverageMa()
+        val currentNow = repository.batteryCurrentNowMa().normalizedBatteryCurrent()
+        val currentAverage = repository.batteryCurrentAverageMa().normalizedBatteryCurrent()
         val historySamples =
             if (mode == DeviceInfoMode.Battery) {
                 batteryHistoryRepository.loadRecent(timestampMillis)
@@ -222,13 +224,15 @@ class DeviceInfoViewModel(
         ).withHistorySamples(historySamples, timestampMillis, maxSampleCount)
     }
 
-    private fun sampleBatterySnapshot() {
-        batteryHistorySampler.sampleOnce(force = true)
+    private fun sampleBatterySnapshot(forceSample: Boolean) {
+        if (forceSample) {
+            batteryHistorySampler.sampleOnce(force = true)
+        }
         val timestamp = nowMillis()
         val battery = runCatching { repository.batteryInfo() }.getOrNull()
         val batteryStatus = runCatching { repository.batteryStatusInfo() }.getOrNull()
-        val currentNow = runCatching { repository.batteryCurrentNowMa() }.getOrNull()
-        val currentAverage = runCatching { repository.batteryCurrentAverageMa() }.getOrNull()
+        val currentNow = runCatching { repository.batteryCurrentNowMa().normalizedBatteryCurrent() }.getOrNull()
+        val currentAverage = runCatching { repository.batteryCurrentAverageMa().normalizedBatteryCurrent() }.getOrNull()
         val samples = batteryHistoryRepository.loadRecent(timestamp)
 
         _uiState.update { state ->
@@ -261,6 +265,15 @@ class DeviceInfoViewModel(
             state.withHistorySamples(samples, timestampMillis, maxSampleCount)
         }
     }
+
+    private fun shouldForceBatterySample(timestampMillis: Long): Boolean {
+        val latestSample =
+            batteryHistoryRepository.samples.value
+                .lastOrNull()
+                ?: batteryHistoryRepository.loadRecent(timestampMillis).lastOrNull()
+                ?: return true
+        return timestampMillis - latestSample.timestampMillis !in 0L..BATTERY_HISTORY_FRESH_SAMPLE_MILLIS
+    }
 }
 
 internal fun formatBatteryTemperature(
@@ -282,7 +295,7 @@ internal fun formatBatteryVoltage(voltageMilliVolts: Int): String =
 internal fun formatBatteryCurrent(currentMa: Float?): String =
     currentMa
         ?.takeIf { it.isFiniteValue() }
-        ?.let { String.format(Locale.US, "%.2f mA", it) }
+        ?.let { String.format(Locale.US, "%.2f mA", abs(it)) }
         ?: "--"
 
 internal fun formatBatteryCapacityMah(capacityMah: Int?): String =
@@ -322,7 +335,7 @@ private fun DeviceInfoUiState.withHistorySamples(
             freshLatestSample?.let { latest ->
                 battery.copy(temperature = latest.temperatureC)
             } ?: battery,
-        currentNow = freshLatestSample?.currentMa ?: currentNow,
+        currentNow = freshLatestSample?.currentMa?.normalizedBatteryCurrent() ?: currentNow,
         currentSamples = recentSamples.toCurrentSamples(timestampMillis, maxSampleCount),
         temperatureSamples = recentSamples.toTemperatureSamples(timestampMillis),
         latestSampleTimestampMillis = latestSample?.timestampMillis ?: timestampMillis,
@@ -339,7 +352,7 @@ private fun List<BatteryHistorySample>.toCurrentSamples(
             .mapNotNull { sample ->
                 sample.currentMa
                     ?.takeIf { it.isFiniteValue() }
-                    ?.let { BatteryCurrentSample(sample.timestampMillis, it) }
+                    ?.let { BatteryCurrentSample(sample.timestampMillis, abs(it)) }
             }.toList()
     return currentSamples.takeLast(maxSampleCount)
 }
@@ -392,10 +405,10 @@ private fun averageCurrent(
 ): Float? =
     samples
         .takeIf { it.isNotEmpty() }
-        ?.map { it.currentMa }
+        ?.map { abs(it.currentMa) }
         ?.average()
         ?.toFloat()
-        ?: fallback
+        ?: fallback.normalizedBatteryCurrent()
 
 private fun averageTemperature(
     samples: List<BatteryTemperatureSample>,
@@ -441,6 +454,8 @@ private data class CpuStat(
 )
 
 private fun Float.isFiniteValue(): Boolean = !isNaN() && !isInfinite()
+
+private fun Float?.normalizedBatteryCurrent(): Float? = this?.takeIf { it.isFiniteValue() }?.let { abs(it) }
 
 private const val UNKNOWN = "Unknown"
 private const val TEMPERATURE_WINDOW_MILLIS = 60_000L

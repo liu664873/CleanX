@@ -1,4 +1,4 @@
-package com.quickcleanpro.phonecleaner.presentation.common.components.animations
+ package com.quickcleanpro.phonecleaner.presentation.common.components.animations
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

@@ -56,6 +56,7 @@ ktlint {
 dependencies {
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.unit)
     implementation(files("libs/cloudscan_sdk_5.0.18.20250821.aar"))
     implementation(platform(libs.androidx.compose.bom))

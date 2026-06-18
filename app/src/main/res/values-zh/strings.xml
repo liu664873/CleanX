@@ -42,8 +42,6 @@
     <string name="nav_onboarding_scan">引导扫描</string>
     <string name="nav_home">首页</string>
     <string name="nav_scan">扫描</string>
-    <string name="nav_result">扫描结果</string>
-    <string name="nav_clean_result">清理结果</string>
     <string name="nav_settings">设置</string>
     <string name="nav_manage_permissions">管理权限</string>
     <string name="nav_anti_virus">杀毒</string>

@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanXScanSpiralAnimation
+import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
@@ -48,11 +48,7 @@ fun AntiVirusScreen(
         ) {
             Spacer(modifier = Modifier.height(10.dp))
 
-            CleanXScanSpiralAnimation(
-                modifier = Modifier.size(252.dp),
-                centerSize = 100.dp,
-                glowColor = VirusBlue.copy(alpha = 0.35f),
-            ) {
+            CleanSpiralAnimation{
                 VirusCenterBadge(
                     size = 56.dp,
                     backgroundBrush = Brush.verticalGradient(

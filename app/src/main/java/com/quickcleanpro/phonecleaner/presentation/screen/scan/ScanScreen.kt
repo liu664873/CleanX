@@ -67,7 +67,7 @@ fun ScanScreen(
 }
 
 @Composable
-private fun ScanProgressContent(uiState: ScanViewModel.ScanUiState) {
+internal fun ScanProgressContent(uiState: ScanViewModel.ScanUiState) {
     val categoryLabel = uiState.currentCategory?.let { stringResource(it.titleRes) }
     val scanningText =
         categoryLabel?.let { stringResource(R.string.scan_scanning_category, it) }
