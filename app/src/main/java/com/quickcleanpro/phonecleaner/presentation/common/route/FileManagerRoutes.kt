@@ -8,44 +8,44 @@ import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionFeature
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionType
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
-import com.quickcleanpro.phonecleaner.presentation.screen.files.AudiosManagerFeatureRoute
-import com.quickcleanpro.phonecleaner.presentation.screen.files.DocumentsManagerFeatureRoute
-import com.quickcleanpro.phonecleaner.presentation.screen.files.DuplicateFilesManagerRoute
-import com.quickcleanpro.phonecleaner.presentation.screen.files.LargeFilesManagerFeatureRoute
-import com.quickcleanpro.phonecleaner.presentation.screen.files.PhotoPrivacyManagerFeatureRoute
-import com.quickcleanpro.phonecleaner.presentation.screen.files.PhotosManagerRoute
-import com.quickcleanpro.phonecleaner.presentation.screen.files.ScreenshotsManagerFeatureRoute
-import com.quickcleanpro.phonecleaner.presentation.screen.files.SimilarPhotosManagerFeatureRoute
-import com.quickcleanpro.phonecleaner.presentation.screen.files.VideosManagerFeatureRoute
+import com.quickcleanpro.phonecleaner.presentation.screen.files.audios.AudiosManagerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateFilesManagerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.documents.DocumentsManagerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.largefiles.LargeFilesManagerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.photoprivacy.PhotoPrivacyManagerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.photos.PhotosManagerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.screenshots.ScreenshotsManagerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.similarphotos.SimilarPhotosManagerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.videos.VideosManagerScreen
 import org.koin.compose.koinInject
 
 internal fun NavGraphBuilder.registerFileManagerRoutes() {
     composable(Screen.PhotosManager.route) {
-        PhotosManagerRoute(permissionGateConfig = fileManagerPermissionConfig())
+        PhotosManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
     }
     composable(Screen.SimilarPhotosManager.route) {
-        SimilarPhotosManagerFeatureRoute(permissionGateConfig = fileManagerPermissionConfig())
+        SimilarPhotosManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
     }
     composable(Screen.PhotoPrivacyManager.route) {
-        PhotoPrivacyManagerFeatureRoute(permissionGateConfig = fileManagerPermissionConfig())
+        PhotoPrivacyManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
     }
     composable(Screen.ScreenshotsManager.route) {
-        ScreenshotsManagerFeatureRoute(permissionGateConfig = fileManagerPermissionConfig())
+        ScreenshotsManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
     }
     composable(Screen.VideosManager.route) {
-        VideosManagerFeatureRoute(permissionGateConfig = fileManagerPermissionConfig())
+        VideosManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
     }
     composable(Screen.AudiosManager.route) {
-        AudiosManagerFeatureRoute(permissionGateConfig = fileManagerPermissionConfig())
+        AudiosManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
     }
     composable(Screen.LargeFilesManager.route) {
-        LargeFilesManagerFeatureRoute(permissionGateConfig = fileManagerPermissionConfig())
+        LargeFilesManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
     }
     composable(Screen.DuplicateFilesManager.route) {
-        DuplicateFilesManagerRoute(permissionGateConfig = fileManagerPermissionConfig())
+        DuplicateFilesManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
     }
     composable(Screen.DocumentsManager.route) {
-        DocumentsManagerFeatureRoute(permissionGateConfig = fileManagerPermissionConfig())
+        DocumentsManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
     }
 }
 

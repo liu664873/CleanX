@@ -2,16 +2,16 @@ package com.quickcleanpro.phonecleaner.presentation.common.route
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.quickcleanpro.phonecleaner.presentation.screen.appusage.AppUsageScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.batteryinfo.BatteryInfoScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.deviceinfo.DeviceInfoScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.networkscan.NetworkScanDevicesScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.networkscan.NetworkScanScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.networkspeed.NetworkSpeedScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.notificationcleaner.NotificationCleanerScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.networkusage.NetworkUsageScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.notificationbar.NotificationBarScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.whatsappcleaner.WhatsAppCleanerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.appusage.AppUsageScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.batteryinfo.BatteryInfoScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.deviceinfo.DeviceInfoScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkscan.NetworkScanDevicesScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkscan.NetworkScanScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkspeed.NetworkSpeedScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkusage.NetworkUsageScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.notificationbar.NotificationBarScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.notificationcleaner.NotificationCleanerScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerScreen
 
 internal fun NavGraphBuilder.registerToolboxRoutes() {
     composable(Screen.DeviceInfo.route) {

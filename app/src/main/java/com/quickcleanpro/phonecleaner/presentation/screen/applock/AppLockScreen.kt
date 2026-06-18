@@ -75,6 +75,7 @@ import com.quickcleanpro.phonecleaner.presentation.common.CleanXIconButtonSize
 import com.quickcleanpro.phonecleaner.presentation.common.CleanXPillShape
 import com.quickcleanpro.phonecleaner.presentation.common.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.AppLockOverlayPermissionDialog
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import org.koin.androidx.compose.koinViewModel

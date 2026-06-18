@@ -29,9 +29,9 @@ import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationD
 import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationSpecs
 import com.quickcleanpro.phonecleaner.domain.repository.AppLockRepository
 import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.CleanXPermissionRequiredDialog
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.InlinePermissionOverlay
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionCopy
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionRequiredDialog
-import com.quickcleanpro.phonecleaner.presentation.common.permission.InlinePermissionOverlay
 import com.quickcleanpro.phonecleaner.presentation.common.route.AppNavGraph
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.theme.CleanXTheme

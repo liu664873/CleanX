@@ -43,6 +43,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.CleanXPermissionRequiredDialog
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.InlinePermissionOverlay
 import kotlinx.coroutines.delay
 
 /**
