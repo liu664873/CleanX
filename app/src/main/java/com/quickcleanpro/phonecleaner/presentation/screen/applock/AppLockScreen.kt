@@ -70,10 +70,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.applock.AppLockApp
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXIconButtonSize
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXPillShape
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXPrimaryButton
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBlue
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXIconButtonSize
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXPillShape
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.AppLockOverlayPermissionDialog
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig

@@ -23,7 +23,6 @@ import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.quickcleanpro.phonecleaner.MainActivity
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.data.repository.AppLockRepositoryImpl
 import com.quickcleanpro.phonecleaner.data.source.applock.LockScreenOverlayService
@@ -457,7 +456,7 @@ class PersistentNotificationService : Service() {
                 .setSmallIcon(R.drawable.ic_n_notification_cleaner)
                 .setContentTitle(getString(item.titleRes))
                 .setContentText(getString(item.descriptionRes))
-                .setContentIntent(targetIntent(item.route, index))
+                .setContentIntent(ToolNotificationIntentFactory.pendingIntent(this, item.route, index))
                 .setCustomContentView(toolNotificationCollapsedView(item))
                 .setCustomBigContentView(toolNotificationExpandedView(item))
                 .setCustomHeadsUpContentView(toolNotificationHeadsUpView(item))
@@ -516,26 +515,6 @@ class PersistentNotificationService : Service() {
                     Manifest.permission.POST_NOTIFICATIONS,
                 ) == PackageManager.PERMISSION_GRANTED
         }.getOrDefault(false)
-
-    private fun targetIntent(
-        route: String,
-        requestCode: Int,
-    ): PendingIntent {
-        val intent =
-            Intent(this, MainActivity::class.java).apply {
-                action = "$ACTION_OPEN_TOOL.$route"
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP
-                putExtra(ToolNotificationDataSource.EXTRA_TARGET_ROUTE, route)
-            }
-        return PendingIntent.getActivity(
-            this,
-            TOOL_CONTENT_REQUEST_BASE_CODE + requestCode,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-    }
 
     private fun toolNotificationCollapsedView(item: ToolNotificationSpec): RemoteViews =
         RemoteViews(packageName, R.layout.notification_tool_collapsed).apply {
@@ -650,12 +629,10 @@ class PersistentNotificationService : Service() {
         private const val ACTION_STOP_SERVICE = "com.quickcleanpro.phonecleaner.notification.STOP_SERVICE"
         const val ACTION_PASSWORD_SUCCESS = "com.quickcleanpro.phonecleaner.applock.PASSWORD_SUCCESS"
         const val ACTION_LOCK_SCREEN_CANCELLED = "com.quickcleanpro.phonecleaner.applock.LOCK_SCREEN_CANCELLED"
-        private const val ACTION_OPEN_TOOL = "com.quickcleanpro.phonecleaner.notification.OPEN_TOOL"
 
         const val PERSISTENT_NOTIFICATION_ID = 17
         private const val PERSISTENT_NOTIFICATION_DELETE_REQUEST_CODE = 17
         private const val TOOL_NOTIFICATION_BASE_ID = 3000
-        private const val TOOL_CONTENT_REQUEST_BASE_CODE = 3000
         private const val CHECK_INTERVAL_MS = 500L
         private const val EVENT_LOOKBACK_MS = 3_000L
         private const val STATS_LOOKBACK_MS = 10_000L

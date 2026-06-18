@@ -7,11 +7,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.quickcleanpro.phonecleaner.presentation.app.AppLaunchCoordinator
 
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
     startDestination: String = Screen.Splash.route,
+    launchCoordinator: AppLaunchCoordinator? = null,
     splashPaused: Boolean = false,
     interceptors: List<NavigationInterceptor> = emptyList(),
     adManager: AdManager = NoOpAdManager,
@@ -33,6 +35,7 @@ fun AppNavGraph(
         ) {
             registerStartupRoutes(
                 splashPaused = splashPaused,
+                launchCoordinator = launchCoordinator,
             )
             registerHomeRoutes()
             registerCleanRoutes()

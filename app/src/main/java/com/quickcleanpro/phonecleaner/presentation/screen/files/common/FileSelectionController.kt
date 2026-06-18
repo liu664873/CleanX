@@ -1,20 +1,20 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.files.common
 
 internal class FileSelectionController {
-    fun selectTab(state: FileCollectionUiState, index: Int): FileCollectionUiState =
+    fun selectTab(state: FileManagerUiState, index: Int): FileManagerUiState =
         state.copy(
             selectedTabIndex = index.coerceAtLeast(0),
-            selectedIds = if (state.isPhotos) emptySet() else state.selectedIds,
+            selectedIds = if (state.isGalleryFeature) emptySet() else state.selectedIds,
             detailStartIndex = null
         )
 
-    fun selectMediaTab(state: FileCollectionUiState, index: Int): FileCollectionUiState =
+    fun selectMediaTab(state: FileManagerUiState, index: Int): FileManagerUiState =
         state.copy(selectedMediaTabIndex = index.coerceAtLeast(0), detailStartIndex = null)
 
-    fun toggleSelection(state: FileCollectionUiState, id: Int): FileCollectionUiState =
+    fun toggleSelection(state: FileManagerUiState, id: Int): FileManagerUiState =
         state.copy(selectedIds = if (id in state.selectedIds) state.selectedIds - id else state.selectedIds + id)
 
-    fun toggleIds(state: FileCollectionUiState, ids: Set<Int>): FileCollectionUiState =
+    fun toggleIds(state: FileManagerUiState, ids: Set<Int>): FileManagerUiState =
         state.copy(
             selectedIds = if (state.selectedIds.containsAll(ids)) {
                 state.selectedIds - ids
@@ -23,9 +23,9 @@ internal class FileSelectionController {
             }
         )
 
-    fun openDetail(state: FileCollectionUiState, index: Int?): FileCollectionUiState =
+    fun openDetail(state: FileManagerUiState, index: Int?): FileManagerUiState =
         state.copy(detailStartIndex = index?.takeIf { it >= 0 })
 
-    fun closeDetail(state: FileCollectionUiState): FileCollectionUiState =
+    fun closeDetail(state: FileManagerUiState): FileManagerUiState =
         state.copy(detailStartIndex = null)
 }

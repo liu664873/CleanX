@@ -41,7 +41,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.CommonResultContent
+import com.quickcleanpro.phonecleaner.presentation.common.components.CommonResultContent
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.DeleteVirusFileDialog
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter

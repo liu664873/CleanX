@@ -1,9 +1,7 @@
 package com.quickcleanpro.phonecleaner.data.source.notification
 
 import android.Manifest
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.widget.RemoteViews
@@ -12,17 +10,15 @@ import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.quickcleanpro.phonecleaner.MainActivity
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
 import com.quickcleanpro.phonecleaner.utils.NotificationChannelManager
 
 object ToolNotificationDataSource {
-    const val EXTRA_TARGET_ROUTE = "quickclean_target_route"
+    const val EXTRA_TARGET_ROUTE = ToolNotificationIntentFactory.EXTRA_TARGET_ROUTE
     const val PERSISTENT_NOTIFICATION_ID = 17
     private const val TOOL_NOTIFICATION_BASE_ID = 3000
-    private const val TOOL_CONTENT_REQUEST_BASE_CODE = 3000
 
     fun showToolNotifications(context: Context) {
         val appContext = context.applicationContext
@@ -41,7 +37,7 @@ object ToolNotificationDataSource {
                     .setSmallIcon(R.drawable.ic_n_notification_cleaner)
                     .setContentTitle(appContext.getString(item.titleRes))
                     .setContentText(appContext.getString(item.descriptionRes))
-                    .setContentIntent(targetIntent(appContext, item.route, index))
+                    .setContentIntent(ToolNotificationIntentFactory.pendingIntent(appContext, item.route, index))
                     .setCustomContentView(toolNotificationCollapsedView(appContext, item))
                     .setCustomBigContentView(toolNotificationExpandedView(appContext, item))
                     .setCustomHeadsUpContentView(toolNotificationHeadsUpView(appContext, item))
@@ -80,27 +76,6 @@ object ToolNotificationDataSource {
         runCatching {
             NotificationManagerCompat.from(appContext).notify(PERSISTENT_NOTIFICATION_ID, notification)
         }
-    }
-
-    private fun targetIntent(
-        context: Context,
-        route: String,
-        requestCode: Int,
-    ): PendingIntent {
-        val intent =
-            Intent(context, MainActivity::class.java).apply {
-                action = "com.quickcleanpro.phonecleaner.notification.OPEN_TOOL.$route"
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP
-                putExtra(EXTRA_TARGET_ROUTE, route)
-            }
-        return PendingIntent.getActivity(
-            context,
-            TOOL_CONTENT_REQUEST_BASE_CODE + requestCode,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
     }
 
     private fun toolNotificationCollapsedView(

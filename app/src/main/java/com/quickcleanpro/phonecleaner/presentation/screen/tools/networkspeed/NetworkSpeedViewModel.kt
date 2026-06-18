@@ -17,17 +17,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class SpeedTestState {
+enum class NetworkSpeedPhase {
     Idle,
-    Running,
-    Done,
+    Testing,
+    Result,
     Error,
 }
 
 data class NetworkSpeedUiState(
     val networkInfo: NetworkInfo = NetworkInfo(),
     val hasNetwork: Boolean = false,
-    val speedState: SpeedTestState = SpeedTestState.Idle,
+    val phase: NetworkSpeedPhase = NetworkSpeedPhase.Idle,
     val speed: NetworkSpeedResult? = null,
     val progress: NetworkSpeedProgress = NetworkSpeedProgress(),
     val errorMessage: String? = null,
@@ -80,7 +80,7 @@ class NetworkSpeedViewModel(
     }
 
     fun refreshNetworkStateUntilNetworkAvailable() {
-        if (_uiState.value.speedState == SpeedTestState.Running) return
+        if (_uiState.value.phase == NetworkSpeedPhase.Testing) return
         networkRefreshJob?.cancel()
         networkRefreshJob =
             viewModelScope.launch(ioDispatcher) {
@@ -95,13 +95,13 @@ class NetworkSpeedViewModel(
 
     fun runSpeedTest() {
         val state = _uiState.value
-        if (state.speedState == SpeedTestState.Running || !state.hasNetwork) return
+        if (state.phase == NetworkSpeedPhase.Testing || !state.hasNetwork) return
 
         networkRefreshJob?.cancel()
         speedTestJob?.cancel()
         _uiState.update {
             it.copy(
-                speedState = SpeedTestState.Running,
+                phase = NetworkSpeedPhase.Testing,
                 speed = null,
                 progress = NetworkSpeedProgress(phase = "latency"),
                 errorMessage = null,
@@ -113,7 +113,7 @@ class NetworkSpeedViewModel(
                     val result =
                         repository.runSpeedTestWithProgress { progress ->
                             _uiState.update { current ->
-                                if (current.speedState == SpeedTestState.Running) {
+                                if (current.phase == NetworkSpeedPhase.Testing) {
                                     current.copy(progress = progress)
                                 } else {
                                     current
@@ -122,7 +122,7 @@ class NetworkSpeedViewModel(
                         }
                     _uiState.update {
                         it.copy(
-                            speedState = SpeedTestState.Done,
+                            phase = NetworkSpeedPhase.Result,
                             speed = result,
                             progress =
                                 it.progress.copy(
@@ -139,7 +139,7 @@ class NetworkSpeedViewModel(
                 } catch (error: Throwable) {
                     _uiState.update {
                         it.copy(
-                            speedState = SpeedTestState.Error,
+                            phase = NetworkSpeedPhase.Error,
                             errorMessage = error.message,
                         )
                     }
@@ -155,7 +155,7 @@ class NetworkSpeedViewModel(
         networkRefreshJob?.cancel()
         _uiState.update {
             it.copy(
-                speedState = SpeedTestState.Idle,
+                phase = NetworkSpeedPhase.Idle,
                 speed = null,
                 progress = NetworkSpeedProgress(),
                 errorMessage = null,

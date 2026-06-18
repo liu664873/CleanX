@@ -2,20 +2,19 @@ package com.quickcleanpro.phonecleaner.di
 
 import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.VirusScanViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.applock.AppLockViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.cleanresult.CleanResultViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.AudiosManagerViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.DocumentsManagerViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.DuplicateFilesViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.LargeFilesManagerViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.PhotoPrivacyManagerViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.PhotosManagerViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.ScreenshotsManagerViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.SimilarPhotosManagerViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.VideosManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.audios.AudiosManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.documents.DocumentsManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateFilesManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.largefiles.LargeFilesManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.photoprivacy.PhotoPrivacyManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.photos.PhotosManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.screenshots.ScreenshotsManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.similarphotos.SimilarPhotosManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.videos.VideosManagerViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.home.HomeViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.onboarding.OnboardingScanViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.result.ResultViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.scan.ScanViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.JunkCleanViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.settings.ManagePermissionsViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.splash.SplashViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.appusage.AppUsageViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.device.BatteryInfoViewModel
@@ -38,8 +37,8 @@ val presentationModule =
     module {
         viewModel { HomeViewModel(get(), get()) }
         viewModel { AppUsageViewModel(get()) }
-        viewModel { DeviceInfoViewModel(get(), get(), get()) }
-        viewModel { BatteryInfoViewModel(get(), get(), get()) }
+        viewModel { DeviceInfoViewModel(get(), get(), get(), get()) }
+        viewModel { BatteryInfoViewModel(get(), get(), get(), get()) }
         viewModel { NetworkScanViewModel(get(), { readNetworkInfo(androidContext()) }) }
         viewModel { NetworkScanDevicesViewModel(get()) }
         viewModel { NetworkSpeedViewModel(get(), { readNetworkInfo(androidContext()) }) }
@@ -48,9 +47,8 @@ val presentationModule =
         viewModel { NotificationBarViewModel(get()) }
         viewModel { NotificationCleanerViewModel(get()) }
         viewModel { OnboardingScanViewModel(get()) }
-        viewModel { ScanViewModel(get(), get(), Dispatchers.IO) }
-        viewModel { ResultViewModel(get(), get(), Dispatchers.IO) }
-        viewModel { CleanResultViewModel(get()) }
+        viewModel { JunkCleanViewModel(get(), get(), get(), Dispatchers.IO) }
+        viewModel { ManagePermissionsViewModel(get(), Dispatchers.IO) }
         viewModel { SplashViewModel() }
         viewModel { PhotosManagerViewModel(get(), Dispatchers.IO) }
         viewModel { ScreenshotsManagerViewModel(get(), Dispatchers.IO) }
@@ -60,7 +58,7 @@ val presentationModule =
         viewModel { PhotoPrivacyManagerViewModel(get(), Dispatchers.IO) }
         viewModel { LargeFilesManagerViewModel(get(), Dispatchers.IO) }
         viewModel { DocumentsManagerViewModel(get(), Dispatchers.IO) }
-        viewModel { DuplicateFilesViewModel(get(), Dispatchers.IO) }
+        viewModel { DuplicateFilesManagerViewModel(get(), Dispatchers.IO) }
         viewModel { VirusScanViewModel(androidApplication()) }
         viewModel {
             AppLockViewModel(

@@ -36,8 +36,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXSegmentedTabs
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXTabItem
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXSegmentedTabs
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXTabItem
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.PackageAppIcon
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar

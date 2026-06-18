@@ -18,6 +18,7 @@ import com.quickcleanpro.phonecleaner.domain.model.device.MemoryInfo
 import com.quickcleanpro.phonecleaner.domain.model.device.StorageInfo
 import com.quickcleanpro.phonecleaner.domain.repository.BatteryHistoryRepository
 import com.quickcleanpro.phonecleaner.domain.repository.DeviceInfoRepository
+import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -71,6 +72,7 @@ data class DeviceInfoUiState(
     val currentSamples: List<BatteryCurrentSample> = emptyList(),
     val temperatureSamples: List<BatteryTemperatureSample> = emptyList(),
     val latestSampleTimestampMillis: Long = 0L,
+    val temperatureUnit: String = TEMPERATURE_UNIT_CELSIUS,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
 ) {
@@ -112,6 +114,7 @@ open class DeviceInfoViewModel(
     private val repository: DeviceInfoRepository,
     private val batteryHistoryRepository: BatteryHistoryRepository,
     private val batteryHistorySampler: BatteryHistorySampler,
+    private val settingsRepository: SettingsRepository,
     private val initialMode: DeviceInfoMode = DeviceInfoMode.Device,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val nowMillis: () -> Long = System::currentTimeMillis,
@@ -213,13 +216,14 @@ open class DeviceInfoViewModel(
             memory = memory,
             storage = storage,
             hardware = hardware,
-            cpuUsagePercent = readCpuUsagePercent(),
+            cpuUsagePercent = readCpuUsagePercent(previousState.cpuUsagePercent),
             currentNow = currentNow,
             currentAverage = currentAverage,
             selectedCurrentRange = previousState.selectedCurrentRange,
             currentSamples = historySamples.toCurrentSamples(timestampMillis, maxSampleCount),
             temperatureSamples = historySamples.toTemperatureSamples(timestampMillis),
             latestSampleTimestampMillis = timestampMillis,
+            temperatureUnit = readTemperatureUnit(),
             isLoading = false,
             errorMessage = null,
         ).withHistorySamples(historySamples, timestampMillis, maxSampleCount)
@@ -243,6 +247,7 @@ open class DeviceInfoViewModel(
                     batteryStatus = batteryStatus ?: state.batteryStatus,
                     currentNow = currentNow ?: state.currentNow,
                     currentAverage = currentAverage ?: state.currentAverage,
+                    temperatureUnit = readTemperatureUnit(),
                     isLoading = false,
                 ).withHistorySamples(samples, timestamp, maxSampleCount)
         }
@@ -263,9 +268,13 @@ open class DeviceInfoViewModel(
         timestampMillis: Long,
     ) {
         _uiState.update { state ->
-            state.withHistorySamples(samples, timestampMillis, maxSampleCount)
+            state
+                .copy(temperatureUnit = readTemperatureUnit())
+                .withHistorySamples(samples, timestampMillis, maxSampleCount)
         }
     }
+
+    private fun readTemperatureUnit(): String = settingsRepository.readTemperatureUnit().normalizeTemperatureUnit()
 
     private fun shouldForceBatterySample(timestampMillis: Long): Boolean {
         val latestSample =
@@ -281,23 +290,42 @@ class BatteryInfoViewModel(
     repository: DeviceInfoRepository,
     batteryHistoryRepository: BatteryHistoryRepository,
     batteryHistorySampler: BatteryHistorySampler,
+    settingsRepository: SettingsRepository,
     ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : DeviceInfoViewModel(
     repository = repository,
     batteryHistoryRepository = batteryHistoryRepository,
     batteryHistorySampler = batteryHistorySampler,
+    settingsRepository = settingsRepository,
     initialMode = DeviceInfoMode.Battery,
     ioDispatcher = ioDispatcher,
 )
 
 internal fun formatBatteryTemperature(
     tempC: Float?,
+    unit: String = TEMPERATURE_UNIT_CELSIUS,
     includeSpace: Boolean = true,
 ): String {
     val temperature = tempC?.takeIf { it.isFiniteValue() } ?: return "--"
+    val normalizedUnit = unit.normalizeTemperatureUnit()
+    val displayTemperature = if (normalizedUnit == TEMPERATURE_UNIT_FAHRENHEIT) {
+        celsiusToFahrenheit(temperature)
+    } else {
+        temperature
+    }
     val separator = if (includeSpace) " " else ""
-    return String.format(Locale.US, "%.1f%s\u00B0C", temperature, separator)
+    return String.format(Locale.US, "%.1f%s\u00B0%s", displayTemperature, separator, normalizedUnit)
 }
+
+internal fun displayBatteryTemperatureValue(
+    tempC: Float,
+    unit: String,
+): Float =
+    if (unit.normalizeTemperatureUnit() == TEMPERATURE_UNIT_FAHRENHEIT) {
+        celsiusToFahrenheit(tempC)
+    } else {
+        tempC
+    }
 
 internal fun formatBatteryVoltage(voltageMilliVolts: Int): String =
     if (voltageMilliVolts > 0) {
@@ -435,14 +463,21 @@ private fun averageTemperature(
         ?.toFloat()
         ?: fallback
 
-private fun readCpuUsagePercent(): Int {
-    val first = readCpuStat() ?: return 0
+private fun readCpuUsagePercent(previousPercent: Int = 0): Int {
+    readCpuUsagePercentFromProcStat()?.let { return it }
+    readCpuUsagePercentFromLoadAverage()?.let { return it }
+    readCpuUsagePercentFromFrequencies()?.let { return it }
+    return previousPercent.coerceIn(0, 100)
+}
+
+private fun readCpuUsagePercentFromProcStat(): Int? {
+    val first = readCpuStat() ?: return null
     Thread.sleep(CPU_USAGE_SAMPLE_DELAY_MILLIS)
-    val second = readCpuStat() ?: return 0
+    val second = readCpuStat() ?: return null
     val totalDiff = second.total - first.total
     val idleDiff = second.idle - first.idle
-    if (totalDiff <= 0L) return 0
-    return (((totalDiff - idleDiff) * 100f) / totalDiff).roundToInt().coerceIn(0, 100)
+    if (totalDiff <= 0L || idleDiff < 0L) return null
+    return (((totalDiff - idleDiff) * 100f) / totalDiff).toCpuUsagePercent()
 }
 
 private fun readCpuStat(): CpuStat? =
@@ -462,20 +497,95 @@ private fun readCpuStat(): CpuStat? =
         )
     }.getOrNull()
 
+private fun readCpuUsagePercentFromLoadAverage(): Int? =
+    runCatching {
+        val loadAverage =
+            File(CPU_LOAD_AVERAGE_PATH)
+                .useLines { lines -> lines.firstOrNull().orEmpty() }
+                .trim()
+                .split(Regex("\\s+"))
+                .firstOrNull()
+                ?.toFloatOrNull()
+        val coreCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+        loadAverage
+            ?.takeIf { it.isFiniteValue() && it >= 0f }
+            ?.let { ((it / coreCount) * 100f).toCpuUsagePercent() }
+    }.getOrNull()
+
+private fun readCpuUsagePercentFromFrequencies(): Int? =
+    runCatching {
+        val ratios =
+            File(CPU_SYSTEM_PATH)
+                .listFiles { file -> file.isDirectory && CPU_CORE_NAME_REGEX.matches(file.name) }
+                .orEmpty()
+                .mapNotNull { cpuDir ->
+                    val current = readFirstCpuFrequency(cpuDir, CPU_CURRENT_FREQUENCY_FILES)
+                    val max = readFirstCpuFrequency(cpuDir, CPU_MAX_FREQUENCY_FILES)
+                    if (current > 0L && max > 0L) {
+                        current.toFloat() / max
+                    } else {
+                        null
+                    }
+                }
+        ratios
+            .takeIf { it.isNotEmpty() }
+            ?.average()
+            ?.times(100.0)
+            ?.toFloat()
+            ?.toCpuUsagePercent()
+    }.getOrNull()
+
+private fun readFirstCpuFrequency(
+    cpuDir: File,
+    fileNames: List<String>,
+): Long =
+    fileNames
+        .asSequence()
+        .mapNotNull { fileName ->
+            runCatching {
+                File(cpuDir, "cpufreq/$fileName")
+                    .readText()
+                    .trim()
+                    .toLongOrNull()
+            }.getOrNull()
+        }.firstOrNull()
+        ?: 0L
+
 private data class CpuStat(
     val idle: Long,
     val total: Long,
 )
 
+private fun Float.toCpuUsagePercent(): Int =
+    roundToInt().coerceIn(MIN_REPORTED_CPU_USAGE_PERCENT, 100)
+
 private fun Float.isFiniteValue(): Boolean = !isNaN() && !isInfinite()
 
 private fun Float?.normalizedBatteryCurrent(): Float? = this?.takeIf { it.isFiniteValue() }?.let { abs(it) }
 
+private fun String.normalizeTemperatureUnit(): String =
+    if (equals(TEMPERATURE_UNIT_FAHRENHEIT, ignoreCase = true)) {
+        TEMPERATURE_UNIT_FAHRENHEIT
+    } else {
+        TEMPERATURE_UNIT_CELSIUS
+    }
+
+private fun celsiusToFahrenheit(value: Float): Float = value * 9f / 5f + 32f
+
 private const val UNKNOWN = "Unknown"
+private const val TEMPERATURE_UNIT_CELSIUS = "C"
+private const val TEMPERATURE_UNIT_FAHRENHEIT = "F"
 private const val TEMPERATURE_WINDOW_MILLIS = 60_000L
 private const val BATTERY_HISTORY_FUTURE_TOLERANCE_MILLIS = 60_000L
 private const val BATTERY_HISTORY_FRESH_SAMPLE_MILLIS = BATTERY_HISTORY_SAMPLE_INTERVAL_MILLIS + 5_000L
-private const val CPU_USAGE_SAMPLE_DELAY_MILLIS = 120L
+private const val CPU_USAGE_SAMPLE_DELAY_MILLIS = 360L
+private const val CPU_SYSTEM_PATH = "/sys/devices/system/cpu"
+private const val CPU_LOAD_AVERAGE_PATH = "/proc/loadavg"
+private const val MIN_REPORTED_CPU_USAGE_PERCENT = 1
+
+private val CPU_CORE_NAME_REGEX = Regex("cpu\\d+")
+private val CPU_CURRENT_FREQUENCY_FILES = listOf("scaling_cur_freq", "cpuinfo_cur_freq")
+private val CPU_MAX_FREQUENCY_FILES = listOf("cpuinfo_max_freq", "scaling_max_freq")
 
 private val EMPTY_BATTERY_INFO = BatteryInfo(-1, UNKNOWN, 0f, -1, UNKNOWN, 0, UNKNOWN)
 private val EMPTY_BATTERY_STATUS = BatteryStatusInfo(statusText = UNKNOWN, isCharging = false)

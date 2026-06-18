@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -14,9 +13,9 @@ import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.quickcleanpro.phonecleaner.MainActivity
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.data.source.notification.QuickCleanNotificationListener
+import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationIntentFactory
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
 data class BlockableNotificationApp(
@@ -25,7 +24,7 @@ data class BlockableNotificationApp(
 )
 
 object NotificationHelper {
-    const val EXTRA_TARGET_ROUTE = "quickclean_target_route"
+    const val EXTRA_TARGET_ROUTE = ToolNotificationIntentFactory.EXTRA_TARGET_ROUTE
 
     private const val CHANNEL_NAME = "Quick Clean Tools"
     private const val PREFS = "notification_blocker"
@@ -55,7 +54,7 @@ object NotificationHelper {
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setContentTitle(item.title)
                     .setContentText(item.description)
-                    .setContentIntent(targetIntent(context, item.route, index))
+                    .setContentIntent(ToolNotificationIntentFactory.pendingIntent(context, item.route, index))
                     .setAutoCancel(true)
                     .setOnlyAlertOnce(false)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -84,24 +83,6 @@ object NotificationHelper {
             }
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.createNotificationChannel(channel)
-    }
-
-    private fun targetIntent(
-        context: Context,
-        route: String,
-        requestCode: Int,
-    ): PendingIntent {
-        val intent =
-            Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                putExtra(EXTRA_TARGET_ROUTE, route)
-            }
-        return PendingIntent.getActivity(
-            context,
-            requestCode,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
     }
 
     private data class ToolNotification(

@@ -33,10 +33,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXMutedText
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXPrimaryButton
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXText
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBlue
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXMutedText
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXPrimaryButton
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXText
 
 @Composable
 internal fun AppLockUsageAccessPermissionDialog(

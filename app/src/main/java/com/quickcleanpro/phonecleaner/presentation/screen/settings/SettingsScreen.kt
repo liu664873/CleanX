@@ -48,7 +48,6 @@ private val SettingsNavy = Color(0xFF1D2959)
 private val SettingsMuted = Color(0xA61D2959)
 private val SettingsDividerColor = Color(0x332D3748)
 private val SettingsCardRadius = 20.dp
-
 @Composable
 fun SettingsScreen(
     settingsRepository: SettingsRepository = koinInject(),

@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -48,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.notification.BlockableNotificationApp
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
+import com.quickcleanpro.phonecleaner.presentation.common.components.PackageAppIcon
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.NotificationBlockingTurnedOffDialog
@@ -358,7 +358,11 @@ private fun NotificationAppRow(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AppInitialBadge(text = app.appName.take(1).ifBlank { "A" })
+            PackageAppIcon(
+                packageName = app.packageName,
+                fallbackText = app.appName.take(1).ifBlank { "A" },
+                modifier = Modifier.size(44.dp)
+            )
             Spacer(modifier = Modifier.size(12.dp))
             Text(
                 text = app.appName,

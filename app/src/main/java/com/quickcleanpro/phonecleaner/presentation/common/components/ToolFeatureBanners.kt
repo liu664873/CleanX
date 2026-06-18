@@ -92,6 +92,24 @@ fun ToolFeatureBanners(
 }
 
 @Composable
+fun ToolFeatureBanners(
+    features: List<ToolFeature>,
+    modifier: Modifier = Modifier,
+) {
+    val router = LocalRouter.current
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        features.forEach { feature ->
+            ToolFeatureBanner(
+                feature = feature,
+                onClick = { router.navigateAndClearStack(feature.screen) },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
 private fun ToolFeatureBanner(feature: ToolFeature, onClick: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),

@@ -207,46 +207,32 @@ internal fun VirusProgressTrack(
     appThreatCount: Int,
     fileThreatCount: Int,
 ) {
-    val visualIcons =
-        when (mode) {
-            VirusScanMode.Quick ->
-                listOf(
-                    R.mipmap.ic_lock_small,
-                    R.mipmap.ic_virus_small,
-                    R.mipmap.ic_malware_small,
-                )
-            VirusScanMode.Deep ->
-                listOf(
-                    R.mipmap.ic_lock_small,
-                    R.mipmap.ic_virus_small,
-                    R.mipmap.ic_malware_small,
-                    R.mipmap.ic_file_small,
-                )
-        }
+    val visualIcons = if (mode == VirusScanMode.Deep) {
+        listOf(R.mipmap.ic_lock_small, R.mipmap.ic_virus_small, R.mipmap.ic_malware_small, R.mipmap.ic_file_small)
+    } else {
+        listOf(R.mipmap.ic_lock_small, R.mipmap.ic_virus_small, R.mipmap.ic_malware_small)
+    }
     val badgeCounts =
         if (mode == VirusScanMode.Deep) {
             listOf(if (hasAdbRisk) 1 else 0, 0, appThreatCount, fileThreatCount)
         } else {
             listOf(if (hasAdbRisk) 1 else 0, 0, appThreatCount)
         }
-    val circleDiameter = 56.dp
-    val trackWidth = 317.dp
-    val trackHeight = 12.dp
-    val iconSize = 24.dp
-    val badgeSize = 14.dp
-    val trackHorizontalInset = 4.dp
+    val trackWidth = if (mode == VirusScanMode.Deep) 330.dp else 240.dp
+    val circleDiameter = 60.dp
+    val connectorWidth = 30.dp
+    val iconSize = 30.dp
+    val badgeSize = 15.dp
     val clampedProgress = progress.coerceIn(0f, 1f)
     val completedStepCount = remember(mode, clampedProgress) {
-        val trackWidthPx = 317f
-        val circleDiameterPx = 56f
-        val trackStartPx = 4f
-        val trackEndPx = trackWidthPx - 4f
-        val nodeCount = visualIcons.size
-        val fillEndX = trackStartPx + (trackEndPx - trackStartPx) * clampedProgress
-        (0 until nodeCount).count { index ->
-            val circleLeft =
-                if (nodeCount <= 1) 0f else (trackWidthPx - circleDiameterPx) * index / (nodeCount - 1).toFloat()
-            val circleRight = circleLeft + circleDiameterPx
+        val circleDiameterPx = 60f
+        val connectorWidthPx = 30f
+        val circleCount = visualIcons.size
+        val totalWidth = circleCount * circleDiameterPx + (circleCount - 1) * connectorWidthPx
+        val fillEndX = totalWidth * clampedProgress
+
+        (0 until circleCount).count { index ->
+            val circleRight = index * (circleDiameterPx + connectorWidthPx) + circleDiameterPx
             fillEndX >= circleRight
         }
     }
@@ -257,24 +243,20 @@ internal fun VirusProgressTrack(
             .height(circleDiameter),
     ) {
         Canvas(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(circleDiameter),
         ) {
             val circleDiameterPx = circleDiameter.toPx()
             val circleRadius = circleDiameterPx / 2f
-            val trackHeightPx = trackHeight.toPx()
-            val trackStartX = trackHorizontalInset.toPx()
-            val trackEndX = size.width - trackHorizontalInset.toPx()
-            val trackUsableWidth = trackEndX - trackStartX
-            val fillEndX = trackStartX + trackUsableWidth * clampedProgress
+            val connectorWidthPx = connectorWidth.toPx()
+            val connectorHeightPx = 15.dp.toPx()
+            val connectorOverlapPx = 2.dp.toPx()
             val centerY = size.height / 2f
-            val nodeCount = visualIcons.size
-
-            fun circleLeft(index: Int): Float =
-                if (nodeCount <= 1) {
-                    0f
-                } else {
-                    (size.width - circleDiameterPx) * index / (nodeCount - 1).toFloat()
-                }
+            val circleCount = visualIcons.size
+            val totalWidth = circleCount * circleDiameterPx + (circleCount - 1) * connectorWidthPx
+            val startX = ((size.width - totalWidth) / 2f).coerceAtLeast(0f)
+            val fillEndX = startX + totalWidth * clampedProgress
 
             fun drawNode(left: Float, color: Color) {
                 drawCircle(
@@ -289,88 +271,56 @@ internal fun VirusProgressTrack(
                 right: Float,
                 color: Color,
             ) {
-                drawRoundRect(
+                if (right <= left) return
+                drawRect(
                     color = color,
-                    topLeft = androidx.compose.ui.geometry.Offset(left, centerY - trackHeightPx / 2f),
-                    size = androidx.compose.ui.geometry.Size(right - left, trackHeightPx),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(trackHeightPx / 2f),
+                    topLeft = androidx.compose.ui.geometry.Offset(left, centerY - connectorHeightPx / 2f),
+                    size = androidx.compose.ui.geometry.Size(right - left, connectorHeightPx),
                 )
             }
 
-            fun drawActiveTrack(
-                left: Float,
-                right: Float,
-            ) {
-                if (right <= left) return
-                drawRoundRect(
-                    color = VirusBlueDeep,
-                    topLeft = androidx.compose.ui.geometry.Offset(left, centerY - trackHeightPx / 2f),
-                    size = androidx.compose.ui.geometry.Size(right - left, trackHeightPx),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(trackHeightPx / 2f),
-                )
+            repeat(circleCount) { index ->
+                val circleLeft = startX + index * (circleDiameterPx + connectorWidthPx)
+                drawNode(circleLeft, VirusTrackInactiveLine)
+
+                if (index < circleCount - 1) {
+                    val connectorLeft = circleLeft + circleDiameterPx - connectorOverlapPx
+                    val connectorRight = circleLeft + circleDiameterPx + connectorWidthPx + connectorOverlapPx
+                    drawConnector(connectorLeft, connectorRight, VirusTrackInactiveLine)
+                }
             }
 
-            fun drawActiveTrackTransition(
-                left: Float,
-                right: Float,
-            ) {
-                if (right <= left) return
-                drawRoundRect(
-                    brush =
-                        Brush.horizontalGradient(
-                            colors = listOf(VirusBlueDeep, Color(0xFF1483B9), VirusTrackInactiveLine),
-                            startX = left,
-                            endX = right,
-                        ),
-                    topLeft = androidx.compose.ui.geometry.Offset(left, centerY - trackHeightPx / 2f),
-                    size = androidx.compose.ui.geometry.Size(right - left, trackHeightPx),
-                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(trackHeightPx / 2f),
-                )
-            }
+            repeat(circleCount) { index ->
+                val circleLeft = startX + index * (circleDiameterPx + connectorWidthPx)
+                val circleRight = circleLeft + circleDiameterPx
 
-            drawConnector(
-                left = trackStartX,
-                right = trackEndX,
-                color = VirusTrackInactiveLine,
-            )
-            if (clampedProgress >= 1f) {
-                drawActiveTrack(trackStartX, trackEndX)
-            } else if (fillEndX > trackStartX) {
-                val transitionWidth = 14.dp.toPx()
-                val solidEndX = (fillEndX - transitionWidth / 2f).coerceAtLeast(trackStartX)
-                val transitionEndX = (fillEndX + transitionWidth / 2f).coerceAtMost(trackEndX)
-                drawActiveTrack(trackStartX, solidEndX)
-                drawActiveTrackTransition(solidEndX, transitionEndX)
-            }
-
-            repeat(nodeCount) { index ->
-                val left = circleLeft(index)
-                drawNode(left, VirusTrackInactiveLine)
-                val right = left + circleDiameterPx
                 when {
-                    fillEndX >= right -> drawNode(left, VirusBlueDeep)
-                    fillEndX > left -> {
-                        clipRect(left = left, top = 0f, right = fillEndX, bottom = size.height) {
-                            drawNode(left, VirusBlueDeep)
+                    fillEndX >= circleRight -> drawNode(circleLeft, VirusBlueDeep)
+                    fillEndX > circleLeft -> {
+                        clipRect(left = circleLeft, top = 0f, right = fillEndX, bottom = size.height) {
+                            drawNode(circleLeft, VirusBlueDeep)
                         }
+                    }
+                }
+
+                if (index < circleCount - 1) {
+                    val connectorLeft = circleRight - connectorOverlapPx
+                    val connectorRight = circleRight + connectorWidthPx + connectorOverlapPx
+                    if (fillEndX > connectorLeft) {
+                        drawConnector(connectorLeft, fillEndX.coerceAtMost(connectorRight), VirusBlueDeep)
                     }
                 }
             }
         }
 
         visualIcons.forEachIndexed { index, icon ->
-            val stepOffset =
-                if (visualIcons.size <= 1) {
-                    0.dp
-                } else {
-                    (trackWidth - circleDiameter) * (index / (visualIcons.size - 1).toFloat())
-                }
+            val circleLeft = (circleDiameter + connectorWidth) * index
             Image(
                 painter = painterResource(icon),
                 contentDescription = null,
                 modifier = Modifier
                     .offset(
-                        x = stepOffset + (circleDiameter - iconSize) / 2,
+                        x = circleLeft + (circleDiameter - iconSize) / 2,
                         y = (circleDiameter - iconSize) / 2,
                     )
                     .size(iconSize),
@@ -380,7 +330,7 @@ internal fun VirusProgressTrack(
             if (index < completedStepCount && badgeCount > 0) {
                 Box(
                     modifier = Modifier
-                        .offset(x = stepOffset + 42.dp, y = 0.dp)
+                        .offset(x = circleLeft + 40.dp, y = 0.dp)
                         .size(badgeSize)
                         .clip(CircleShape)
                         .background(VirusDanger)

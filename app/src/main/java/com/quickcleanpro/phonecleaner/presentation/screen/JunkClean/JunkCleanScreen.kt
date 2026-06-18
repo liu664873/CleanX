@@ -1,0 +1,89 @@
+package com.quickcleanpro.phonecleaner.presentation.screen.JunkClean
+
+import android.app.Activity
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
+import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
+import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.views.JunkCleanContentView
+import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.views.JunkScanResultBottomBar
+
+@Composable
+fun JunkCleanScreen(
+    viewModel: JunkCleanViewModel,
+    permissionGateConfig: PermissionGateConfig? = null,
+    onNavigateBack: () -> Unit,
+    onNavigateHome: () -> Unit,
+) {
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val deleteAuthorizationLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult(),
+        ) { result ->
+            viewModel.handleAuthorizationResult(result.resultCode == Activity.RESULT_OK)
+        }
+
+    LaunchedEffect(viewModel) {
+        viewModel.startScanIfNeeded()
+    }
+
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is JunkCleanEvent.RequestDeleteAuthorization -> {
+                    deleteAuthorizationLauncher.launch(
+                        IntentSenderRequest.Builder(event.deleteRequest.intentSender).build(),
+                    )
+                }
+            }
+        }
+    }
+
+    fun exitToHome() {
+        viewModel.clearResult()
+        onNavigateHome()
+    }
+
+    BackHandler(enabled = uiState.phase == JunkCleanPhase.Complete, onBack = ::exitToHome)
+
+    CleanXScaffoldPage(
+        title = stringResource(R.string.junk_removal),
+        onBack = if (uiState.phase == JunkCleanPhase.Complete) ::exitToHome else onNavigateBack,
+        scrollEnabled = false,
+        contentPadding = PaddingValues(0.dp),
+        permissionGateConfig = permissionGateConfig,
+        backgroundBrush = Brush.linearGradient(
+            colors = listOf(Color(0xFFE3ECFD), Color(0xFFDFEBF5)),
+        ),
+        bottomBar = {
+            if (uiState.phase == JunkCleanPhase.Preview) {
+                JunkScanResultBottomBar(
+                    selectedSummary = uiState.selectedSummary,
+                    onClean = { viewModel.startCleaning(context) },
+                )
+            }
+        },
+    ) {
+        JunkCleanContentView(
+            uiState = uiState,
+            onToggleCategorySelection = viewModel::toggleCategorySelection,
+            onToggleItem = { item -> viewModel.toggleItemSelection(item.junkFile.id) },
+            onContinueFromResult = ::exitToHome,
+        )
+    }
+}

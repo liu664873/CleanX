@@ -6,12 +6,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,25 +22,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXBottomActionBar
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXEmptyScanResult
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.DeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.NoResultsDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.DuplicateFilesViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.PhotosState
+import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateFilesManagerViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerPhase
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.requestMediaStoreDeleteOrDeleteDirectly
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.splitSizeLabel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.CompleteAnimationContent
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.DeletingAnimationContent
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileCollectionResultContent
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerPageBrush
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.ScanningContent
-import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.views.DuplicateGroupDetailContent
-import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.views.DuplicateGroupsContent
+import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.views.DuplicateFilesManagerContentView
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import org.koin.androidx.compose.koinViewModel
 
@@ -60,7 +49,7 @@ fun DuplicateFilesManagerScreen(
 
 @Composable
 private fun DuplicateFilesManagerScreenState(
-    viewModel: DuplicateFilesViewModel,
+    viewModel: DuplicateFilesManagerViewModel,
     permissionGateConfig: PermissionGateConfig? = null
 ) {
     val router = LocalRouter.current
@@ -87,16 +76,11 @@ private fun DuplicateFilesManagerScreenState(
 
     BackHandler {
         when {
-            uiState.phase == PhotosState.Scanning -> showStopDialog = true
+            uiState.phase == FileManagerPhase.Scanning -> showStopDialog = true
             selectedGroup != null -> viewModel.closeGroup()
-            uiState.phase == PhotosState.Result -> router.goHome()
+            uiState.phase == FileManagerPhase.Result -> router.goHome()
             else -> router.goBack()
         }
-    }
-
-    if (uiState.phase == PhotosState.Deleting) {
-        DeletingAnimationContent(stringResource(R.string.file_deleting_duplicate_files))
-        return
     }
 
     CleanXScaffoldPage(
@@ -106,15 +90,15 @@ private fun DuplicateFilesManagerScreenState(
         backgroundBrush = FileManagerPageBrush,
         onBack = {
             when {
-                uiState.phase == PhotosState.Scanning -> showStopDialog = true
+                uiState.phase == FileManagerPhase.Scanning -> showStopDialog = true
                 selectedGroup != null -> viewModel.closeGroup()
-                uiState.phase == PhotosState.Result -> router.goHome()
+                uiState.phase == FileManagerPhase.Result -> router.goHome()
                 else -> router.goBack()
             }
         },
         permissionGateConfig = permissionGateConfig,
         bottomBar = {
-            if ((uiState.phase == PhotosState.Browsing || uiState.phase == PhotosState.ConfirmDelete) && selectedGroup == null) {
+            if ((uiState.phase == FileManagerPhase.Browsing || uiState.phase == FileManagerPhase.ConfirmDelete) && selectedGroup == null) {
                 CleanXBottomActionBar(
                     enabled = uiState.filesToDelete.isNotEmpty(),
                     text = stringResource(R.string.file_clean_up_size, formatDuplicateCleanupSize(uiState.selectedDeleteSize)),
@@ -127,52 +111,17 @@ private fun DuplicateFilesManagerScreenState(
             }
         }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(FileManagerPageBrush)
-                .padding(horizontal = 16.dp)
-        ) {
-            when (uiState.phase) {
-                PhotosState.Scanning -> ScanningContent(text = stringResource(R.string.file_scanning_duplicate_files))
-                PhotosState.Browsing, PhotosState.ConfirmDelete -> {
-                    val group = selectedGroup
-                    if (group == null) {
-                        DuplicateGroupsContent(
-                            groups = uiState.groups,
-                            selectedFileKeys = uiState.selectedFileKeys,
-                            allSelected = uiState.allSelected,
-                            scrollState = groupListScrollState,
-                            onToggleAll = viewModel::toggleAll,
-                            onOpenGroup = viewModel::openGroup
-                        )
-                    } else {
-                        DuplicateGroupDetailContent(
-                            group = group,
-                            selectedFileKeys = uiState.selectedFileKeys,
-                            scrollState = scrollStateForGroup(group.id),
-                            onToggleFile = viewModel::toggleFile,
-                            onAutoSelect = viewModel::autoSelectCurrentGroup,
-                            onToggleGroupSelection = viewModel::toggleCurrentGroupSelection
-                        )
-                    }
-                }
-                PhotosState.Deleting -> Unit
-                PhotosState.CompleteAnimation -> CompleteAnimationContent()
-                PhotosState.Result -> {
-                    val result = FileSizeFormatter.format(uiState.deletedBytes).splitSizeLabel()
-                    FileCollectionResultContent(
-                        amount = result.first,
-                        unit = result.second,
-                        caption = stringResource(R.string.file_deleted_in_cleanup),
-                        onContinue = viewModel::continueManaging,
-                    )
-                }
-                PhotosState.NoResults -> CleanXEmptyScanResult(
-                    message = stringResource(R.string.file_scan_completed_no_results),
-                )
-            }
-        }
+        DuplicateFilesManagerContentView(
+            uiState = uiState,
+            groupListScrollState = groupListScrollState,
+            scrollStateForGroup = ::scrollStateForGroup,
+            onToggleAll = viewModel::toggleAll,
+            onOpenGroup = viewModel::openGroup,
+            onToggleFile = viewModel::toggleFile,
+            onAutoSelect = viewModel::autoSelectCurrentGroup,
+            onToggleGroupSelection = viewModel::toggleCurrentGroupSelection,
+            onContinue = viewModel::continueManaging,
+        )
     }
 
     if (showStopDialog) {
@@ -185,7 +134,7 @@ private fun DuplicateFilesManagerScreenState(
         )
     }
 
-    if (uiState.phase == PhotosState.ConfirmDelete) {
+    if (uiState.phase == FileManagerPhase.ConfirmDelete) {
         DeleteConfirmDialog(
             onCancel = viewModel::cancelDelete,
             onDelete = {
@@ -199,7 +148,7 @@ private fun DuplicateFilesManagerScreenState(
         )
     }
 
-    if (uiState.phase == PhotosState.NoResults) {
+    if (uiState.phase == FileManagerPhase.NoResults) {
         NoResultsDialog(onBack = { router.goBack() })
     }
 }

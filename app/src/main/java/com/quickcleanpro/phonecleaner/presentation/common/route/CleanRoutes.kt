@@ -8,23 +8,17 @@ import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionFeature
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionType
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
-import com.quickcleanpro.phonecleaner.presentation.screen.cleanresult.CleanResultViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.result.ResultViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.scan.JunkRemovalScreen
-import com.quickcleanpro.phonecleaner.presentation.screen.scan.ScanViewModel
+import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.JunkCleanScreen
+import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.JunkCleanViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 
 internal fun NavGraphBuilder.registerCleanRoutes() {
     composable(Screen.Scan.route) {
         val router = LocalRouter.current
-        val scanViewModel: ScanViewModel = koinViewModel()
-        val resultViewModel: ResultViewModel = koinViewModel()
-        val cleanResultViewModel: CleanResultViewModel = koinViewModel()
-        JunkRemovalScreen(
-            scanViewModel = scanViewModel,
-            resultViewModel = resultViewModel,
-            cleanResultViewModel = cleanResultViewModel,
+        val viewModel: JunkCleanViewModel = koinViewModel()
+        JunkCleanScreen(
+            viewModel = viewModel,
             permissionGateConfig = cleanPermissionConfig(),
             onNavigateBack = { router.goBack() },
             onNavigateHome = { router.goHome() },

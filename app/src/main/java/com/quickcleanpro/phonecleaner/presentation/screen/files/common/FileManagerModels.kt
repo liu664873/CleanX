@@ -3,7 +3,7 @@ package com.quickcleanpro.phonecleaner.presentation.screen.files.common
 import androidx.compose.ui.graphics.Color
 import com.quickcleanpro.phonecleaner.domain.model.file.ManagedFileItem
 
-internal enum class PhotosState {
+internal enum class FileManagerPhase {
     Scanning,
     Browsing,
     ConfirmDelete,
@@ -13,7 +13,7 @@ internal enum class PhotosState {
     NoResults
 }
 
-internal data class PhotoItem(
+internal data class FileManagerMediaItem(
     val id: Int,
     val sizeLabel: String,
     val colors: List<Color>,
@@ -21,10 +21,10 @@ internal data class PhotoItem(
     val realFile: ManagedFileItem? = null
 )
 
-internal data class PhotoTabInfo(
+internal data class FileManagerMediaTab(
     val title: String,
     val sizeLabel: String?,
-    val items: List<PhotoItem>
+    val items: List<FileManagerMediaItem>
 )
 
 internal data class LoadState<T>(
@@ -32,7 +32,7 @@ internal data class LoadState<T>(
     val loaded: Boolean = false
 )
 
-internal enum class CollectionLayout {
+internal enum class FileManagerLayout {
     Screenshots,
     SimilarPhotos,
     PhotoPrivacy,
@@ -40,12 +40,12 @@ internal enum class CollectionLayout {
     AudioList
 }
 
-internal data class PhotoGroup(
+internal data class FileManagerMediaGroup(
     val count: Int,
-    val items: List<PhotoItem>
+    val items: List<FileManagerMediaItem>
 )
 
-internal data class FileCollectionConfig(
+internal data class FileManagerMediaConfig(
     val title: String,
     val scanText: String,
     val actionText: String,
@@ -53,45 +53,45 @@ internal data class FileCollectionConfig(
     val resultAmount: String,
     val resultUnit: String,
     val resultCaption: String,
-    val layout: CollectionLayout,
-    val items: List<PhotoItem>,
-    val groups: List<PhotoGroup> = emptyList(),
+    val layout: FileManagerLayout,
+    val items: List<FileManagerMediaItem>,
+    val groups: List<FileManagerMediaGroup> = emptyList(),
     val defaultSelectedIds: Set<Int> = emptySet(),
-    val tabs: List<ManagedFileTab> = emptyList(),
+    val tabs: List<FileManagerTab> = emptyList(),
     val loaded: Boolean = true
 )
-internal enum class ManagedFileKind {
+internal enum class FileManagerItemKind {
     LargeVideo,
     Document
 }
 
-internal data class ManagedFileUiItem(
+internal data class FileManagerListItem(
     val id: Int,
     val name: String,
     val meta: String,
     val sizeLabel: String,
-    val kind: ManagedFileKind,
+    val kind: FileManagerItemKind,
     val realFile: ManagedFileItem? = null
 )
 
-internal data class ManagedFileTab(
+internal data class FileManagerTab(
     val title: String,
     val sizeLabel: String
 )
 
-internal enum class ManagedFileListStyle {
+internal enum class FileManagerListStyle {
     Default,
     Documents
 }
 
-internal data class ManagedFileListConfig(
+internal data class FileManagerListConfig(
     val title: String,
     val scanText: String,
-    val tabs: List<ManagedFileTab>,
-    val items: List<ManagedFileUiItem>,
+    val tabs: List<FileManagerTab>,
+    val items: List<FileManagerListItem>,
     val resultAmount: String,
     val resultUnit: String,
-    val style: ManagedFileListStyle = ManagedFileListStyle.Default,
+    val style: FileManagerListStyle = FileManagerListStyle.Default,
     val loaded: Boolean = true
 )
 internal data class DuplicateFileEntry(

@@ -49,17 +49,16 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.device.StorageInfo
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXCheckBadge
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXStatusBadge
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXStatusBadgeState
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.PhoneScanIllustration
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
-import com.quickcleanpro.phonecleaner.presentation.common.components.animations.RotatingRingAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 private const val ONBOARDING_STEP_DELAY_MILLIS = 680L
-private const val OnboardingStatusRingDurationMillis = 1200
 private const val OnboardingScanLineDurationMillis = 1800
 
 private data class DeviceScanRow(
@@ -286,29 +285,6 @@ private fun localizedOnboardingDeviceValue(value: String): String =
 
 
 @Composable
-private fun StatusBadge(row: DeviceScanRow) {
-    Box(
-        modifier = Modifier.size(24.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        when {
-            row.complete -> CleanXCheckBadge(checked = true, size = 24.dp)
-            row.active -> RotatingRingAnimation(
-                modifier = Modifier.size(24.dp),
-                ringWidth = 1.8.dp,
-                ringColor = CleanXBlue,
-                backgroundColor = Color(0xFFC8D2DE),
-                animationDurationMillis = OnboardingStatusRingDurationMillis,
-                arcLength = 180f
-            )
-
-            else -> CleanXCheckBadge(checked = false, size = 24.dp)
-        }
-    }
-}
-
-
-@Composable
 private fun StorageCard(storageInfo: StorageInfo) {
     Box(
         modifier = Modifier
@@ -420,7 +396,14 @@ private fun DeviceRows(rows: List<DeviceScanRow>) {
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        StatusBadge(row = row)
+                        CleanXStatusBadge(
+                            state =
+                                when {
+                                    row.complete -> CleanXStatusBadgeState.Complete
+                                    row.active -> CleanXStatusBadgeState.Active
+                                    else -> CleanXStatusBadgeState.Inactive
+                                },
+                        )
                     }
                 }
             }

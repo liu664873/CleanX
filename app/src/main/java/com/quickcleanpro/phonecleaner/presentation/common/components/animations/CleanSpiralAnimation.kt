@@ -64,9 +64,10 @@ fun CleanSpiralAnimation(
                 .size(centerSize)
                 .clip(CircleShape)
                 .background(Color.White),
-            contentAlignment = Alignment.Center,
-            content = content,
-        )
+            contentAlignment = Alignment.Center
+        ){
+            content()
+        }
         Image(
             painter = painterResource(spiralResId),
             contentDescription = null,

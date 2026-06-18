@@ -4,15 +4,15 @@ import androidx.compose.ui.graphics.Color
 import com.quickcleanpro.phonecleaner.domain.model.file.ManagedFileItem
 import com.quickcleanpro.phonecleaner.domain.model.file.ManagedFileType
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.filterMediaGridItems
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.filterManagedFileUiItems
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.filterFileManagerListItems
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-internal fun mapPhotoItems(files: List<ManagedFileItem>, limit: Int = 60): List<PhotoItem> =
+internal fun mapFileManagerMediaItems(files: List<ManagedFileItem>, limit: Int = 60): List<FileManagerMediaItem> =
     files.take(limit).mapIndexed { index, file ->
-        PhotoItem(
+        FileManagerMediaItem(
             id = index + 1,
             sizeLabel = file.formattedSize,
             colors = realFileColors(index),
@@ -20,18 +20,18 @@ internal fun mapPhotoItems(files: List<ManagedFileItem>, limit: Int = 60): List<
         )
     }
 
-internal fun mapManagedFileUiItems(files: List<ManagedFileItem>): List<ManagedFileUiItem> =
+internal fun mapFileManagerListItems(files: List<ManagedFileItem>): List<FileManagerListItem> =
     files.sortedByDescending { it.sizeBytes }
         .mapIndexed { index, file ->
-            ManagedFileUiItem(
+            FileManagerListItem(
                 id = index + 1,
                 name = file.name,
                 meta = "${formatFileDate(file.modifiedSeconds)} ${file.formattedSize}",
                 sizeLabel = file.formattedSize,
                 kind = if (file.type == ManagedFileType.Video) {
-                    ManagedFileKind.LargeVideo
+                    FileManagerItemKind.LargeVideo
                 } else {
-                    ManagedFileKind.Document
+                    FileManagerItemKind.Document
                 },
                 realFile = file
             )
@@ -77,28 +77,28 @@ internal fun formatFileDate(modifiedSeconds: Long): String {
     return SimpleDateFormat("yyyy.MM.dd HH:mm:ss", Locale.US).format(Date(millis))
 }
 
-internal fun buildPhotoTabs(allPhotos: List<PhotoItem>): List<PhotoTabInfo> {
-    fun matchesFolder(item: PhotoItem, folder: String): Boolean {
+internal fun buildFileManagerGalleryTabs(allItems: List<FileManagerMediaItem>): List<FileManagerMediaTab> {
+    fun matchesFolder(item: FileManagerMediaItem, folder: String): Boolean {
         val file = item.realFile
         return file?.bucketName?.contains(folder, ignoreCase = true) == true ||
             file?.path?.contains("/$folder/", ignoreCase = true) == true
     }
 
-    val pictures = allPhotos.filter { matchesFolder(it, "Pictures") }
-    val dcim = allPhotos.filter { matchesFolder(it, "DCIM") || matchesFolder(it, "Camera") }
+    val pictures = allItems.filter { matchesFolder(it, "Pictures") }
+    val dcim = allItems.filter { matchesFolder(it, "DCIM") || matchesFolder(it, "Camera") }
     val used = (pictures + dcim).map { it.id }.toSet()
-    val other = allPhotos.filter { it.id !in used }
+    val other = allItems.filter { it.id !in used }
 
     return listOf(
-        PhotoTabInfo("Photo", allPhotos.totalPhotoSizeLabel(), allPhotos),
-        PhotoTabInfo("Pictures", pictures.totalPhotoSizeLabel(), pictures),
-        PhotoTabInfo("DCIM", dcim.totalPhotoSizeLabel(), dcim),
-        PhotoTabInfo("Other", other.totalPhotoSizeLabel(), other)
+        FileManagerMediaTab("Photo", allItems.totalFileManagerMediaSizeLabel(), allItems),
+        FileManagerMediaTab("Pictures", pictures.totalFileManagerMediaSizeLabel(), pictures),
+        FileManagerMediaTab("DCIM", dcim.totalFileManagerMediaSizeLabel(), dcim),
+        FileManagerMediaTab("Other", other.totalFileManagerMediaSizeLabel(), other)
     )
 }
 
-internal fun buildSimilarPhotoGroups(photos: List<PhotoItem>): List<PhotoGroup> {
-    fun key(item: PhotoItem): String {
+internal fun buildSimilarFileManagerMediaGroups(items: List<FileManagerMediaItem>): List<FileManagerMediaGroup> {
+    fun key(item: FileManagerMediaItem): String {
         val file = item.realFile
         val day = (file?.modifiedSeconds ?: 0L) / 86_400L
         val sizeBucket = ((file?.sizeBytes ?: 0L) / (512L * 1024L)).coerceAtLeast(0L)
@@ -107,7 +107,7 @@ internal fun buildSimilarPhotoGroups(photos: List<PhotoItem>): List<PhotoGroup> 
     }
 
     var nextId = 1
-    return photos
+    return items
         .groupBy(::key)
         .values
         .filter { it.size > 1 }
@@ -117,34 +117,34 @@ internal fun buildSimilarPhotoGroups(photos: List<PhotoItem>): List<PhotoGroup> 
             val items = sorted.mapIndexed { index, item ->
                 item.copy(id = nextId++, bestPhoto = index == 0)
             }
-            PhotoGroup(count = items.size, items = items)
+            FileManagerMediaGroup(count = items.size, items = items)
         }
 }
 
-internal fun List<PhotoItem>.totalPhotoSizeLabel(): String? {
+internal fun List<FileManagerMediaItem>.totalFileManagerMediaSizeLabel(): String? {
     val total = sumOf { it.realFile?.sizeBytes ?: 0L }
     return total.takeIf { it > 0L }?.let { FileSizeFormatter.format(it) }
 }
 
-internal fun buildMediaTabs(items: List<PhotoItem>, titles: List<String>): List<ManagedFileTab> =
+internal fun buildFileManagerMediaTabs(items: List<FileManagerMediaItem>, titles: List<String>): List<FileManagerTab> =
     titles.map { title ->
         val tabItems = filterMediaGridItems(title, items)
-        ManagedFileTab(
+        FileManagerTab(
             title = title,
             sizeLabel = FileSizeFormatter.format(tabItems.sumOf { it.realFile?.sizeBytes ?: 0L })
         )
     }
 
-internal fun buildManagedFileTabs(items: List<ManagedFileUiItem>, titles: List<String>): List<ManagedFileTab> =
+internal fun buildFileManagerTabs(items: List<FileManagerListItem>, titles: List<String>): List<FileManagerTab> =
     titles.map { title ->
-        val tabItems = filterManagedFileUiItems(title, items)
-        ManagedFileTab(
+        val tabItems = filterFileManagerListItems(title, items)
+        FileManagerTab(
             title = title,
             sizeLabel = FileSizeFormatter.format(tabItems.sumOf { it.realFile?.sizeBytes ?: 0L })
         )
     }
 
-internal fun List<ManagedFileUiItem>.totalManagedSizeLabel(): String =
+internal fun List<FileManagerListItem>.totalFileManagerListSizeLabel(): String =
     FileSizeFormatter.format(sumOf { it.realFile?.sizeBytes ?: 0L })
 
 internal fun String.splitSizeLabel(): Pair<String, String> =

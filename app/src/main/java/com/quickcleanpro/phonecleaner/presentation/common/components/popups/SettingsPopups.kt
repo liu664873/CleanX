@@ -55,7 +55,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.CleanXPrimaryButton
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXPrimaryButton
 
 private val SettingsCardBg = Color(0xFFF6F7FB)
 private val SettingsNavy = Color(0xFF1D2959)

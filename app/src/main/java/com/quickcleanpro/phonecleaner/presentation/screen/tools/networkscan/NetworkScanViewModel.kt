@@ -18,17 +18,17 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-enum class NetworkScanState {
+enum class NetworkScanPhase {
     Idle,
-    Running,
-    Done,
+    Scanning,
+    Result,
     Error,
 }
 
 data class NetworkScanUiState(
     val networkInfo: NetworkInfo = NetworkInfo(),
     val hasWifi: Boolean = false,
-    val scanState: NetworkScanState = NetworkScanState.Idle,
+    val phase: NetworkScanPhase = NetworkScanPhase.Idle,
     val scan: NetworkScanResult? = null,
     val scanTime: String = "--",
     val completedDetailCount: Int = 0,
@@ -66,7 +66,7 @@ class NetworkScanViewModel(
     }
 
     fun refreshNetworkStateUntilWifiConnected() {
-        if (_uiState.value.scanState == NetworkScanState.Running) return
+        if (_uiState.value.phase == NetworkScanPhase.Scanning) return
         networkRefreshJob?.cancel()
         networkRefreshJob =
             viewModelScope.launch(ioDispatcher) {
@@ -81,14 +81,14 @@ class NetworkScanViewModel(
 
     fun startScan() {
         val state = _uiState.value
-        if (state.scanState == NetworkScanState.Running || !state.hasWifi) return
+        if (state.phase == NetworkScanPhase.Scanning || !state.hasWifi) return
 
         networkRefreshJob?.cancel()
         scanJob?.cancel()
         NetworkScanSessionStore.clear()
         _uiState.update {
             it.copy(
-                scanState = NetworkScanState.Running,
+                phase = NetworkScanPhase.Scanning,
                 scan = null,
                 scanTime = "--",
                 completedDetailCount = 0,
@@ -108,7 +108,7 @@ class NetworkScanViewModel(
                 }.onSuccess { scan ->
                     _uiState.update {
                         it.copy(
-                            scanState = NetworkScanState.Done,
+                            phase = NetworkScanPhase.Result,
                             scan = scan,
                             scanTime = nowLabel(),
                             networkInfo =
@@ -123,7 +123,7 @@ class NetworkScanViewModel(
                 }.onFailure { error ->
                     _uiState.update {
                         it.copy(
-                            scanState = NetworkScanState.Error,
+                            phase = NetworkScanPhase.Error,
                             errorMessage = error.message,
                         )
                     }

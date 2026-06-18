@@ -1,16 +1,20 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.views
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,11 +31,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -55,9 +61,10 @@ import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 
 private val CardBg = Color(0xFFF6F7FB)
+private val ResultCardBg = Color.White
 private val Navy = Color(0xFF1D2959)
 private val NavyMuted = Color(0xA61D2959)
-private val Divider15 = Color(0x261D2959)
+private val Divider15 = Color(0x1A1D2959)
 private val CardRadius = 12.dp
 
 @Composable
@@ -70,6 +77,20 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
 
     CleanXScaffoldPage(
         title = stringResource(R.string.whatsapp_cleaner),
+        contentPadding =
+            if (uiState.phase == WhatsAppCleanerPhase.ScanResult) {
+                PaddingValues(0.dp)
+            } else {
+                PaddingValues(horizontal = 16.dp, vertical = 16.dp)
+            },
+        bottomBar = {
+            if (uiState.phase == WhatsAppCleanerPhase.ScanResult) {
+                WhatsAppScanResultBottomBar(
+                    selectedBytes = uiState.selectedBytes,
+                    onClean = viewModel::cleanSelectedFiles,
+                )
+            }
+        },
         permissionGateConfig = PermissionGatePresets.storage(CleanXPermissionFeature.WhatsAppCleaner),
     ) {
         when (uiState.phase) {
@@ -80,7 +101,6 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
                 onToggleGroup = viewModel::toggleGroup,
                 onToggleCategory = viewModel::toggleCategory,
                 onToggleExpanded = viewModel::toggleExpanded,
-                onClean = viewModel::cleanSelectedFiles,
             )
             WhatsAppCleanerPhase.Result -> WhatsAppResultContent(uiState = uiState)
             WhatsAppCleanerPhase.Error -> WhatsAppErrorContent(
@@ -131,67 +151,121 @@ private fun WhatsAppScanResultContent(
     onToggleGroup: (WhatsAppCleanerGroup) -> Unit,
     onToggleCategory: (WhatsAppCleanerGroup, WhatsAppCleanerCategory) -> Unit,
     onToggleExpanded: (WhatsAppCleanerGroup) -> Unit,
-    onClean: () -> Unit,
 ) {
+    WhatsAppTopPlaceholder()
+    Spacer(modifier = Modifier.height(42.dp))
     SummaryCard(totalBytes = uiState.scannedBytes)
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(44.dp))
 
-    uiState.groups.forEach { group ->
-        GroupCard(
-            groupItem = group,
-            onToggleGroup = { onToggleGroup(group.group) },
-            onToggleExpanded = { onToggleExpanded(group.group) },
-            onToggleCategory = { category -> onToggleCategory(group.group, category) },
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        uiState.groups.forEach { group ->
+            GroupCard(
+                groupItem = group,
+                onToggleGroup = { onToggleGroup(group.group) },
+                onToggleExpanded = { onToggleExpanded(group.group) },
+                onToggleCategory = { category -> onToggleCategory(group.group, category) },
+            )
+        }
     }
 
-    CleanXPrimaryButton(
-        text = stringResource(R.string.remove_size, FileSizeFormatter.format(uiState.selectedBytes)),
-        onClick = onClean,
-        enabled = uiState.selectedBytes > 0L,
+    Spacer(modifier = Modifier.height(20.dp))
+}
+
+@Composable
+private fun WhatsAppScanResultBottomBar(
+    selectedBytes: Long,
+    onClean: () -> Unit,
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        CleanXPrimaryButton(
+            text = stringResource(R.string.remove_size, compactSizeLabel(selectedBytes)),
+            onClick = onClean,
+            enabled = selectedBytes > 0L,
+        )
+    }
+}
+
+@Composable
+private fun WhatsAppTopPlaceholder() {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .background(
+                    Brush.linearGradient(
+                        colors =
+                            listOf(
+                                Color(0xFFF3F5FA),
+                                Color(0xFFE9EDF7),
+                                Color(0xFFF1F4FA),
+                            ),
+                    ),
+                ),
     )
-    Spacer(modifier = Modifier.height(100.dp))
 }
 
 @Composable
 private fun SummaryCard(totalBytes: Long) {
-    Surface(
+    val sizeLabel = splitSizeLabel(totalBytes)
+
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        color = CardBg,
-        shape = RoundedCornerShape(CardRadius),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
+            modifier =
+                Modifier
+                    .size(82.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFEFFFF4))
+                    .border(1.dp, Color(0xFFC5F7D4), CircleShape),
+            contentAlignment = Alignment.Center,
         ) {
-            Box(
-                modifier =
-                    Modifier
-                        .size(62.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE9FFF1)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_whatsapp_cleaner),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(36.dp),
-                )
-            }
-            Spacer(modifier = Modifier.size(14.dp))
-            Column {
+            Icon(
+                painter = painterResource(R.drawable.ic_whatsapp_cleaner),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(50.dp),
+            )
+        }
+        Spacer(modifier = Modifier.width(20.dp))
+        Column {
+            Text(
+                text = stringResource(R.string.occupying),
+                color = Color(0xA62D3748),
+                fontSize = 18.sp,
+                lineHeight = 24.sp,
+                fontWeight = FontWeight.Normal,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = stringResource(R.string.occupying),
-                    color = NavyMuted,
-                    fontSize = 15.sp,
+                    text = sizeLabel.main,
+                    color = Color(0xFF2D2F38),
+                    fontSize = 42.sp,
+                    lineHeight = 42.sp,
+                    fontWeight = FontWeight.Bold,
                 )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = FileSizeFormatter.format(totalBytes),
-                    color = Navy,
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    text = sizeLabel.unit,
+                    color = Color(0xFF2D2F38),
+                    fontSize = 16.sp,
+                    lineHeight = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 5.dp),
                 )
             }
         }
@@ -207,12 +281,15 @@ private fun GroupCard(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = CardBg,
+        color = ResultCardBg,
         shape = RoundedCornerShape(CardRadius),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 18.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 SelectionBadge(
@@ -221,43 +298,56 @@ private fun GroupCard(
                     modifier = Modifier.clickable(enabled = groupItem.hasFiles, onClick = onToggleGroup),
                 )
                 Spacer(modifier = Modifier.size(10.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(groupItem.group.titleRes),
-                        color = Navy,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = FileSizeFormatter.format(groupItem.totalBytes),
-                        color = NavyMuted,
-                        fontSize = 14.sp,
-                    )
-                }
+                Text(
+                    text = stringResource(groupItem.group.titleRes),
+                    color = Color(0xFF2D3748),
+                    fontSize = 16.sp,
+                    lineHeight = 22.sp,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = compactSizeLabel(groupItem.totalBytes),
+                    color = Color(0xFF2D3748),
+                    fontSize = 16.sp,
+                    lineHeight = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(modifier = Modifier.width(14.dp))
                 Icon(
                     imageVector = if (groupItem.expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = null,
-                    tint = NavyMuted,
+                    tint = Color(0xA62D3748),
                     modifier =
                         Modifier
-                            .size(28.dp)
+                            .size(24.dp)
                             .clickable(onClick = onToggleExpanded),
                 )
             }
 
             if (groupItem.expanded) {
-                Spacer(modifier = Modifier.height(14.dp))
-                groupItem.children.forEachIndexed { index, child ->
-                    if (index > 0) {
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            color = Divider15,
-                        )
+                HorizontalDivider(color = Divider15)
+                Column(
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    groupItem.children.chunked(3).forEach { rowItems ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            rowItems.forEach { child ->
+                                CategoryTile(
+                                    item = child,
+                                    onToggle = { onToggleCategory(child.category) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                            repeat(3 - rowItems.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
                     }
-                    CategoryRow(
-                        item = child,
-                        onToggle = { onToggleCategory(child.category) },
-                    )
                 }
             }
         }
@@ -265,22 +355,22 @@ private fun GroupCard(
 }
 
 @Composable
-private fun CategoryRow(
+private fun CategoryTile(
     item: WhatsAppCleanerSubItem,
     onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Row(
+    Column(
         modifier =
-            Modifier
-                .fillMaxWidth()
+            modifier
                 .clickable(enabled = item.hasFiles, onClick = onToggle),
-        verticalAlignment = Alignment.CenterVertically,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
             modifier =
                 Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(8.dp))
                     .background(item.category.iconBackground),
             contentAlignment = Alignment.Center,
         ) {
@@ -291,23 +381,27 @@ private fun CategoryRow(
                 modifier = Modifier.size(24.dp),
             )
         }
-        Spacer(modifier = Modifier.size(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(item.category.titleRes),
-                color = Navy,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-            )
-            Text(
-                text = "${item.files.size} files / ${FileSizeFormatter.format(item.totalBytes)}",
-                color = NavyMuted,
-                fontSize = 13.sp,
-            )
-        }
-        SelectionBadge(
-            selected = item.selected,
-            enabled = item.hasFiles,
+        Spacer(modifier = Modifier.height(7.dp))
+        Text(
+            text = stringResource(item.category.titleRes),
+            color = Color(0xA62D3748),
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = compactSizeLabel(item.totalBytes),
+            color = Color(0xA62D3748),
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }
@@ -323,10 +417,17 @@ private fun SelectionBadge(
             modifier
                 .size(24.dp)
                 .clip(CircleShape)
+                .then(
+                    if (!selected && enabled) {
+                        Modifier.border(1.5.dp, Color(0xFFC8D2DE), CircleShape)
+                    } else {
+                        Modifier
+                    },
+                )
                 .background(
                     when {
                         selected -> CleanXBlue
-                        enabled -> Color.White
+                        enabled -> Color.Transparent
                         else -> Color(0xFFE1E6EF)
                     },
                 ),
@@ -445,3 +546,17 @@ private val WhatsAppCleanerCategory.iconBackground: Color
             WhatsAppCleanerCategory.Databases -> Color(0xFFEFF3FF)
             WhatsAppCleanerCategory.Other -> Color(0xFFE9FFF9)
         }
+
+private data class SizeLabel(
+    val main: String,
+    val unit: String,
+)
+
+private fun splitSizeLabel(bytes: Long): SizeLabel {
+    val compact = compactSizeLabel(bytes)
+    val main = compact.takeWhile { it.isDigit() || it == '.' }.ifBlank { "0" }
+    val unit = compact.drop(main.length).ifBlank { "B" }
+    return SizeLabel(main = main, unit = unit)
+}
+
+private fun compactSizeLabel(bytes: Long): String = FileSizeFormatter.format(bytes).replace(" ", "")
