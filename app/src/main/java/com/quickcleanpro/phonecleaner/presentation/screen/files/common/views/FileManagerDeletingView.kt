@@ -17,7 +17,7 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.animations.
 internal fun FileManagerDeletingView(fallbackText: String? = null) {
     CleanSpiralAnimation {
         Image(
-            painter = painterResource(R.drawable.ic_tran_can_blue),
+            painter = painterResource(R.drawable.tran_scan),
             contentDescription = fallbackText ?: stringResource(R.string.delete_loading_fallback),
             modifier = Modifier.size(100.dp),
         )

@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.repository.FileRepository
 import com.quickcleanpro.phonecleaner.presentation.common.fileRepositoryOrPreview
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,9 +45,10 @@ internal open class FileManagerViewModel(
 
     private val _uiState = MutableStateFlow(FileManagerUiState(kind = initialKind))
     val uiState: StateFlow<FileManagerUiState> = _uiState.asStateFlow()
+    private var activeOperationJob: Job? = null
 
     fun load(kind: FileManagerFeature) {
-        if (_uiState.value.kind == kind && currentItemsLoaded()) return
+        if (_uiState.value.kind == kind && hasStartedForCurrentState()) return
         loadInternal(kind)
     }
 
@@ -107,6 +110,11 @@ internal open class FileManagerViewModel(
         _uiState.update { it.copy(errorMessage = null) }
     }
 
+    fun cancelActiveOperation() {
+        activeOperationJob?.cancel()
+        activeOperationJob = null
+    }
+
     fun deleteSelectedFiles() {
         val state = _uiState.value
         val selectedFiles = state.selectedFiles
@@ -148,6 +156,7 @@ internal open class FileManagerViewModel(
                 delayIfNeeded(completeDelayMillis)
                 _uiState.update { it.copy(phase = FileManagerPhase.Result) }
             }.onFailure { error ->
+                if (error is CancellationException) throw error
                 _uiState.update {
                     it.copy(
                         phase = FileManagerPhase.Browsing,
@@ -173,6 +182,7 @@ internal open class FileManagerViewModel(
                     )
                 }
                 .onFailure { error ->
+                    if (error is CancellationException) throw error
                     _uiState.update {
                         it.copy(
                             phase = FileManagerPhase.NoResults,
@@ -183,8 +193,9 @@ internal open class FileManagerViewModel(
         }
     }
 
-    private fun currentItemsLoaded(): Boolean {
+    private fun hasStartedForCurrentState(): Boolean {
         val state = _uiState.value
+        if (state.phase != FileManagerPhase.Scanning) return true
         return state.galleryTabs.isNotEmpty() || state.mediaConfig != null || state.managedConfig != null
     }
 
@@ -211,11 +222,20 @@ internal open class FileManagerViewModel(
     }
 
     private fun launchLoad(block: suspend () -> Unit) {
+        activeOperationJob?.cancel()
         val loader = testLoader
         if (loader != null) {
             loader(block)
         } else {
-            viewModelScope.launch(ioDispatcher) { block() }
+            activeOperationJob = viewModelScope.launch(ioDispatcher) {
+                try {
+                    block()
+                } finally {
+                    if (activeOperationJob == this.coroutineContext[Job]) {
+                        activeOperationJob = null
+                    }
+                }
+            }
         }
     }
 }

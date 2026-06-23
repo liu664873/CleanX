@@ -14,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,15 +55,37 @@ internal fun FileManagerScreen(
         mutableStateOf(observedPermissionGranted)
     }
     var showStopDialog by remember { mutableStateOf(false) }
+    var blockedOperationPhase by remember { mutableStateOf<FileManagerPhase?>(null) }
+    var isLeavingPage by remember { mutableStateOf(false) }
+    val displayState =
+        blockedOperationPhase
+            ?.let { blockedPhase -> uiState.copy(phase = blockedPhase) }
+            ?: uiState
+    val latestPermissionGranted by rememberUpdatedState(permissionGranted)
+    val latestDisplayState by rememberUpdatedState(displayState)
+    val latestShowStopDialog by rememberUpdatedState(showStopDialog)
+    val latestIsLeavingPage by rememberUpdatedState(isLeavingPage)
     val kind = uiState.kind
     val isListFeature = kind == FileManagerFeature.LargeFiles || kind == FileManagerFeature.Documents
     val scrollStates = remember(kind) { mutableMapOf<Int, ScrollState>() }
     fun scrollStateForTab(index: Int): ScrollState =
         scrollStates.getOrPut(index) { ScrollState(0) }
 
-    DisposableEffect(lifecycleOwner, refreshOnResume, permissionGranted, viewModel) {
+    DisposableEffect(lifecycleOwner, refreshOnResume, viewModel) {
+        var skipInitialResume = true
         val observer = LifecycleEventObserver { _, event ->
-            if (refreshOnResume && permissionGranted && event == Lifecycle.Event.ON_RESUME) {
+            if (event != Lifecycle.Event.ON_RESUME) return@LifecycleEventObserver
+            if (skipInitialResume) {
+                skipInitialResume = false
+                return@LifecycleEventObserver
+            }
+            val canRefresh =
+                refreshOnResume &&
+                    latestPermissionGranted &&
+                    !latestIsLeavingPage &&
+                    !latestShowStopDialog &&
+                    latestDisplayState.phase == FileManagerPhase.Browsing
+            if (canRefresh) {
                 viewModel.refresh()
             }
         }
@@ -91,12 +114,12 @@ internal fun FileManagerScreen(
     } else {
         localizedFileManagerResultCaption(kind, mediaConfig.resultCaption)
     }
-    val mediaDetailItems = if (uiState.isGalleryFeature) uiState.currentGalleryItems else uiState.collectionDetailItems
-    val listDetailItems = uiState.visibleManagedItems
-    val isDetailMode = uiState.detailStartIndex != null
+    val mediaDetailItems = if (displayState.isGalleryFeature) displayState.currentGalleryItems else displayState.collectionDetailItems
+    val listDetailItems = displayState.visibleManagedItems
+    val isDetailMode = displayState.detailStartIndex != null
     val hasDetailItems = if (isListFeature) listDetailItems.isNotEmpty() else mediaDetailItems.isNotEmpty()
-    val showDetail = uiState.isBrowsingOrConfirming && isDetailMode && hasDetailItems
-    val showSelectionAction = permissionGranted && uiState.isBrowsingOrConfirming && !showDetail
+    val showDetail = displayState.isBrowsingOrConfirming && isDetailMode && hasDetailItems
+    val showSelectionAction = permissionGranted && displayState.isBrowsingOrConfirming && !showDetail
     val deleteLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             viewModel.deleteSelectedFiles()
@@ -108,10 +131,19 @@ internal fun FileManagerScreen(
     fun handleBack() {
         when {
             isDetailMode -> viewModel.closeDetail()
-            !permissionGranted -> router.goBack()
-            uiState.phase == FileManagerPhase.Scanning -> showStopDialog = true
-            uiState.phase == FileManagerPhase.Result -> router.goHome()
-            else -> router.goBack()
+            !permissionGranted -> {
+                isLeavingPage = true
+                router.goBack()
+            }
+            displayState.phase == FileManagerPhase.Scanning || displayState.phase == FileManagerPhase.Deleting -> {
+                blockedOperationPhase = displayState.phase
+                showStopDialog = true
+            }
+            displayState.phase == FileManagerPhase.Result -> router.goHome()
+            else -> {
+                isLeavingPage = true
+                router.goBack()
+            }
         }
     }
 
@@ -121,7 +153,7 @@ internal fun FileManagerScreen(
     )
 
     LaunchedEffect(permissionGranted, viewModel) {
-        if (permissionGranted) {
+        if (permissionGranted && !isLeavingPage) {
             viewModel.startIfPermitted()
         }
     }
@@ -144,9 +176,9 @@ internal fun FileManagerScreen(
             FileManagerTopAction(
                 actionText = when {
                     !permissionGranted -> null
-                    showDetail -> stringResource(R.string.file_delete_count, uiState.selectedIds.size)
-                    !isListFeature && uiState.isGalleryFeature && uiState.isBrowsingOrConfirming -> {
-                        if (uiState.allSelected) {
+                    showDetail -> stringResource(R.string.file_delete_count, displayState.selectedIds.size)
+                    !isListFeature && displayState.isGalleryFeature && displayState.isBrowsingOrConfirming -> {
+                        if (displayState.allSelected) {
                             stringResource(R.string.file_unselect_all)
                         } else {
                             stringResource(R.string.file_select_all)
@@ -167,11 +199,11 @@ internal fun FileManagerScreen(
         bottomBar = {
             if (showSelectionAction) {
                 CleanXBottomActionBar(
-                    enabled = uiState.selectedIds.isNotEmpty(),
+                    enabled = displayState.selectedIds.isNotEmpty(),
                     text = if (isListFeature) {
-                        fileManagerDeleteButtonText(listConfig, uiState.selectedSizeBytes)
-                    } else if (uiState.isGalleryFeature && uiState.selectedIds.isNotEmpty()) {
-                        stringResource(R.string.file_delete_size, FileSizeFormatter.format(uiState.selectedSizeBytes))
+                        fileManagerDeleteButtonText(listConfig, displayState.selectedSizeBytes)
+                    } else if (displayState.isGalleryFeature && displayState.selectedIds.isNotEmpty()) {
+                        stringResource(R.string.file_delete_size, FileSizeFormatter.format(displayState.selectedSizeBytes))
                     } else {
                         actionText
                     },
@@ -185,7 +217,7 @@ internal fun FileManagerScreen(
         }
     ) {
         FileManagerContentView(
-            uiState = uiState,
+            uiState = displayState,
             scanText = scanText,
             processingText = processingText,
             resultCaption = resultCaption,
@@ -208,13 +240,19 @@ internal fun FileManagerScreen(
         StopScanDialog(
             onQuit = {
                 showStopDialog = false
+                blockedOperationPhase = null
+                isLeavingPage = true
+                viewModel.cancelActiveOperation()
                 router.goBack()
             },
-            onResume = { showStopDialog = false }
+            onResume = {
+                showStopDialog = false
+                blockedOperationPhase = null
+            }
         )
     }
 
-    if (permissionGranted && uiState.phase == FileManagerPhase.ConfirmDelete) {
+    if (permissionGranted && displayState.phase == FileManagerPhase.ConfirmDelete) {
         val isPhotoPrivacy = kind == FileManagerFeature.PhotoPrivacy || mediaConfig.layout == FileManagerLayout.PhotoPrivacy
         DeleteConfirmDialog(
             title = if (isPhotoPrivacy) stringResource(R.string.file_remove_location_title) else null,
@@ -228,7 +266,7 @@ internal fun FileManagerScreen(
                 } else {
                     requestMediaStoreDeleteOrDeleteDirectly(
                         context = context,
-                        uris = uiState.selectedUris,
+                        uris = displayState.selectedUris,
                         launchRequest = deleteLauncher::launch,
                         deleteDirectly = viewModel::deleteSelectedFiles
                     )
@@ -237,7 +275,7 @@ internal fun FileManagerScreen(
         )
     }
 
-    if (permissionGranted && uiState.phase == FileManagerPhase.NoResults) {
+    if (permissionGranted && displayState.phase == FileManagerPhase.NoResults) {
         NoResultsDialog(onBack = { router.goBack() })
     }
 }

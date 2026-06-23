@@ -427,7 +427,7 @@ private fun FileManagerAudioListView(
                     FileManagerMediaFileRow(
                         item = item,
                         selected = item.id in selectedIds,
-                        iconResId = R.drawable.ic_file_yellow,
+                        iconResId = R.drawable.ic_audio_yellow,
                         onOpen = { onOpenDetail(item) },
                         onToggleSelection = { onSelect(item.id) },
                     )

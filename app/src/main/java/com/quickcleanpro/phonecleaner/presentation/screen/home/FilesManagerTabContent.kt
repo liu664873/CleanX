@@ -54,7 +54,7 @@ fun FilesManagerTabContent() {
             FileManagerItem(R.drawable.ic_videos, R.string.nav_videos, Screen.VideosManager),
             FileManagerItem(R.drawable.ic_audios, R.string.nav_audios, Screen.AudiosManager),
             FileManagerItem(R.drawable.ic_large_files, R.string.nav_large_files, Screen.LargeFilesManager),
-            FileManagerItem(R.drawable.ic_duplicate_files, R.string.nav_duplicate_files, Screen.DuplicateFilesManager),
+            FileManagerItem(R.drawable.ic_file_yellow, R.string.nav_duplicate_files, Screen.DuplicateFilesManager),
             FileManagerItem(R.drawable.ic_documents, R.string.nav_documents, Screen.DocumentsManager),
         )
 

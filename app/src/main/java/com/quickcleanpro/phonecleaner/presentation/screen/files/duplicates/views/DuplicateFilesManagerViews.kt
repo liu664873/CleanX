@@ -437,7 +437,7 @@ private fun localizedDuplicateFileNote(note: String): String =
 @Composable
 private fun DuplicateFileIcon(modifier: Modifier = Modifier) {
     Image(
-        painter = painterResource(id = R.drawable.ic_file_blue),
+        painter = painterResource(id = R.drawable.ic_file_yellow),
         contentDescription = null,
         modifier = modifier
     )

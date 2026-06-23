@@ -61,11 +61,17 @@ private fun DuplicateFilesManagerScreenState(
         mutableStateOf(observedPermissionGranted)
     }
     var showStopDialog by remember { mutableStateOf(false) }
+    var blockedOperationPhase by remember { mutableStateOf<FileManagerPhase?>(null) }
+    var isLeavingPage by remember { mutableStateOf(false) }
+    val displayState =
+        blockedOperationPhase
+            ?.let { blockedPhase -> uiState.copy(phase = blockedPhase) }
+            ?: uiState
     val groupListScrollState = remember { ScrollState(0) }
     val groupDetailScrollStates = remember { mutableMapOf<Int, ScrollState>() }
     fun scrollStateForGroup(groupId: Int): ScrollState =
         groupDetailScrollStates.getOrPut(groupId) { ScrollState(0) }
-    val selectedGroup = uiState.selectedGroup
+    val selectedGroup = displayState.selectedGroup
     val deleteLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             viewModel.deleteSelectedFiles()
@@ -80,8 +86,8 @@ private fun DuplicateFilesManagerScreenState(
     )
 
     LaunchedEffect(permissionGranted, viewModel) {
-        if (permissionGranted) {
-            viewModel.refresh()
+        if (permissionGranted && !isLeavingPage) {
+            viewModel.startIfNeeded()
         }
     }
 
@@ -92,10 +98,19 @@ private fun DuplicateFilesManagerScreenState(
     fun handleBack() {
         when {
             selectedGroup != null -> viewModel.closeGroup()
-            !permissionGranted -> router.goBack()
-            uiState.phase == FileManagerPhase.Scanning -> showStopDialog = true
-            uiState.phase == FileManagerPhase.Result -> router.goHome()
-            else -> router.goBack()
+            !permissionGranted -> {
+                isLeavingPage = true
+                router.goBack()
+            }
+            displayState.phase == FileManagerPhase.Scanning || displayState.phase == FileManagerPhase.Deleting -> {
+                blockedOperationPhase = displayState.phase
+                showStopDialog = true
+            }
+            displayState.phase == FileManagerPhase.Result -> router.goHome()
+            else -> {
+                isLeavingPage = true
+                router.goBack()
+            }
         }
     }
 
@@ -110,10 +125,10 @@ private fun DuplicateFilesManagerScreenState(
         permissionGateConfig = permissionGateConfig,
         onPermissionGrantedChanged = { permissionGranted = it },
         bottomBar = {
-            if (permissionGranted && (uiState.phase == FileManagerPhase.Browsing || uiState.phase == FileManagerPhase.ConfirmDelete) && selectedGroup == null) {
+            if (permissionGranted && (displayState.phase == FileManagerPhase.Browsing || displayState.phase == FileManagerPhase.ConfirmDelete) && selectedGroup == null) {
                 CleanXBottomActionBar(
-                    enabled = uiState.filesToDelete.isNotEmpty(),
-                    text = stringResource(R.string.file_clean_up_size, formatDuplicateCleanupSize(uiState.selectedDeleteSize)),
+                    enabled = displayState.filesToDelete.isNotEmpty(),
+                    text = stringResource(R.string.file_clean_up_size, formatDuplicateCleanupSize(displayState.selectedDeleteSize)),
                     onClick = viewModel::requestDelete,
                     backgroundColor = Color.Transparent,
                     buttonModifier = Modifier.height(52.dp),
@@ -124,7 +139,7 @@ private fun DuplicateFilesManagerScreenState(
         }
     ) {
         DuplicateFilesManagerContentView(
-            uiState = uiState,
+            uiState = displayState,
             groupListScrollState = groupListScrollState,
             scrollStateForGroup = ::scrollStateForGroup,
             onToggleAll = viewModel::toggleAll,
@@ -140,19 +155,25 @@ private fun DuplicateFilesManagerScreenState(
         StopScanDialog(
             onQuit = {
                 showStopDialog = false
+                blockedOperationPhase = null
+                isLeavingPage = true
+                viewModel.cancelActiveOperation()
                 router.goBack()
             },
-            onResume = { showStopDialog = false }
+            onResume = {
+                showStopDialog = false
+                blockedOperationPhase = null
+            }
         )
     }
 
-    if (permissionGranted && uiState.phase == FileManagerPhase.ConfirmDelete) {
+    if (permissionGranted && displayState.phase == FileManagerPhase.ConfirmDelete) {
         DeleteConfirmDialog(
             onCancel = viewModel::cancelDelete,
             onDelete = {
                 requestMediaStoreDeleteOrDeleteDirectly(
                     context = context,
-                    uris = uiState.selectedUris,
+                    uris = displayState.selectedUris,
                     launchRequest = deleteLauncher::launch,
                     deleteDirectly = viewModel::deleteSelectedFiles
                 )
@@ -160,7 +181,7 @@ private fun DuplicateFilesManagerScreenState(
         )
     }
 
-    if (permissionGranted && uiState.phase == FileManagerPhase.NoResults) {
+    if (permissionGranted && displayState.phase == FileManagerPhase.NoResults) {
         NoResultsDialog(onBack = { router.goBack() })
     }
 }

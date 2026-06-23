@@ -31,7 +31,7 @@ internal fun FileManagerScanningView(text: String = "Scanning...") {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             CleanSpiralAnimation {
                 Image(
-                    painter = painterResource(R.drawable.ic_file),
+                    painter = painterResource(R.drawable.file_yellow),
                     contentDescription = text,
                     modifier = Modifier.size(70.dp),
                 )
