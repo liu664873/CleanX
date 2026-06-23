@@ -1,9 +1,7 @@
 package com.quickcleanpro.phonecleaner.presentation.common.permission
 
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,15 +34,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
+import com.quickcleanpro.phonecleaner.core.permission.AppPermission
+import com.quickcleanpro.phonecleaner.core.permission.PermissionManager
+import com.quickcleanpro.phonecleaner.core.permission.PermissionRequestPlan
+import com.quickcleanpro.phonecleaner.core.permission.PermissionStatus
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.CleanXPermissionRequiredDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.InlinePermissionOverlay
+import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
 import kotlinx.coroutines.delay
 
 /**
@@ -52,28 +53,36 @@ import kotlinx.coroutines.delay
  */
 @Composable
 fun CleanXPermissionGate(
-    permission: CleanXPermissionType,
-    feature: CleanXPermissionFeature = CleanXPermissionFeature.General,
+    feature: CleanXFeature,
     onDenied: () -> Unit = {},
+    onPermissionGrantedChanged: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
-    settingsRepository: SettingsRepository,
     deniedContent: @Composable ((onRetry: () -> Unit) -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var granted by remember(permission, settingsRepository) {
-        mutableStateOf(checkPermissionFresh(context, permission, settingsRepository))
+    val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
+    val permissionManager = remember(context) {
+        CleanXPermissionRegistry.permissionManager(context)
     }
-    var showDialog by remember(permission) { mutableStateOf(!granted) }
-    var pendingSettingsRecheck by remember(permission) { mutableStateOf(false) }
-    var pendingDeniedAfterDialogClose by remember(permission) { mutableStateOf(false) }
-    var settingsLaunchObservedPause by remember(permission) { mutableStateOf(false) }
-    var deniedAlreadyDispatched by remember(permission) { mutableStateOf(false) }
-    var settingsRecheckGeneration by remember(permission) { mutableIntStateOf(0) }
+    var granted by remember(feature, permissionManager) {
+        mutableStateOf(checkPermissionFresh(context, feature, permissionManager))
+    }
+    var showDialog by remember(feature) { mutableStateOf(!granted) }
+    var pendingSettingsRecheck by remember(feature) { mutableStateOf(false) }
+    var pendingDeniedAfterDialogClose by remember(feature) { mutableStateOf(false) }
+    var settingsLaunchObservedPause by remember(feature) { mutableStateOf(false) }
+    var deniedAlreadyDispatched by remember(feature) { mutableStateOf(false) }
+    var settingsRecheckGeneration by remember(feature) { mutableIntStateOf(0) }
+    var missingPermission by remember(feature) {
+        mutableStateOf(firstMissingPermission(context, feature, permissionManager))
+    }
 
     fun recheckPermission(showMissingDialog: Boolean) {
-        val nowGranted = checkPermissionFresh(context, permission, settingsRepository)
+        val status = permissionStatusFresh(context, feature, permissionManager)
+        val nowGranted = status.granted
+        missingPermission = status.missing.firstOrNull()
         granted = nowGranted
         showDialog = if (nowGranted) false else showMissingDialog
         if (nowGranted) {
@@ -110,18 +119,26 @@ fun CleanXPermissionGate(
     val runtimePermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { grants ->
-        val isGranted = grants.values.all { it } && checkPermissionFresh(context, permission, settingsRepository)
+        permissionManager.onRuntimeResult(context, feature, grants)
+        val status = permissionStatusFresh(context, feature, permissionManager)
+        missingPermission = status.missing.firstOrNull()
+        val isGranted = grants.values.all { it } && status.granted
         granted = isGranted
         showDialog = false
         if (isGranted) {
             deniedAlreadyDispatched = false
             pendingDeniedAfterDialogClose = false
         } else {
-            rememberRuntimePermissionDenied(permission, settingsRepository)
             launchSettingsOrDeny(
-                permission = permission,
-                settingsRepository = settingsRepository,
-                onLaunchingSettings = { markSettingsLaunchPending() },
+                feature = feature,
+                permissionManager = permissionManager,
+                context = context,
+                settingsOnly = true,
+                onLaunchingSettings = {
+                    externalActivityLaunchHandler.markLaunch()
+                    markSettingsLaunchPending()
+                },
+                onSettingsLaunchFailed = externalActivityLaunchHandler.cancelLaunch,
                 launcher = settingsLauncher::launch,
                 onDenied = { dismissDialogThenDeny() },
             )
@@ -130,21 +147,29 @@ fun CleanXPermissionGate(
 
     fun requestPermission() {
         launchPermissionRequestOrSettings(
-            permission = permission,
+            feature = feature,
             context = context,
-            settingsRepository = settingsRepository,
+            permissionManager = permissionManager,
             runtimePermissionLauncher = runtimePermissionLauncher::launch,
-            onLaunchingSettings = { markSettingsLaunchPending() },
+            onLaunchingSettings = {
+                externalActivityLaunchHandler.markLaunch()
+                markSettingsLaunchPending()
+            },
+            onSettingsLaunchFailed = externalActivityLaunchHandler.cancelLaunch,
             launcher = settingsLauncher::launch,
             onDenied = { dismissDialogThenDeny() },
         )
     }
 
-    LaunchedEffect(permission, settingsRepository) {
+    LaunchedEffect(feature, permissionManager) {
         recheckPermission(showMissingDialog = true)
     }
 
-    DisposableEffect(lifecycleOwner, permission, settingsRepository) {
+    LaunchedEffect(granted) {
+        onPermissionGrantedChanged(granted)
+    }
+
+    DisposableEffect(lifecycleOwner, feature, permissionManager) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE,
@@ -177,12 +202,25 @@ fun CleanXPermissionGate(
 
     LaunchedEffect(settingsRecheckGeneration) {
         if (!pendingSettingsRecheck) return@LaunchedEffect
-        val nowGranted = checkPermissionAfterSettingsReturn(context, permission, settingsRepository)
+        val previousMissingPermission = missingPermission
+        val status = permissionStatusAfterSettingsReturn(context, feature, permissionManager)
+        val nowGranted = status.granted
+        val nextMissingPermission = status.missing.firstOrNull()
         pendingSettingsRecheck = false
         settingsLaunchObservedPause = false
+        missingPermission = nextMissingPermission
         granted = nowGranted
         showDialog = false
-        if (!nowGranted) dismissDialogThenDeny()
+        if (nowGranted) {
+            deniedAlreadyDispatched = false
+            pendingDeniedAfterDialogClose = false
+        } else if (shouldContinuePermissionFlow(previousMissingPermission, nextMissingPermission)) {
+            deniedAlreadyDispatched = false
+            pendingDeniedAfterDialogClose = false
+            showDialog = true
+        } else {
+            dismissDialogThenDeny()
+        }
     }
 
     val shouldShowPermissionDialog = showDialog && !granted
@@ -198,7 +236,7 @@ fun CleanXPermissionGate(
                 deniedContent { requestPermission() }
             } else {
                 DefaultDeniedContent(
-                    copy = CleanXPermissionRequestManager.dialogCopy(permission, feature),
+                    copy = CleanXPermissionRegistry.copyFor(feature, missingPermission),
                     onRetry = { requestPermission() },
                 )
             }
@@ -207,7 +245,7 @@ fun CleanXPermissionGate(
         if (shouldShowPermissionDialog) {
             InlinePermissionOverlay(onDismiss = { dismissDialogThenDeny() }) {
                 CleanXPermissionRequiredDialog(
-                    copy = CleanXPermissionRequestManager.dialogCopy(permission, feature),
+                    copy = CleanXPermissionRegistry.copyFor(feature, missingPermission),
                     onSubmit = { requestPermission() },
                     onCancel = { dismissDialogThenDeny() },
                 )
@@ -263,121 +301,139 @@ private fun DefaultDeniedContent(
 }
 
 private fun launchSettingsOrDeny(
-    permission: CleanXPermissionType,
-    settingsRepository: SettingsRepository,
+    feature: CleanXFeature,
+    permissionManager: PermissionManager<CleanXFeature>,
+    context: android.content.Context,
+    settingsOnly: Boolean = false,
     onLaunchingSettings: () -> Unit,
+    onSettingsLaunchFailed: () -> Unit,
     launcher: (Intent) -> Unit,
     onDenied: () -> Unit,
 ) {
-    val intents = listOfNotNull(
-        CleanXPermissionRequestManager.primarySettingsIntent(permission, settingsRepository),
-        CleanXPermissionRequestManager.fallbackSettingsIntent(permission, settingsRepository),
-    )
+    val plan =
+        if (settingsOnly) {
+            permissionManager.settingsPlan(context, feature)
+        } else {
+            permissionManager.requestPlan(context, feature)
+        }
+    val intents = (plan as? PermissionRequestPlan.OpenSettings)?.intents.orEmpty()
     for (intent in intents) {
         try {
             onLaunchingSettings()
             launcher(intent)
             return
         } catch (_: ActivityNotFoundException) {
+            onSettingsLaunchFailed()
         } catch (_: Exception) {
+            onSettingsLaunchFailed()
         }
     }
     onDenied()
 }
 
 private fun launchPermissionRequestOrSettings(
-    permission: CleanXPermissionType,
-    context: Context,
-    settingsRepository: SettingsRepository,
+    feature: CleanXFeature,
+    context: android.content.Context,
+    permissionManager: PermissionManager<CleanXFeature>,
     runtimePermissionLauncher: (Array<String>) -> Unit,
     onLaunchingSettings: () -> Unit,
+    onSettingsLaunchFailed: () -> Unit,
     launcher: (Intent) -> Unit,
     onDenied: () -> Unit,
 ) {
-    val runtimePermissions = runtimePermissionsToRequest(context, permission, settingsRepository)
-    if (runtimePermissions.isNotEmpty()) {
-        try {
-            runtimePermissionLauncher(runtimePermissions)
-            return
-        } catch (_: Exception) {
+    when (val plan = permissionManager.requestPlan(context, feature)) {
+        PermissionRequestPlan.AlreadyGranted -> return
+        is PermissionRequestPlan.RequestRuntime -> {
+            try {
+                runtimePermissionLauncher(plan.permissions)
+                return
+            } catch (_: Exception) {
+            }
         }
+        is PermissionRequestPlan.OpenSettings -> {
+            launchSettingsIntentsOrDeny(
+                intents = plan.intents,
+                onLaunchingSettings = onLaunchingSettings,
+                onSettingsLaunchFailed = onSettingsLaunchFailed,
+                launcher = launcher,
+                onDenied = onDenied,
+            )
+            return
+        }
+        PermissionRequestPlan.Unavailable -> Unit
     }
     launchSettingsOrDeny(
-        permission = permission,
-        settingsRepository = settingsRepository,
+        feature = feature,
+        permissionManager = permissionManager,
+        context = context,
         onLaunchingSettings = onLaunchingSettings,
+        onSettingsLaunchFailed = onSettingsLaunchFailed,
         launcher = launcher,
         onDenied = onDenied,
     )
 }
 
-private fun runtimePermissionsToRequest(
-    context: Context,
-    permission: CleanXPermissionType,
-    settingsRepository: SettingsRepository,
-): Array<String> {
-    if (!shouldRequestRuntimePermission(permission, settingsRepository)) return emptyArray()
-    return CleanXPermissionRequestManager.runtimePermissions(permission)
-        .filter { runtimePermission ->
-            ContextCompat.checkSelfPermission(context, runtimePermission) != PackageManager.PERMISSION_GRANTED
-        }
-        .toTypedArray()
-}
-
-private fun shouldRequestRuntimePermission(
-    permission: CleanXPermissionType,
-    settingsRepository: SettingsRepository,
-): Boolean =
-    when (permission) {
-        CleanXPermissionType.Location ->
-            !runCatching { settingsRepository.hasDeniedLocationRuntimePermission() }.getOrDefault(false)
-        CleanXPermissionType.PostNotifications ->
-            !runCatching { settingsRepository.hasDeniedNotificationRuntimePermission() }.getOrDefault(false)
-        CleanXPermissionType.StorageFiles,
-        CleanXPermissionType.MediaImages,
-        CleanXPermissionType.MediaImagesWithLocation,
-        CleanXPermissionType.MediaVideo,
-        CleanXPermissionType.MediaAudio -> true
-        CleanXPermissionType.UsageAccess,
-        CleanXPermissionType.NotificationListener,
-        CleanXPermissionType.Overlay -> false
-    }
-
-private fun rememberRuntimePermissionDenied(
-    permission: CleanXPermissionType,
-    settingsRepository: SettingsRepository,
+private fun launchSettingsIntentsOrDeny(
+    intents: List<Intent>,
+    onLaunchingSettings: () -> Unit,
+    onSettingsLaunchFailed: () -> Unit,
+    launcher: (Intent) -> Unit,
+    onDenied: () -> Unit,
 ) {
-    when (permission) {
-        CleanXPermissionType.Location ->
-            runCatching { settingsRepository.saveLocationRuntimePermissionDenied() }
-        CleanXPermissionType.PostNotifications ->
-            runCatching { settingsRepository.saveNotificationRuntimePermissionDenied() }
-        else -> Unit
+    for (intent in intents) {
+        try {
+            onLaunchingSettings()
+            launcher(intent)
+            return
+        } catch (_: ActivityNotFoundException) {
+            onSettingsLaunchFailed()
+        } catch (_: Exception) {
+            onSettingsLaunchFailed()
+        }
     }
+    onDenied()
 }
 
 private fun checkPermissionFresh(
-    context: Context,
-    permission: CleanXPermissionType,
-    settingsRepository: SettingsRepository,
+    context: android.content.Context,
+    feature: CleanXFeature,
+    permissionManager: PermissionManager<CleanXFeature>,
 ): Boolean =
-    runCatching {
-        if (permission == CleanXPermissionType.UsageAccess) {
-            settingsRepository.resetAppUsagePermissionCache()
-        }
-        CleanXPermissionRequestManager.isGranted(context, permission, settingsRepository)
-    }.getOrDefault(false)
+    permissionStatusFresh(context, feature, permissionManager).granted
 
-private suspend fun checkPermissionAfterSettingsReturn(
-    context: Context,
-    permission: CleanXPermissionType,
-    settingsRepository: SettingsRepository,
-): Boolean {
+private fun permissionStatusFresh(
+    context: android.content.Context,
+    feature: CleanXFeature,
+    permissionManager: PermissionManager<CleanXFeature>,
+) =
+    runCatching { permissionManager.status(context, feature) }
+        .getOrDefault(PermissionStatus(false, emptyList()))
+
+private fun firstMissingPermission(
+    context: android.content.Context,
+    feature: CleanXFeature,
+    permissionManager: PermissionManager<CleanXFeature>,
+): AppPermission? =
+    permissionStatusFresh(context, feature, permissionManager).missing.firstOrNull()
+
+private suspend fun permissionStatusAfterSettingsReturn(
+    context: android.content.Context,
+    feature: CleanXFeature,
+    permissionManager: PermissionManager<CleanXFeature>,
+): PermissionStatus {
     delay(350L)
-    val first = checkPermissionFresh(context, permission, settingsRepository)
-    if (permission != CleanXPermissionType.StorageFiles || !first) return first
+    val first = permissionStatusFresh(context, feature, permissionManager)
+    if (feature != CleanXFeature.FileManager || !first.granted) return first
     delay(350L)
-    return checkPermissionFresh(context, permission, settingsRepository)
+    return permissionStatusFresh(context, feature, permissionManager)
 }
+
+private fun shouldContinuePermissionFlow(
+    previousMissingPermission: AppPermission?,
+    nextMissingPermission: AppPermission?,
+): Boolean =
+    previousMissingPermission != null &&
+        nextMissingPermission != null &&
+        previousMissingPermission.key != nextMissingPermission.key
 
 private val CleanXBackground = Color(0xFFF0F3F7)

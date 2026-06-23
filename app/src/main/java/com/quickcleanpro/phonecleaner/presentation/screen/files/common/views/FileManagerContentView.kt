@@ -19,8 +19,8 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManag
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerMediaBrowserView
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerPageBrush
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerListView
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.detail.FileManagerListDetailView
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.detail.FileManagerMediaDetailView
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.toFileManagerDetailItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.detail.FileManagerDetailView
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.list.FileManagerGalleryBrowserView
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.process.FileManagerScanningView
 
@@ -41,8 +41,6 @@ internal fun FileManagerContentView(
     onToggleGroup: (FileManagerMediaGroup) -> Unit,
     onSelect: (Int) -> Unit,
     onOpenDetail: (Int?) -> Unit,
-    onCloseDetail: () -> Unit,
-    onRequestDelete: () -> Unit,
     onContinue: () -> Unit,
 ) {
     if (uiState.phase == FileManagerPhase.Deleting) {
@@ -54,34 +52,22 @@ internal fun FileManagerContentView(
     val startIndex = uiState.detailStartIndex
     val mediaDetailItems = if (uiState.isGalleryFeature) uiState.currentGalleryItems else uiState.collectionDetailItems
     val managedItems = uiState.visibleManagedItems
-
-    if (isBrowsing && startIndex != null) {
-        when {
-            managedConfig != null && managedItems.isNotEmpty() -> {
-                FileManagerListDetailView(
-                    items = managedItems,
-                    initialIndex = startIndex,
-                    selectedIds = uiState.selectedIds,
-                    selectedSize = uiState.selectedSizeBytes,
-                    onBack = onCloseDetail,
-                    onDelete = onRequestDelete,
-                    onToggleSelection = onSelect,
-                )
-                return
-            }
-            mediaDetailItems.isNotEmpty() -> {
-                FileManagerMediaDetailView(
-                    items = mediaDetailItems,
-                    initialIndex = startIndex,
-                    selectedIds = uiState.selectedIds,
-                    selectedSize = uiState.selectedSizeBytes,
-                    onBack = onCloseDetail,
-                    onDelete = onRequestDelete,
-                    onToggleSelection = onSelect,
-                )
-                return
-            }
+    val detailItems =
+        if (managedConfig != null) {
+            managedItems.map { it.toFileManagerDetailItem() }
+        } else {
+            mediaDetailItems.map { it.toFileManagerDetailItem() }
         }
+
+    if (isBrowsing && startIndex != null && detailItems.isNotEmpty()) {
+        FileManagerDetailView(
+            items = detailItems,
+            initialIndex = startIndex,
+            selectedIds = uiState.selectedIds,
+            selectedSize = uiState.selectedSizeBytes,
+            onToggleSelection = onSelect,
+        )
+        return
     }
 
     Column(

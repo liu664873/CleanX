@@ -1,5 +1,6 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.onboarding
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -70,6 +71,8 @@ private data class DeviceScanRow(
 
 @Composable
 fun OnboardingScanScreen(onContinueToHome: () -> Unit) {
+    BackHandler {}
+
     OnboardingScanContent(
         onContinueToHome = onContinueToHome,
     )

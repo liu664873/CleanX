@@ -32,6 +32,7 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.popups.Dele
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.NoResultsDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
+import com.quickcleanpro.phonecleaner.presentation.common.permission.rememberPermissionGranted
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerPageBrush
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerTopAction
@@ -48,6 +49,10 @@ internal fun FileManagerScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val observedPermissionGranted = rememberPermissionGranted(permissionGateConfig)
+    var permissionGranted by remember(permissionGateConfig?.cleanXFeature) {
+        mutableStateOf(observedPermissionGranted)
+    }
     var showStopDialog by remember { mutableStateOf(false) }
     val kind = uiState.kind
     val isListFeature = kind == FileManagerFeature.LargeFiles || kind == FileManagerFeature.Documents
@@ -55,9 +60,9 @@ internal fun FileManagerScreen(
     fun scrollStateForTab(index: Int): ScrollState =
         scrollStates.getOrPut(index) { ScrollState(0) }
 
-    DisposableEffect(lifecycleOwner, refreshOnResume, viewModel) {
+    DisposableEffect(lifecycleOwner, refreshOnResume, permissionGranted, viewModel) {
         val observer = LifecycleEventObserver { _, event ->
-            if (refreshOnResume && event == Lifecycle.Event.ON_RESUME) {
+            if (refreshOnResume && permissionGranted && event == Lifecycle.Event.ON_RESUME) {
                 viewModel.refresh()
             }
         }
@@ -88,9 +93,10 @@ internal fun FileManagerScreen(
     }
     val mediaDetailItems = if (uiState.isGalleryFeature) uiState.currentGalleryItems else uiState.collectionDetailItems
     val listDetailItems = uiState.visibleManagedItems
-    val showDetail = uiState.detailStartIndex != null &&
-        if (isListFeature) listDetailItems.isNotEmpty() else mediaDetailItems.isNotEmpty()
-    val showSelectionAction = uiState.isBrowsingOrConfirming && !showDetail
+    val isDetailMode = uiState.detailStartIndex != null
+    val hasDetailItems = if (isListFeature) listDetailItems.isNotEmpty() else mediaDetailItems.isNotEmpty()
+    val showDetail = uiState.isBrowsingOrConfirming && isDetailMode && hasDetailItems
+    val showSelectionAction = permissionGranted && uiState.isBrowsingOrConfirming && !showDetail
     val deleteLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             viewModel.deleteSelectedFiles()
@@ -101,7 +107,8 @@ internal fun FileManagerScreen(
 
     fun handleBack() {
         when {
-            showDetail -> viewModel.closeDetail()
+            isDetailMode -> viewModel.closeDetail()
+            !permissionGranted -> router.goBack()
             uiState.phase == FileManagerPhase.Scanning -> showStopDialog = true
             uiState.phase == FileManagerPhase.Result -> router.goHome()
             else -> router.goBack()
@@ -113,7 +120,17 @@ internal fun FileManagerScreen(
         onConsumed = viewModel::clearError
     )
 
-    BackHandler { handleBack() }
+    LaunchedEffect(permissionGranted, viewModel) {
+        if (permissionGranted) {
+            viewModel.startIfPermitted()
+        }
+    }
+
+    LaunchedEffect(observedPermissionGranted) {
+        permissionGranted = observedPermissionGranted
+    }
+
+    BackHandler(enabled = permissionGranted) { handleBack() }
 
     CleanXScaffoldPage(
         title = title,
@@ -122,9 +139,11 @@ internal fun FileManagerScreen(
         backgroundBrush = FileManagerPageBrush,
         onBack = ::handleBack,
         permissionGateConfig = permissionGateConfig,
+        onPermissionGrantedChanged = { permissionGranted = it },
         actions = {
             FileManagerTopAction(
                 actionText = when {
+                    !permissionGranted -> null
                     showDetail -> stringResource(R.string.file_delete_count, uiState.selectedIds.size)
                     !isListFeature && uiState.isGalleryFeature && uiState.isBrowsingOrConfirming -> {
                         if (uiState.allSelected) {
@@ -181,13 +200,11 @@ internal fun FileManagerScreen(
             onToggleGroup = viewModel::toggleGroup,
             onSelect = viewModel::toggleSelection,
             onOpenDetail = viewModel::openDetail,
-            onCloseDetail = viewModel::closeDetail,
-            onRequestDelete = viewModel::requestDelete,
             onContinue = viewModel::continueManaging,
         )
     }
 
-    if (showStopDialog) {
+    if (permissionGranted && showStopDialog) {
         StopScanDialog(
             onQuit = {
                 showStopDialog = false
@@ -197,7 +214,7 @@ internal fun FileManagerScreen(
         )
     }
 
-    if (uiState.phase == FileManagerPhase.ConfirmDelete) {
+    if (permissionGranted && uiState.phase == FileManagerPhase.ConfirmDelete) {
         val isPhotoPrivacy = kind == FileManagerFeature.PhotoPrivacy || mediaConfig.layout == FileManagerLayout.PhotoPrivacy
         DeleteConfirmDialog(
             title = if (isPhotoPrivacy) stringResource(R.string.file_remove_location_title) else null,
@@ -220,7 +237,7 @@ internal fun FileManagerScreen(
         )
     }
 
-    if (uiState.phase == FileManagerPhase.NoResults) {
+    if (permissionGranted && uiState.phase == FileManagerPhase.NoResults) {
         NoResultsDialog(onBack = { router.goBack() })
     }
 }

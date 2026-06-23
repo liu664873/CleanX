@@ -5,7 +5,6 @@ import androidx.navigation.compose.composable
 import com.quickcleanpro.phonecleaner.presentation.app.AppLaunchCoordinator
 import com.quickcleanpro.phonecleaner.presentation.app.AppLaunchRequest
 import com.quickcleanpro.phonecleaner.presentation.app.navigateToNotificationTarget
-import com.quickcleanpro.phonecleaner.presentation.app.returnFromForegroundSplash
 import com.quickcleanpro.phonecleaner.presentation.screen.onboarding.OnboardingScanScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.splash.SplashScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.splash.SplashViewModel
@@ -24,7 +23,7 @@ internal fun NavGraphBuilder.registerStartupRoutes(
                     router.navController.navigateToNotificationTarget(request.route)
                 }
                 is AppLaunchRequest.ForegroundReturn -> {
-                    router.navController.returnFromForegroundSplash(request.previousRoute)
+                    Unit
                 }
                 AppLaunchRequest.Normal -> {
                     val targetScreen =

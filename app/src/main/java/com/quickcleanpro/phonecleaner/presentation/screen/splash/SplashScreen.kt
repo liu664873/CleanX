@@ -1,5 +1,6 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.splash
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -61,6 +62,8 @@ fun SplashScreen(
     paused: Boolean = false,
     onSplashFinished: () -> Unit,
 ) {
+    BackHandler {}
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scaleAnim = remember { Animatable(0.3f) }

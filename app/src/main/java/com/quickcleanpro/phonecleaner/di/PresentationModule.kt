@@ -35,7 +35,7 @@ import org.koin.dsl.module
 
 val presentationModule =
     module {
-        viewModel { HomeViewModel(get(), get()) }
+        viewModel { HomeViewModel(get(), get(), get()) }
         viewModel { AppUsageViewModel(get()) }
         viewModel { DeviceInfoViewModel(get(), get(), get(), get()) }
         viewModel { BatteryInfoViewModel(get(), get(), get(), get()) }
@@ -48,7 +48,7 @@ val presentationModule =
         viewModel { NotificationCleanerViewModel(get()) }
         viewModel { OnboardingScanViewModel(get()) }
         viewModel { JunkCleanViewModel(get(), get(), get(), Dispatchers.IO) }
-        viewModel { ManagePermissionsViewModel(get(), Dispatchers.IO) }
+        viewModel { ManagePermissionsViewModel(Dispatchers.IO) }
         viewModel { SplashViewModel() }
         viewModel { PhotosManagerViewModel(get(), Dispatchers.IO) }
         viewModel { ScreenshotsManagerViewModel(get(), Dispatchers.IO) }

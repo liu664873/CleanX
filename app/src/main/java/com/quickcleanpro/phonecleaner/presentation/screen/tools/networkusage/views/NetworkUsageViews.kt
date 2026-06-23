@@ -42,8 +42,7 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaff
 import com.quickcleanpro.phonecleaner.presentation.common.components.PackageAppIcon
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionFeature
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGatePresets
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkusage.NetworkUsageDisplayItem
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkusage.NetworkUsageUiState
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkusage.NetworkUsageViewModel
@@ -75,7 +74,7 @@ internal fun NetworkUsageScreenState(viewModel: NetworkUsageViewModel) {
     CleanXScaffoldPage(
         title = stringResource(R.string.network_usage),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-        permissionGateConfig = PermissionGatePresets.usageAccess(CleanXPermissionFeature.NetworkUsage),
+        permissionFeature = CleanXFeature.NetworkUsage,
     ) {
         NetworkUsageTabs(
             uiState = uiState,

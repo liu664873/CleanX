@@ -336,9 +336,9 @@
     <string name="file_path_label">Path: %1$s</string>
     <string name="file_auto_select">Auto Select</string>
     <string name="file_got_it">Got it</string>
-    <string name="file_duplicate_warning">File deletion will prioritize older\nfiles. Make sure you do not delete\nany files that you need.</string>
+    <string name="file_duplicate_warning">File deletion will prioritize older files. Make sure you do not delete any files that you need.</string>
     <string name="file_removal_not_recommended">Removal not recommended</string>
-    <string name="file_photo_privacy_desc">The photos listed contain location data. After\nremoving the location data, you will still be able to\nview your photos.</string>
+    <string name="file_photo_privacy_desc">The photos listed contain location data. After removing the location data, you will still be able to view your photos.</string>
     <string name="file_suggestion_junk_desc">Check if there are junk files</string>
     <string name="file_suggestion_battery_desc">View information about your phone battery</string>
     <string name="file_scanning_photos">Scanning photos...</string>

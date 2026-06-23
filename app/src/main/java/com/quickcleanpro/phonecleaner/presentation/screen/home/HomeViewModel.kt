@@ -1,11 +1,18 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.home
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationSpec
+import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationSpecs
 import com.quickcleanpro.phonecleaner.domain.model.device.BatteryInfo
 import com.quickcleanpro.phonecleaner.domain.model.device.StorageInfo
 import com.quickcleanpro.phonecleaner.domain.repository.AppLockRepository
 import com.quickcleanpro.phonecleaner.domain.repository.DeviceInfoRepository
+import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
+import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,13 +33,32 @@ data class HomeSummaryUiState(
 class HomeViewModel(
     private val repository: DeviceInfoRepository,
     private val appLockRepository: AppLockRepository,
+    private val settingsRepository: SettingsRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     private val _summaryState = MutableStateFlow(HomeSummaryUiState())
     val summaryState: StateFlow<HomeSummaryUiState> = _summaryState.asStateFlow()
 
+    var exitPromptSpec by mutableStateOf<ToolNotificationSpec?>(null)
+        private set
+
     init {
         refreshSummary()
+    }
+
+    fun requestExitPrompt() {
+        if (exitPromptSpec != null) return
+        exitPromptSpec = nextExitPromptSpec()
+    }
+
+    fun dismissExitPrompt() {
+        exitPromptSpec = null
+    }
+
+    fun consumeExitPromptForNavigation(): ToolNotificationSpec? {
+        val spec = exitPromptSpec ?: return null
+        exitPromptSpec = null
+        return spec
     }
 
     fun refreshSummary() {
@@ -56,4 +82,15 @@ class HomeViewModel(
             _summaryState.value = loadedState
         }
     }
+
+    private fun nextExitPromptSpec(): ToolNotificationSpec {
+        val notificationBarSpec = ToolNotificationSpecs.first { it.route == Screen.NotificationBar.route }
+        if (!settingsRepository.hasShownNotificationBarExitPrompt()) {
+            settingsRepository.saveNotificationBarExitPromptShown()
+            return notificationBarSpec
+        }
+        val suggestions = ToolNotificationSpecs.filterNot { it.route == Screen.NotificationBar.route }
+        return suggestions.randomOrNull() ?: notificationBarSpec
+    }
+
 }

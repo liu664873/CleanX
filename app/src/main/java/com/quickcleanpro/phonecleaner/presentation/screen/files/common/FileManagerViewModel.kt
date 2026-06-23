@@ -41,16 +41,16 @@ internal open class FileManagerViewModel(
         completeDelayMillis = 700L
     )
 
-    private val _uiState = MutableStateFlow(FileManagerUiState())
+    private val _uiState = MutableStateFlow(FileManagerUiState(kind = initialKind))
     val uiState: StateFlow<FileManagerUiState> = _uiState.asStateFlow()
-
-    init {
-        initialKind?.let(::load)
-    }
 
     fun load(kind: FileManagerFeature) {
         if (_uiState.value.kind == kind && currentItemsLoaded()) return
         loadInternal(kind)
+    }
+
+    fun startIfPermitted() {
+        initialKind?.let(::load)
     }
 
     fun refresh() {

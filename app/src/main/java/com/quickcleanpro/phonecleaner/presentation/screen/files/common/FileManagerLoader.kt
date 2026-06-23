@@ -6,16 +6,8 @@ import com.quickcleanpro.phonecleaner.domain.repository.FileRepository
 internal class FileManagerLoader(
     private val repository: FileRepository
 ) {
-    fun hasAllFilesAccess(): Boolean =
-        runCatching { repository.hasAllFilesAccess() }.getOrDefault(false)
-
     suspend fun buildState(kind: FileManagerFeature): FileManagerUiState =
-        if (!hasAllFilesAccess()) {
-            FileManagerUiState(
-                kind = kind,
-                errorMessage = fileScanFailedMessage()
-            )
-        } else when (kind) {
+        when (kind) {
             FileManagerFeature.Photos -> {
                 val items = mapFileManagerMediaItems(repository.loadImages())
                 FileManagerUiState(

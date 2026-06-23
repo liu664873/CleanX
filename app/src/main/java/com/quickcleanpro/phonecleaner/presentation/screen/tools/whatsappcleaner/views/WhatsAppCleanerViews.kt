@@ -48,8 +48,7 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.animations.
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionFeature
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGatePresets
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerCategory
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerGroup
@@ -91,7 +90,7 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
                 )
             }
         },
-        permissionGateConfig = PermissionGatePresets.storage(CleanXPermissionFeature.WhatsAppCleaner),
+        permissionFeature = CleanXFeature.WhatsAppCleaner,
     ) {
         when (uiState.phase) {
             WhatsAppCleanerPhase.Scanning -> WhatsAppLoadingContent(text = stringResource(R.string.scanning_whatsapp_files))

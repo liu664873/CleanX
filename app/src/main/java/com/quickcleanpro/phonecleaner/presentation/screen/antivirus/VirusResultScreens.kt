@@ -44,6 +44,7 @@ import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CommonResultContent
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.DeleteVirusFileDialog
+import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import java.io.File
@@ -56,6 +57,7 @@ fun ScanVirusResultScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
     val deletionFailedText = stringResource(R.string.deletion_failed)
     var fileToDelete by remember { mutableStateOf<String?>(null) }
 
@@ -152,7 +154,12 @@ fun ScanVirusResultScreen(
             if (uiState.hasAdbRisk) {
                 item {
                     AdbRiskCard(
-                        onSolve = { openDeveloperSettings(context) }
+                        onSolve = {
+                            openDeveloperSettings(
+                                context = context,
+                                externalActivityLaunchHandler = externalActivityLaunchHandler,
+                            )
+                        }
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                 }
@@ -168,7 +175,11 @@ fun ScanVirusResultScreen(
                         if (threat.isFile) {
                             threat.apkPath?.let { fileToDelete = it }
                         } else {
-                            openAppSettings(context, threat.packageName)
+                            openAppSettings(
+                                context = context,
+                                packageName = threat.packageName,
+                                externalActivityLaunchHandler = externalActivityLaunchHandler,
+                            )
                         }
                     }
                 )

@@ -1,15 +1,12 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.settings
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionRequestManager
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionType
+import com.quickcleanpro.phonecleaner.core.permission.PermissionRequestPlan
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionRegistry
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -21,8 +18,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 data class ManagePermissionRowState(
-    val label: String,
-    val type: CleanXPermissionType,
+    val labelRes: Int,
+    val feature: CleanXFeature,
     val checked: Boolean,
 )
 
@@ -31,34 +28,25 @@ data class ManagePermissionsUiState(
 )
 
 sealed interface ManagePermissionsEvent {
-    data class LaunchRuntimePermissions(val permissions: List<String>) : ManagePermissionsEvent
-    data class LaunchSettings(val intents: List<Intent>) : ManagePermissionsEvent
+    data class LaunchRuntimePermissions(
+        val permissions: List<String>,
+    ) : ManagePermissionsEvent
+
+    data class LaunchSettings(
+        val intents: List<Intent>,
+    ) : ManagePermissionsEvent
 }
 
-private data class ManagePermissionDefinition(
-    val label: String,
-    val type: CleanXPermissionType,
-)
-
-private val permissionDefinitions =
-    listOf(
-        ManagePermissionDefinition("Storage Permissions", CleanXPermissionType.StorageFiles),
-        ManagePermissionDefinition("Usage Data Permissions", CleanXPermissionType.UsageAccess),
-        ManagePermissionDefinition("Location Management", CleanXPermissionType.Location),
-        ManagePermissionDefinition("Notification Toolbar", CleanXPermissionType.NotificationListener),
-    )
-
 private fun initialRows(): List<ManagePermissionRowState> =
-    permissionDefinitions.map { definition ->
+    CleanXPermissionRegistry.manageItems.map { item ->
         ManagePermissionRowState(
-            label = definition.label,
-            type = definition.type,
+            labelRes = item.labelRes,
+            feature = item.feature,
             checked = false,
         )
     }
 
 class ManagePermissionsViewModel(
-    private val settingsRepository: SettingsRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ManagePermissionsUiState(rows = initialRows()))
@@ -87,28 +75,21 @@ class ManagePermissionsViewModel(
 
     fun requestPermission(
         context: Context,
-        type: CleanXPermissionType,
+        feature: CleanXFeature,
     ) {
         val appContext = context.applicationContext ?: context
-        val missingRuntimePermissions =
-            CleanXPermissionRequestManager.runtimePermissions(type)
-                .filter { permission ->
-                    ContextCompat.checkSelfPermission(appContext, permission) != PackageManager.PERMISSION_GRANTED
-                }
-
+        val manager = CleanXPermissionRegistry.permissionManager(appContext)
         viewModelScope.launch {
-            if (missingRuntimePermissions.isNotEmpty()) {
-                eventsChannel.send(ManagePermissionsEvent.LaunchRuntimePermissions(missingRuntimePermissions))
-                return@launch
+            when (val plan = manager.requestPlan(appContext, feature)) {
+                PermissionRequestPlan.AlreadyGranted -> refresh(appContext, refreshAgainAfterDelay = true)
+                is PermissionRequestPlan.RequestRuntime -> {
+                    eventsChannel.send(ManagePermissionsEvent.LaunchRuntimePermissions(plan.permissions.toList()))
+                }
+                is PermissionRequestPlan.OpenSettings -> {
+                    eventsChannel.send(ManagePermissionsEvent.LaunchSettings(plan.intents))
+                }
+                PermissionRequestPlan.Unavailable -> refresh(appContext, refreshAgainAfterDelay = true)
             }
-
-            val intents =
-                listOfNotNull(
-                    CleanXPermissionRequestManager.primarySettingsIntent(type, settingsRepository),
-                    CleanXPermissionRequestManager.fallbackSettingsIntent(type, settingsRepository),
-                    runCatching { settingsRepository.appSettingsIntent() }.getOrNull(),
-                ).distinctBy { it.toUri(0) }
-            eventsChannel.send(ManagePermissionsEvent.LaunchSettings(intents))
         }
     }
 
@@ -116,13 +97,12 @@ class ManagePermissionsViewModel(
         context: Context,
         grants: Map<String, Boolean>,
     ) {
-        if (grants[Manifest.permission.ACCESS_FINE_LOCATION] == false) {
-            runCatching { settingsRepository.saveLocationRuntimePermissionDenied() }
+        val appContext = context.applicationContext ?: context
+        val manager = CleanXPermissionRegistry.permissionManager(appContext)
+        CleanXPermissionRegistry.manageItems.forEach { item ->
+            manager.onRuntimeResult(appContext, item.feature, grants)
         }
-        if (grants[Manifest.permission.POST_NOTIFICATIONS] == false) {
-            runCatching { settingsRepository.saveNotificationRuntimePermissionDenied() }
-        }
-        refresh(context, refreshAgainAfterDelay = true)
+        refresh(appContext, refreshAgainAfterDelay = true)
     }
 
     fun onSettingsResult(context: Context) {
@@ -133,28 +113,14 @@ class ManagePermissionsViewModel(
         refresh(context, refreshAgainAfterDelay = true)
     }
 
-    private fun buildRows(context: Context): List<ManagePermissionRowState> =
-        permissionDefinitions.map { definition ->
-            permissionRow(definition, context)
+    private fun buildRows(context: Context): List<ManagePermissionRowState> {
+        val manager = CleanXPermissionRegistry.permissionManager(context)
+        return CleanXPermissionRegistry.manageItems.map { item ->
+            ManagePermissionRowState(
+                labelRes = item.labelRes,
+                feature = item.feature,
+                checked = manager.status(context, item.feature).granted,
+            )
         }
-
-    private fun permissionRow(
-        definition: ManagePermissionDefinition,
-        context: Context,
-    ): ManagePermissionRowState =
-        ManagePermissionRowState(
-            label = definition.label,
-            type = definition.type,
-            checked = isPermissionGrantedFresh(context, definition.type),
-        )
-
-    private fun isPermissionGrantedFresh(
-        context: Context,
-        type: CleanXPermissionType,
-    ): Boolean {
-        if (type == CleanXPermissionType.UsageAccess) {
-            runCatching { settingsRepository.resetAppUsagePermissionCache() }
-        }
-        return CleanXPermissionRequestManager.isGranted(context, type, settingsRepository)
     }
 }

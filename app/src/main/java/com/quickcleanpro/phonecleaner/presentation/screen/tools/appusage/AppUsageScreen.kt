@@ -56,14 +56,14 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.toolbox.AppUsageInfo
+import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXSegmentedTabs
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXTabItem
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.PackageAppIcon
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionFeature
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGatePresets
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
@@ -89,6 +89,7 @@ internal fun AppUsageScreen(viewModel: AppUsageViewModel = koinViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
+    val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
 
     DisposableEffect(lifecycleOwner, viewModel) {
         val observer = LifecycleEventObserver { _, event ->
@@ -106,7 +107,7 @@ internal fun AppUsageScreen(viewModel: AppUsageViewModel = koinViewModel()) {
             colors = listOf(Color(0xFFE3ECFD), Color(0xFFDFEBF5))
         ),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-        permissionGateConfig = PermissionGatePresets.usageAccess(CleanXPermissionFeature.AppUsage),
+        permissionFeature = CleanXFeature.AppUsage,
     ) {
         // 1. 时间选择器
         TimeRangeSelector(
@@ -127,9 +128,12 @@ internal fun AppUsageScreen(viewModel: AppUsageViewModel = koinViewModel()) {
             onTabSelected = viewModel::selectTab,
             onStopApp = { packageName ->
                 try {
+                    externalActivityLaunchHandler.markLaunch()
                     context.startActivity(viewModel.appInfoIntent(packageName))
                 } catch (_: ActivityNotFoundException) {
-                    // 忽略
+                    externalActivityLaunchHandler.cancelLaunch()
+                } catch (_: Exception) {
+                    externalActivityLaunchHandler.cancelLaunch()
                 }
             },
         )

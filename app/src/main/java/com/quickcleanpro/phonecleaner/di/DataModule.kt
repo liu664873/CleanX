@@ -43,7 +43,7 @@ val dataModule: Module =
         single { CleanJunkUseCase(get()) }
         single { MemoryCleanUseCase(get()) }
         single<ToolboxRepository> { ToolboxRepositoryImpl(get(), get(), get()) }
-        single<SettingsRepository> { SettingsRepositoryImpl(androidContext(), get(), get()) }
+        single<SettingsRepository> { SettingsRepositoryImpl(androidContext()) }
         single<BatteryHistoryRepository> { BatteryHistoryRepositoryImpl(androidContext()) }
         single {
             BatteryHistorySampler(

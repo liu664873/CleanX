@@ -66,7 +66,7 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaff
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGatePresets
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarPage
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarUiState
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationCleanerViewModel
@@ -138,7 +138,7 @@ internal fun NotificationCleanerScreenState(
 
     CleanXScaffoldPage(
         title = stringResource(R.string.notification_cleaner),
-        permissionGateConfig = PermissionGatePresets.notificationListener(),
+        permissionFeature = CleanXFeature.NotificationCleaner,
         scrollEnabled = false,
         onBack = {
             if (page == NotificationCleanerPage.Settings) {

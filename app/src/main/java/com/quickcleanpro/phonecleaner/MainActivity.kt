@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.quickcleanpro.phonecleaner.core.permission.appSettingsIntent
 import com.quickcleanpro.phonecleaner.domain.repository.AppLockRepository
 import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 import com.quickcleanpro.phonecleaner.presentation.app.AppLaunchCoordinator
@@ -41,7 +42,9 @@ class MainActivity : AppCompatActivity() {
                     settingsRepository = settingsRepository,
                     hasNotificationPermission = ::hasNotificationPermission,
                     openAppSettings = {
-                        runCatching { startActivity(settingsRepository.appSettingsIntent()) }
+                        launchCoordinator.markExternalActivityLaunch()
+                        runCatching { startActivity(appSettingsIntent(this)) }
+                            .onFailure { launchCoordinator.cancelExternalActivityLaunch() }
                     },
                     onStartPersistentNotification = {
                         runCatching { notificationLifecycleController.startServiceWhenAllowed() }
@@ -63,6 +66,11 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         launchCoordinator.onNewIntent(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        launchCoordinator.onResume()
     }
 
     override fun onStop() {

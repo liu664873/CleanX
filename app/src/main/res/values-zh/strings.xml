@@ -272,9 +272,9 @@
     <string name="file_path_label">路径：%1$s</string>
     <string name="file_auto_select">自动选择</string>
     <string name="file_got_it">知道了</string>
-    <string name="file_duplicate_warning">文件删除会优先选择较旧文件。\n请确认不会删除你需要的文件。</string>
+    <string name="file_duplicate_warning">文件删除会优先选择较旧文件。请确认不会删除你需要的文件。</string>
     <string name="file_removal_not_recommended">不建议移除</string>
-    <string name="file_photo_privacy_desc">下列照片包含位置信息。移除位置信息后，\n你仍然可以正常查看这些照片。</string>
+    <string name="file_photo_privacy_desc">下列照片包含位置信息。移除位置信息后，你仍然可以正常查看这些照片。</string>
     <string name="file_suggestion_junk_desc">检查是否存在垃圾文件</string>
     <string name="file_suggestion_battery_desc">查看手机电池信息</string>
     <string name="file_scanning_photos">正在扫描照片...</string>

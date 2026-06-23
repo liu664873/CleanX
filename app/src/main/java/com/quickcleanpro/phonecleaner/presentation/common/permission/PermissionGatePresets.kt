@@ -1,47 +1,44 @@
 package com.quickcleanpro.phonecleaner.presentation.common.permission
 
 import androidx.compose.runtime.Composable
-import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 
 data class PermissionGateConfig(
-    val permissionType: CleanXPermissionType,
-    val feature: CleanXPermissionFeature = CleanXPermissionFeature.General,
+    val cleanXFeature: CleanXFeature,
     val onDenied: (() -> Unit)? = null,
     val deniedContent: (@Composable (onRetry: () -> Unit) -> Unit)? = null,
-    val settingsRepository: SettingsRepository? = null,
 )
 
-/**
- * 权限配置预设，简化页面调用
- */
 object PermissionGatePresets {
-    fun storage(feature: CleanXPermissionFeature = CleanXPermissionFeature.General) =
-        PermissionGateConfig(CleanXPermissionType.StorageFiles, feature)
+    fun feature(feature: CleanXFeature) =
+        PermissionGateConfig(feature)
 
-    fun mediaImages(feature: CleanXPermissionFeature = CleanXPermissionFeature.General) =
-        PermissionGateConfig(CleanXPermissionType.MediaImages, feature)
+    fun junkRemoval() =
+        PermissionGateConfig(CleanXFeature.JunkRemoval)
 
-    fun mediaImagesWithLocation() =
-        PermissionGateConfig(CleanXPermissionType.MediaImagesWithLocation)
+    fun fileManager() =
+        PermissionGateConfig(CleanXFeature.FileManager)
 
-    fun mediaVideo() =
-        PermissionGateConfig(CleanXPermissionType.MediaVideo)
+    fun networkScan() =
+        PermissionGateConfig(CleanXFeature.NetworkScan)
 
-    fun mediaAudio() =
-        PermissionGateConfig(CleanXPermissionType.MediaAudio)
+    fun appUsage() =
+        PermissionGateConfig(CleanXFeature.AppUsage)
 
-    fun location() =
-        PermissionGateConfig(CleanXPermissionType.Location)
+    fun networkUsage() =
+        PermissionGateConfig(CleanXFeature.NetworkUsage)
 
-    fun usageAccess(feature: CleanXPermissionFeature = CleanXPermissionFeature.General) =
-        PermissionGateConfig(CleanXPermissionType.UsageAccess, feature)
+    fun notificationCleaner() =
+        PermissionGateConfig(CleanXFeature.NotificationCleaner)
 
-    fun notificationListener() =
-        PermissionGateConfig(CleanXPermissionType.NotificationListener)
+    fun notificationBar() =
+        PermissionGateConfig(CleanXFeature.NotificationBar)
 
-    fun overlay() =
-        PermissionGateConfig(CleanXPermissionType.Overlay)
+    fun appLock() =
+        PermissionGateConfig(CleanXFeature.AppLock)
 
-    fun postNotifications(feature: CleanXPermissionFeature = CleanXPermissionFeature.General) =
-        PermissionGateConfig(CleanXPermissionType.PostNotifications, feature)
+    fun virusDeepScan() =
+        PermissionGateConfig(CleanXFeature.VirusDeepScan)
+
+    fun whatsAppCleaner() =
+        PermissionGateConfig(CleanXFeature.WhatsAppCleaner)
 }

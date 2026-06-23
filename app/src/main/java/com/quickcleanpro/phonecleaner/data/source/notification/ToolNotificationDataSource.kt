@@ -1,6 +1,7 @@
 package com.quickcleanpro.phonecleaner.data.source.notification
 
 import android.Manifest
+import android.app.Notification
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -12,7 +13,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
-
 import com.quickcleanpro.phonecleaner.utils.NotificationChannelManager
 
 object ToolNotificationDataSource {
@@ -31,25 +31,7 @@ object ToolNotificationDataSource {
         val manager = NotificationManagerCompat.from(appContext)
         ToolNotificationSpecs.forEachIndexed { index, item ->
             runCatching { manager.cancel(TOOL_NOTIFICATION_BASE_ID + index) }
-            val notification =
-                NotificationCompat
-                    .Builder(appContext, NotificationChannelManager.TRIGGERED_TOOLS_CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_n_notification_cleaner)
-                    .setContentTitle(appContext.getString(item.titleRes))
-                    .setContentText(appContext.getString(item.descriptionRes))
-                    .setContentIntent(ToolNotificationIntentFactory.pendingIntent(appContext, item.route, index))
-                    .setCustomContentView(toolNotificationCollapsedView(appContext, item))
-                    .setCustomBigContentView(toolNotificationExpandedView(appContext, item))
-                    .setCustomHeadsUpContentView(toolNotificationHeadsUpView(appContext, item))
-                    .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(false)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                    .setShowWhen(true)
-                    .setWhen(System.currentTimeMillis())
-                    .build()
+            val notification = buildToolNotification(appContext, item, index)
             runCatching { manager.notify(TOOL_NOTIFICATION_BASE_ID + index, notification) }
         }
     }
@@ -76,6 +58,32 @@ object ToolNotificationDataSource {
         runCatching {
             NotificationManagerCompat.from(appContext).notify(PERSISTENT_NOTIFICATION_ID, notification)
         }
+    }
+
+    internal fun buildToolNotification(
+        context: Context,
+        item: ToolNotificationSpec,
+        requestCode: Int,
+    ): Notification {
+        val appContext = context.applicationContext
+        return NotificationCompat
+            .Builder(appContext, NotificationChannelManager.TRIGGERED_TOOLS_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_n_notification_cleaner)
+            .setContentTitle(appContext.getString(item.titleRes))
+            .setContentText(appContext.getString(item.descriptionRes))
+            .setContentIntent(ToolNotificationIntentFactory.pendingIntent(appContext, item.route, requestCode))
+            .setCustomContentView(toolNotificationCollapsedView(appContext, item))
+            .setCustomBigContentView(toolNotificationExpandedView(appContext, item))
+            .setCustomHeadsUpContentView(toolNotificationHeadsUpView(appContext, item))
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(false)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setShowWhen(true)
+            .setWhen(System.currentTimeMillis())
+            .build()
     }
 
     private fun toolNotificationCollapsedView(

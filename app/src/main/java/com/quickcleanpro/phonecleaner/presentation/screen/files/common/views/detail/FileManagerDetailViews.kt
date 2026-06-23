@@ -10,15 +10,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,11 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBackground
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXText
-import com.quickcleanpro.phonecleaner.presentation.common.components.cleanXDebouncedClick
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerListItem
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerMediaItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDetailItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDetailPreview
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerItemTypeIcon
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.SelectionCircle
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.list.FileManagerImageQuality
@@ -46,23 +40,22 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.lis
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 
 private val FileManagerDetailSelectionBarHeight = 48.dp
-private val DetailContentBottomPadding = 64.dp
+private val FileManagerDetailSelectionBarInset = 16.dp
+private val DetailContentBottomPadding = FileManagerDetailSelectionBarHeight + 32.dp
 
 @Composable
-internal fun FileManagerMediaDetailView(
-    items: List<FileManagerMediaItem>,
+internal fun FileManagerDetailView(
+    items: List<FileManagerDetailItem>,
     initialIndex: Int,
     selectedIds: Set<Int>,
     selectedSize: Long,
-    onBack: (() -> Unit)? = null,
-    onDelete: (() -> Unit)? = null,
-    onToggleSelection: (Int) -> Unit
+    onToggleSelection: (Int) -> Unit,
 ) {
     if (items.isEmpty()) return
 
     val pagerState = rememberPagerState(
         initialPage = initialIndex.coerceIn(0, items.lastIndex),
-        pageCount = { items.size }
+        pageCount = { items.size },
     )
     val currentPage = pagerState.currentPage.coerceIn(0, items.lastIndex)
     val currentItem = items[currentPage]
@@ -74,205 +67,86 @@ internal fun FileManagerMediaDetailView(
         }
     }
 
-    val content: @Composable () -> Unit = {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxSize()
-        ) { page ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Brush.linearGradient(items[page].colors)),
-                contentAlignment = Alignment.Center
-            ) {
-                FileManagerRealImage(
-                    item = items[page],
-                    contentScale = ContentScale.Fit,
-                    quality = FileManagerImageQuality.Detail
-                )
-            }
-        }
-    }
-
-    if (onBack != null && onDelete != null) {
-        FileManagerDetailChrome(
-            currentPage = currentPage,
-            totalPages = items.size,
-            selectedCount = selectedIds.size,
-            selectedSize = selectedSize,
-            selected = selected,
-            onBack = onBack,
-            onDelete = onDelete,
-            onToggleSelection = { onToggleSelection(currentItem.id) },
-            content = content
-        )
-    } else {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(CleanXBackground)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = DetailContentBottomPadding)
-            ) {
-                content()
-            }
-
-            FileManagerDetailSelectionBar(
-                selectedSize = selectedSize,
-                selected = selected,
-                onToggleSelection = { onToggleSelection(currentItem.id) },
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-            )
-        }
-    }
-}
-
-@Composable
-internal fun FileManagerListDetailView(
-    items: List<FileManagerListItem>,
-    initialIndex: Int,
-    selectedIds: Set<Int>,
-    selectedSize: Long,
-    onBack: (() -> Unit)? = null,
-    onDelete: (() -> Unit)? = null,
-    onToggleSelection: (Int) -> Unit
-) {
-    if (items.isEmpty()) return
-
-    val pagerState = rememberPagerState(
-        initialPage = initialIndex.coerceIn(0, items.lastIndex),
-        pageCount = { items.size }
-    )
-    val currentPage = pagerState.currentPage.coerceIn(0, items.lastIndex)
-    val currentItem = items[currentPage]
-    val selected = currentItem.id in selectedIds
-
-    val content: @Composable () -> Unit = {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize()
-        ) { page ->
-            FileManagerListDetailPage(item = items[page])
-        }
-    }
-
-    if (onBack != null && onDelete != null) {
-        FileManagerDetailChrome(
-            currentPage = currentPage,
-            totalPages = items.size,
-            selectedCount = selectedIds.size,
-            selectedSize = selectedSize,
-            selected = selected,
-            onBack = onBack,
-            onDelete = onDelete,
-            onToggleSelection = { onToggleSelection(currentItem.id) },
-            content = content
-        )
-    } else {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(CleanXBackground)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = DetailContentBottomPadding)
-            ) {
-                content()
-            }
-
-            FileManagerDetailSelectionBar(
-                selectedSize = selectedSize,
-                selected = selected,
-                onToggleSelection = { onToggleSelection(currentItem.id) },
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-            )
-        }
-    }
-}
-
-@Composable
-private fun FileManagerDetailChrome(
-    currentPage: Int,
-    totalPages: Int,
-    selectedCount: Int,
-    selectedSize: Long,
-    selected: Boolean,
-    onBack: () -> Unit,
-    onDelete: () -> Unit,
-    onToggleSelection: () -> Unit,
-    content: @Composable () -> Unit
-) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(CleanXBackground)
+            .background(CleanXBackground),
     ) {
-        Box(
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 96.dp, bottom = DetailContentBottomPadding)
-        ) {
-            content()
-        }
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .height(68.dp)
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                modifier = Modifier.cleanXDebouncedClick { onBack() },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
-                    tint = CleanXText,
-                    modifier = Modifier.size(26.dp)
-                )
-                Text(
-                    text = "${currentPage + 1}/$totalPages",
-                    color = CleanXText,
-                    fontSize = 18.sp,
-                    lineHeight = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = stringResource(R.string.file_delete_count, selectedCount),
-                color = CleanXBlue,
-                fontSize = 16.sp,
-                modifier = Modifier.clickable(enabled = selectedCount > 0) {
-                    onDelete()
-                }
-            )
+                .padding(bottom = DetailContentBottomPadding),
+        ) { page ->
+            FileManagerDetailPage(item = items[page])
         }
 
         FileManagerDetailSelectionBar(
             selectedSize = selectedSize,
             selected = selected,
-            onToggleSelection = onToggleSelection,
+            onToggleSelection = { onToggleSelection(currentItem.id) },
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun FileManagerDetailPage(item: FileManagerDetailItem) {
+    when (val preview = item.preview) {
+        is FileManagerDetailPreview.MediaPreview -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Brush.linearGradient(preview.mediaItem.colors)),
+                contentAlignment = Alignment.Center,
+            ) {
+                FileManagerRealImage(
+                    item = preview.mediaItem,
+                    contentScale = ContentScale.Fit,
+                    quality = FileManagerImageQuality.Detail,
+                )
+            }
+        }
+        is FileManagerDetailPreview.FileIconPreview -> {
+            FileManagerIconDetailPage(
+                item = item,
+                preview = preview,
+            )
+        }
+    }
+}
+
+@Composable
+private fun FileManagerIconDetailPage(
+    item: FileManagerDetailItem,
+    preview: FileManagerDetailPreview.FileIconPreview,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        FileManagerItemTypeIcon(kind = preview.kind, modifier = Modifier.size(96.dp))
+        Text(
+            text = item.name,
+            color = CleanXText,
+            fontSize = 20.sp,
+            lineHeight = 24.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 24.dp),
+        )
+        Text(
+            text = item.meta,
+            color = Color(0xFF7D8EA8),
+            fontSize = 15.sp,
+            lineHeight = 19.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp),
         )
     }
 }
@@ -282,73 +156,44 @@ private fun FileManagerDetailSelectionBar(
     selectedSize: Long,
     selected: Boolean,
     onToggleSelection: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    Column(
+    Row(
         modifier = modifier
-            .background(Color(0xFFEAF3FA))
-            .navigationBarsPadding()
+            .padding(
+                horizontal = FileManagerDetailSelectionBarInset,
+                vertical = FileManagerDetailSelectionBarInset,
+            )
+            .fillMaxWidth()
+            .height(FileManagerDetailSelectionBarHeight)
+            .background(
+                color = Color(0xFFEAF3FA),
+                shape = RoundedCornerShape(10.dp),
+            )
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
+        Text(
+            text = stringResource(R.string.file_selected_size, FileSizeFormatter.format(selectedSize)),
+            color = CleanXText,
+            fontSize = 15.sp,
+            lineHeight = 18.sp,
+        )
+        Spacer(modifier = Modifier.weight(1f))
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(FileManagerDetailSelectionBarHeight)
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.clickable { onToggleSelection() },
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(R.string.file_selected_size, FileSizeFormatter.format(selectedSize)),
+                text = stringResource(R.string.file_select),
                 color = CleanXText,
                 fontSize = 15.sp,
-                lineHeight = 18.sp
+                lineHeight = 18.sp,
             )
-            Spacer(modifier = Modifier.weight(1f))
-            Row(
-                modifier = Modifier.clickable { onToggleSelection() },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.file_select),
-                    color = CleanXText,
-                    fontSize = 15.sp,
-                    lineHeight = 18.sp
-                )
-                SelectionCircle(
-                    selected = selected,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
+            SelectionCircle(
+                selected = selected,
+                modifier = Modifier.padding(start = 8.dp),
+            )
         }
     }
 }
-
-@Composable
-private fun FileManagerListDetailPage(item: FileManagerListItem) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        FileManagerItemTypeIcon(kind = item.kind, modifier = Modifier.size(96.dp))
-        Text(
-            text = item.name,
-            color = CleanXText,
-            fontSize = 20.sp,
-            lineHeight = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 24.dp)
-        )
-        Text(
-            text = item.meta,
-            color = Color(0xFF7D8EA8),
-            fontSize = 15.sp,
-            lineHeight = 19.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-    }
-}
-

@@ -6,9 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionFeature
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionType
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.AntiVirusScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.DeepScanVirusScreen
@@ -17,7 +15,6 @@ import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.QuickScanVir
 import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.ScanVirusResultScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.VirusScanViewModel
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.koinInject
 
 internal fun NavGraphBuilder.registerAntiVirusRoutes() {
     composable(Screen.AntiVirus.route) {
@@ -40,7 +37,6 @@ internal fun NavGraphBuilder.registerAntiVirusRoutes() {
 
     composable(Screen.VirusDeepScan.route) { backStackEntry ->
         val router = LocalRouter.current
-        val settingsRepository: SettingsRepository = koinInject()
         val parentEntry = remember(backStackEntry) {
             router.navController.antiVirusViewModelOwnerOr(backStackEntry)
         }
@@ -48,10 +44,8 @@ internal fun NavGraphBuilder.registerAntiVirusRoutes() {
         DeepScanVirusScreen(
             viewModel = viewModel,
             permissionGateConfig = PermissionGateConfig(
-                permissionType = CleanXPermissionType.StorageFiles,
-                feature = CleanXPermissionFeature.VirusDeepScan,
+                cleanXFeature = CleanXFeature.VirusDeepScan,
                 onDenied = { router.goBack() },
-                settingsRepository = settingsRepository,
                 deniedContent = { onRetry ->
                     PermissionDeniedContent(
                         titleRes = R.string.anti_virus,

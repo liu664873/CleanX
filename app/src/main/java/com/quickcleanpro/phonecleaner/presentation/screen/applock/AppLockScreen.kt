@@ -70,6 +70,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.applock.AppLockApp
+import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXIconButtonSize
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXPillShape
@@ -89,6 +90,7 @@ internal fun AppLockRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
+    val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
     val toastRes = uiState.toastRes
     val toastMessage = toastRes?.let { stringResource(it) }
 
@@ -99,10 +101,13 @@ internal fun AppLockRoute(
             return
         }
         try {
+            externalActivityLaunchHandler.markLaunch()
             context.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
+            externalActivityLaunchHandler.cancelLaunch()
             viewModel.dismissOverlayPermissionDialog()
         } catch (_: Exception) {
+            externalActivityLaunchHandler.cancelLaunch()
             viewModel.dismissOverlayPermissionDialog()
         }
     }

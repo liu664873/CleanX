@@ -33,7 +33,7 @@ internal fun FileManagerScanningView(text: String = "Scanning...") {
                 Image(
                     painter = painterResource(R.drawable.ic_file),
                     contentDescription = text,
-                    modifier = Modifier.size(100.dp),
+                    modifier = Modifier.size(70.dp),
                 )
             }
             Spacer(modifier = Modifier.height(57.dp))

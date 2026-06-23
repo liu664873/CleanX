@@ -74,6 +74,25 @@ internal data class FileManagerListItem(
     val realFile: ManagedFileItem? = null
 )
 
+internal sealed interface FileManagerDetailPreview {
+    data class MediaPreview(
+        val mediaItem: FileManagerMediaItem,
+    ) : FileManagerDetailPreview
+
+    data class FileIconPreview(
+        val kind: FileManagerItemKind,
+    ) : FileManagerDetailPreview
+}
+
+internal data class FileManagerDetailItem(
+    val id: Int,
+    val name: String,
+    val meta: String,
+    val sizeLabel: String,
+    val preview: FileManagerDetailPreview,
+    val realFile: ManagedFileItem? = null,
+)
+
 internal data class FileManagerTab(
     val title: String,
     val sizeLabel: String

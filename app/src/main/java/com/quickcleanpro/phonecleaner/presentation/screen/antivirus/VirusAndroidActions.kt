@@ -12,6 +12,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.core.net.toUri
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.presentation.app.ExternalActivityLaunchHandler
 import java.io.File
 
 internal class PackageRemovedReceiver(
@@ -30,20 +31,32 @@ internal fun allFilesAccessIntent(context: Context): Intent {
     }
 }
 
-internal fun openDeveloperSettings(context: Context) {
+internal fun openDeveloperSettings(
+    context: Context,
+    externalActivityLaunchHandler: ExternalActivityLaunchHandler,
+) {
     try {
         Toast.makeText(context, context.getString(R.string.disable_usb), Toast.LENGTH_LONG).show()
+        externalActivityLaunchHandler.markLaunch()
         context.startActivity(
             Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         )
     } catch (_: ActivityNotFoundException) {
+        externalActivityLaunchHandler.cancelLaunch()
+    } catch (_: Exception) {
+        externalActivityLaunchHandler.cancelLaunch()
     }
 }
 
-internal fun openAppSettings(context: Context, packageName: String?) {
+internal fun openAppSettings(
+    context: Context,
+    packageName: String?,
+    externalActivityLaunchHandler: ExternalActivityLaunchHandler,
+) {
     val targetPackageName = packageName?.takeIf { it.isNotBlank() } ?: return
     try {
+        externalActivityLaunchHandler.markLaunch()
         context.startActivity(
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = "package:$targetPackageName".toUri()
@@ -51,6 +64,7 @@ internal fun openAppSettings(context: Context, packageName: String?) {
             }
         )
     } catch (_: Exception) {
+        externalActivityLaunchHandler.cancelLaunch()
     }
 }
 

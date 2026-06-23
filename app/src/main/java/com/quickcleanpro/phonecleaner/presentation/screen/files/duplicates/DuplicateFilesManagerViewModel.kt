@@ -78,17 +78,10 @@ internal class DuplicateFilesManagerViewModel(
     private val _uiState = MutableStateFlow(DuplicateFilesManagerUiState())
     val uiState: StateFlow<DuplicateFilesManagerUiState> = _uiState.asStateFlow()
 
-    init {
-        refresh()
-    }
-
     fun refresh() {
         _uiState.value = DuplicateFilesManagerUiState(phase = FileManagerPhase.Scanning)
         launchLoad {
-            runCatching {
-                if (!hasAllFilesAccess()) return@runCatching emptyList()
-                mapDuplicateGroups(repository.loadDuplicateFiles())
-            }
+            runCatching { mapDuplicateGroups(repository.loadDuplicateFiles()) }
                 .onSuccess { groups ->
                     delayIfNeeded(scanDelayMillis)
                     _uiState.value = DuplicateFilesManagerUiState(
@@ -193,9 +186,6 @@ internal class DuplicateFilesManagerViewModel(
                     error(deletionFailedMessage())
                 }
                 delayIfNeeded(deleteDelayMillis)
-                if (!hasAllFilesAccess()) {
-                    error(duplicateScanFailedMessage())
-                }
                 val groups = mapDuplicateGroups(repository.loadDuplicateFiles())
                 _uiState.update {
                     it.copy(
@@ -236,6 +226,4 @@ internal class DuplicateFilesManagerViewModel(
         }
     }
 
-    private fun hasAllFilesAccess(): Boolean =
-        runCatching { repository.hasAllFilesAccess() }.getOrDefault(false)
 }

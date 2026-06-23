@@ -19,6 +19,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.screen.settings.views.ManagePermissionsContent
 import com.quickcleanpro.phonecleaner.presentation.screen.settings.views.PermissionRowUi
@@ -30,6 +31,7 @@ fun ManagePermissionsScreen(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val settingsLauncher =
@@ -69,10 +71,13 @@ fun ManagePermissionsScreen(
                 is ManagePermissionsEvent.LaunchSettings -> {
                     event.intents.forEach { intent ->
                         try {
+                            externalActivityLaunchHandler.markLaunch()
                             settingsLauncher.launch(intent)
                             return@collect
                         } catch (_: ActivityNotFoundException) {
+                            externalActivityLaunchHandler.cancelLaunch()
                         } catch (_: Exception) {
+                            externalActivityLaunchHandler.cancelLaunch()
                         }
                     }
                     viewModel.onSettingsResult(context)
@@ -89,9 +94,9 @@ fun ManagePermissionsScreen(
             rows =
                 uiState.rows.map { row ->
                     PermissionRowUi(
-                        label = row.label,
+                        label = stringResource(row.labelRes),
                         checked = row.checked,
-                        onClick = { viewModel.requestPermission(context, row.type) },
+                        onClick = { viewModel.requestPermission(context, row.feature) },
                     )
                 },
         )

@@ -37,6 +37,26 @@ internal fun mapFileManagerListItems(files: List<ManagedFileItem>): List<FileMan
             )
         }
 
+internal fun FileManagerMediaItem.toFileManagerDetailItem(): FileManagerDetailItem =
+    FileManagerDetailItem(
+        id = id,
+        name = realFile?.name.orEmpty(),
+        meta = realFile?.let { "${formatFileDate(it.modifiedSeconds)} ${it.formattedSize}" }.orEmpty(),
+        sizeLabel = sizeLabel,
+        preview = FileManagerDetailPreview.MediaPreview(this),
+        realFile = realFile,
+    )
+
+internal fun FileManagerListItem.toFileManagerDetailItem(): FileManagerDetailItem =
+    FileManagerDetailItem(
+        id = id,
+        name = name,
+        meta = meta,
+        sizeLabel = sizeLabel,
+        preview = FileManagerDetailPreview.FileIconPreview(kind),
+        realFile = realFile,
+    )
+
 internal fun mapDuplicateGroups(groups: List<List<ManagedFileItem>>): List<DuplicateGroupItem> =
     groups.filter { it.isNotEmpty() }
         .mapIndexed { groupIndex, files ->

@@ -1,22 +1,12 @@
 package com.quickcleanpro.phonecleaner.utils
 
-import android.Manifest
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
-import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.data.source.notification.QuickCleanNotificationListener
+import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationDataSource
 import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationIntentFactory
-import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
 data class BlockableNotificationApp(
     val appName: String,
@@ -26,82 +16,14 @@ data class BlockableNotificationApp(
 object NotificationHelper {
     const val EXTRA_TARGET_ROUTE = ToolNotificationIntentFactory.EXTRA_TARGET_ROUTE
 
-    private const val CHANNEL_NAME = "Quick Clean Tools"
     private const val PREFS = "notification_blocker"
     private const val KEY_ENABLED = "enabled"
     private const val KEY_BLOCKED_COUNT = "blocked_count"
     private const val KEY_SELECTED_PACKAGES = "selected_packages"
 
-    // 鈹€鈹€ Tool notifications 鈹€鈹€
-
     fun showToolNotifications(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-
-        createChannel(context)
-        val manager =
-            NotificationManagerCompat
-                .from(context)
-        manager.cancelAll()
-
-        toolNotifications().forEachIndexed { index, item ->
-            val notification =
-                NotificationCompat
-                    .Builder(context, NotificationChannelManager.TRIGGERED_TOOLS_CHANNEL_ID)
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setContentTitle(item.title)
-                    .setContentText(item.description)
-                    .setContentIntent(ToolNotificationIntentFactory.pendingIntent(context, item.route, index))
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(false)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                    .setShowWhen(true)
-                    .setWhen(System.currentTimeMillis())
-                    .build()
-            manager.notify(3000 + index, notification)
-        }
+        ToolNotificationDataSource.showToolNotifications(context)
     }
-
-    private fun createChannel(context: Context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val channel =
-            NotificationChannel(
-                NotificationChannelManager.TRIGGERED_TOOLS_CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH,
-            ).apply {
-                description = "Quick clean tool suggestions"
-                setShowBadge(true)
-                enableVibration(true)
-                vibrationPattern = longArrayOf(0L, 100L, 200L, 300L)
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-            }
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(channel)
-    }
-
-    private data class ToolNotification(
-        val title: String,
-        val description: String,
-        val route: String,
-    )
-
-    private fun toolNotifications(): List<ToolNotification> =
-        listOf(
-            ToolNotification("Device Info", "View detailed specs of your phone", Screen.DeviceInfo.route),
-            ToolNotification("Junk Removal", "Check for junk files", Screen.Scan.route),
-            ToolNotification("Battery Info", "View phone battery information", Screen.BatteryInfo.route),
-            ToolNotification("Network Scan", "Scan connected devices", Screen.NetworkScan.route),
-            ToolNotification("Network Usage", "View your data usage", Screen.NetworkUsage.route),
-            ToolNotification("Notification Cleaner", "Check unwanted notifications", Screen.NotificationCleaner.route),
-        )
-
-    // 鈹€鈹€ Notification blocker 鈹€鈹€
 
     fun isEnabled(context: Context): Boolean = prefs(context).getBoolean(KEY_ENABLED, false) && hasNotificationListenerAccess(context)
 
@@ -173,7 +95,7 @@ object NotificationHelper {
                 it in
                     context.packageManager
                         .getInstalledApplications(0)
-                        .map { a -> a.packageName }
+                        .map { app -> app.packageName }
                         .toSet()
             }.toSet()
             .ifEmpty { emptySet() }

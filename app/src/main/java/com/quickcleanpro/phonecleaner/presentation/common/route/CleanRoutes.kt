@@ -4,14 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionFeature
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionType
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.JunkCleanScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.JunkCleanViewModel
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.koinInject
 
 internal fun NavGraphBuilder.registerCleanRoutes() {
     composable(Screen.Scan.route) {
@@ -29,12 +26,9 @@ internal fun NavGraphBuilder.registerCleanRoutes() {
 @Composable
 private fun cleanPermissionConfig(): PermissionGateConfig {
     val router = LocalRouter.current
-    val settingsRepository: SettingsRepository = koinInject()
     return PermissionGateConfig(
-        permissionType = CleanXPermissionType.StorageFiles,
-        feature = CleanXPermissionFeature.JunkRemoval,
+        cleanXFeature = CleanXFeature.JunkRemoval,
         onDenied = { router.goBack() },
-        settingsRepository = settingsRepository,
         deniedContent = { onRetry ->
             PermissionDeniedContent(
                 titleRes = R.string.junk_removal,

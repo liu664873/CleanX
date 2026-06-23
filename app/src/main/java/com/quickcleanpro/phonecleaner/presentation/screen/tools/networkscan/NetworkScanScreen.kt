@@ -29,12 +29,13 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXButtonHeight
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXButtonShape
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGatePresets
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkscan.views.NetworkScanContentView
@@ -45,6 +46,7 @@ fun NetworkScanScreen(viewModel: NetworkScanViewModel = koinViewModel()) {
     val router = LocalRouter.current
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     DisposableEffect(lifecycleOwner, viewModel) {
@@ -62,13 +64,21 @@ fun NetworkScanScreen(viewModel: NetworkScanViewModel = koinViewModel()) {
         title = stringResource(R.string.network_scan),
         titleFontSize = 20.sp,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-        permissionGateConfig = PermissionGatePresets.location(),
+        permissionFeature = CleanXFeature.NetworkScan,
         bottomBar = {
             NetworkScanBottomBar(
                 uiState = uiState,
                 onRefreshWifi = viewModel::refreshNetworkStateUntilWifiConnected,
                 onSwitchWifi = {
-                    openWifiSettings(context)
+                    val openedSettings =
+                        openWifiSettings(
+                            context = context,
+                            onLaunchingSettings = externalActivityLaunchHandler.markLaunch,
+                            onSettingsLaunchFailed = externalActivityLaunchHandler.cancelLaunch,
+                        )
+                    if (!openedSettings) {
+                        externalActivityLaunchHandler.cancelLaunch()
+                    }
                     viewModel.refreshNetworkStateUntilWifiConnected()
                 },
                 onScan = viewModel::startScan,
@@ -136,22 +146,29 @@ private fun NetworkScanBottomBar(
     }
 }
 
-private fun openWifiSettings(context: android.content.Context) {
-    val intent =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            Intent(Settings.Panel.ACTION_WIFI)
-        } else {
-            Intent(Settings.ACTION_WIFI_SETTINGS)
+private fun openWifiSettings(
+    context: android.content.Context,
+    onLaunchingSettings: () -> Unit,
+    onSettingsLaunchFailed: () -> Unit,
+): Boolean {
+    val intents =
+        buildList {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                add(Intent(Settings.Panel.ACTION_WIFI))
+            }
+            add(Intent(Settings.ACTION_WIFI_SETTINGS))
+            add(Intent(Settings.ACTION_SETTINGS))
         }
-    runCatching {
-        context.startActivity(intent)
-    }.recoverCatching { error ->
-        if (error is ActivityNotFoundException) {
-            context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
-        } else {
-            throw error
+    intents.forEach { intent ->
+        try {
+            onLaunchingSettings()
+            context.startActivity(intent)
+            return true
+        } catch (_: ActivityNotFoundException) {
+            onSettingsLaunchFailed()
+        } catch (_: Exception) {
+            onSettingsLaunchFailed()
         }
-    }.recover {
-        context.startActivity(Intent(Settings.ACTION_SETTINGS))
     }
+    return false
 }

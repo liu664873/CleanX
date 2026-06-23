@@ -1,6 +1,7 @@
 package com.quickcleanpro.phonecleaner.presentation.app
 
 import android.content.Intent
+import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,7 +14,11 @@ sealed interface AppLaunchRequest {
     data class ForegroundReturn(val previousRoute: String) : AppLaunchRequest
 }
 
-class AppLaunchCoordinator {
+class AppLaunchCoordinator(
+    private val foregroundResumeIntervalMs: Long = DEFAULT_FOREGROUND_RESUME_INTERVAL_MS,
+    private val elapsedRealtime: () -> Long = SystemClock::elapsedRealtime,
+    private val targetRouteResolver: (Intent?) -> String? = ToolNotificationIntentFactory::targetRoute,
+) {
     var pendingRequest by mutableStateOf<AppLaunchRequest>(AppLaunchRequest.Normal)
         private set
 
@@ -22,15 +27,17 @@ class AppLaunchCoordinator {
 
     private var started = false
     private var stoppedRoute: String? = null
+    private var stoppedAtElapsedMs: Long? = null
+    private var externalActivityLaunchPending = false
 
     fun onCreate(intent: Intent?) {
-        pendingRequest = ToolNotificationIntentFactory.targetRoute(intent)
+        pendingRequest = targetRouteResolver(intent)
             ?.let(AppLaunchRequest::NotificationTarget)
             ?: AppLaunchRequest.Normal
     }
 
     fun onNewIntent(intent: Intent?) {
-        ToolNotificationIntentFactory.targetRoute(intent)?.let { route ->
+        targetRouteResolver(intent)?.let { route ->
             pendingRequest = AppLaunchRequest.NotificationTarget(route)
         }
     }
@@ -42,18 +49,52 @@ class AppLaunchCoordinator {
     fun onStart() {
         if (!started) {
             started = true
+            clearStoppedState()
             return
         }
-        if (pendingRequest is AppLaunchRequest.NotificationTarget) return
+        if (pendingRequest is AppLaunchRequest.NotificationTarget) {
+            clearStoppedState()
+            return
+        }
+        if (externalActivityLaunchPending) {
+            externalActivityLaunchPending = false
+            clearStoppedState()
+            return
+        }
         val route = stoppedRoute
-        if (route != null && route !in startupRoutes) {
+        val stoppedAt = stoppedAtElapsedMs
+        val backgroundDurationMs =
+            if (stoppedAt == null) {
+                0L
+            } else {
+                elapsedRealtime() - stoppedAt
+            }
+        if (route != null &&
+            route !in startupRoutes &&
+            backgroundDurationMs >= foregroundResumeIntervalMs
+        ) {
             pendingRequest = AppLaunchRequest.ForegroundReturn(route)
         }
-        stoppedRoute = null
+        clearStoppedState()
     }
 
     fun onStop() {
         stoppedRoute = currentRoute?.takeIf { it !in startupRoutes }
+        stoppedAtElapsedMs = stoppedRoute?.let { elapsedRealtime() }
+    }
+
+    fun onResume() {
+        if (stoppedAtElapsedMs == null) {
+            externalActivityLaunchPending = false
+        }
+    }
+
+    fun markExternalActivityLaunch() {
+        externalActivityLaunchPending = true
+    }
+
+    fun cancelExternalActivityLaunch() {
+        externalActivityLaunchPending = false
     }
 
     fun consumeRequest(): AppLaunchRequest {
@@ -62,7 +103,20 @@ class AppLaunchCoordinator {
         return request
     }
 
+    fun consumeRequestIfCurrent(request: AppLaunchRequest): Boolean {
+        if (pendingRequest != request) return false
+        pendingRequest = AppLaunchRequest.Normal
+        return true
+    }
+
+    private fun clearStoppedState() {
+        stoppedRoute = null
+        stoppedAtElapsedMs = null
+    }
+
     private companion object {
+        const val DEFAULT_FOREGROUND_RESUME_INTERVAL_MS = 30_000L
+
         val startupRoutes =
             setOf(
                 Screen.Splash.route,

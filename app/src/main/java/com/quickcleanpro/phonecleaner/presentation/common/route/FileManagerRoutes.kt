@@ -4,9 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionFeature
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionType
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.screen.files.audios.AudiosManagerScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateFilesManagerScreen
@@ -17,7 +15,6 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.photos.PhotosMan
 import com.quickcleanpro.phonecleaner.presentation.screen.files.screenshots.ScreenshotsManagerScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.files.similarphotos.SimilarPhotosManagerScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.files.videos.VideosManagerScreen
-import org.koin.compose.koinInject
 
 internal fun NavGraphBuilder.registerFileManagerRoutes() {
     composable(Screen.PhotosManager.route) {
@@ -52,12 +49,9 @@ internal fun NavGraphBuilder.registerFileManagerRoutes() {
 @Composable
 private fun fileManagerPermissionConfig(): PermissionGateConfig {
     val router = LocalRouter.current
-    val settingsRepository: SettingsRepository = koinInject()
     return PermissionGateConfig(
-        permissionType = CleanXPermissionType.StorageFiles,
-        feature = CleanXPermissionFeature.FileManager,
+        cleanXFeature = CleanXFeature.FileManager,
         onDenied = { router.goBack() },
-        settingsRepository = settingsRepository,
         deniedContent = { onRetry ->
             FilePermissionDeniedContent(
                 titleRes = R.string.home_tab_file_manager,

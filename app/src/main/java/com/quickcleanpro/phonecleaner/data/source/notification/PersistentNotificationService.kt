@@ -19,7 +19,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
-import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -60,6 +59,7 @@ class PersistentNotificationService : Service() {
                 context: Context?,
                 intent: Intent?,
             ) {
+                if (intent?.`package` != packageName) return
                 when (intent?.action) {
                     ACTION_START -> syncMonitoringState()
                     ACTION_ENABLE_MONITORING -> enableMonitoring()
@@ -112,7 +112,15 @@ class PersistentNotificationService : Service() {
                         Intent.ACTION_PACKAGE_REMOVED -> NotificationTrigger.PackageRemoved
                         else -> null
                     } ?: return
+                val packageName = intent?.data?.schemeSpecificPart.orEmpty()
                 if (intent?.getBooleanExtra(Intent.EXTRA_REPLACING, false) == true) return
+                NotificationServicePolicy.packageSyncAction(intent?.action, packageName)?.let { action ->
+                    when (action) {
+                        PackageSyncAction.Added -> runCatching { repository.handlePackageAdded(packageName) }
+                        PackageSyncAction.Removed -> runCatching { repository.handlePackageRemoved(packageName) }
+                    }
+                    syncMonitoringState()
+                }
                 handleNotificationTrigger(trigger)
             }
         }
@@ -430,12 +438,19 @@ class PersistentNotificationService : Service() {
             } else {
                 prefs.getInt(KEY_PUSH_WINDOW_COUNT, 0)
             }
-        if (count >= MAX_TRIGGERED_NOTIFICATIONS_PER_DAY) return false
-        if (now - prefs.getLong(KEY_LAST_TRIGGERED_NOTIFICATION, 0L) < GLOBAL_TRIGGER_INTERVAL_MS) {
+        val sceneKey = "${KEY_LAST_TRIGGER_PREFIX}${trigger.key}"
+        if (
+            !NotificationServicePolicy.shouldPublishTriggeredNotification(
+                nowMillis = now,
+                windowStartMillis = if (windowStart == 0L || now - windowStart >= PUSH_WINDOW_MS) now else windowStart,
+                windowCount = count,
+                lastGlobalMillis = prefs.getLong(KEY_LAST_TRIGGERED_NOTIFICATION, 0L),
+                lastSceneMillis = prefs.getLong(sceneKey, 0L),
+                triggerIntervalMillis = trigger.intervalMs,
+            )
+        ) {
             return false
         }
-        val sceneKey = "${KEY_LAST_TRIGGER_PREFIX}${trigger.key}"
-        if (now - prefs.getLong(sceneKey, 0L) < trigger.intervalMs) return false
         prefs
             .edit()
             .putLong(KEY_LAST_TRIGGERED_NOTIFICATION, now)
@@ -450,25 +465,7 @@ class PersistentNotificationService : Service() {
         val manager = NotificationManagerCompat.from(this)
         val index = notificationIndexFor(trigger)
         val item = ToolNotificationSpecs.getOrNull(index) ?: return
-        val notification =
-            NotificationCompat
-                .Builder(this, NotificationChannelManager.TRIGGERED_TOOLS_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_n_notification_cleaner)
-                .setContentTitle(getString(item.titleRes))
-                .setContentText(getString(item.descriptionRes))
-                .setContentIntent(ToolNotificationIntentFactory.pendingIntent(this, item.route, index))
-                .setCustomContentView(toolNotificationCollapsedView(item))
-                .setCustomBigContentView(toolNotificationExpandedView(item))
-                .setCustomHeadsUpContentView(toolNotificationHeadsUpView(item))
-                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-                .setAutoCancel(true)
-                .setOnlyAlertOnce(false)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setShowWhen(true)
-                .setWhen(System.currentTimeMillis())
-                .build()
+        val notification = ToolNotificationDataSource.buildToolNotification(this, item, index)
         try {
             manager.notify(TOOL_NOTIFICATION_BASE_ID + index, notification)
         } catch (_: SecurityException) {
@@ -515,29 +512,6 @@ class PersistentNotificationService : Service() {
                     Manifest.permission.POST_NOTIFICATIONS,
                 ) == PackageManager.PERMISSION_GRANTED
         }.getOrDefault(false)
-
-    private fun toolNotificationCollapsedView(item: ToolNotificationSpec): RemoteViews =
-        RemoteViews(packageName, R.layout.notification_tool_collapsed).apply {
-            setImageViewResource(R.id.iv_icon, item.iconRes)
-            setTextViewText(R.id.tv_title, getString(item.titleRes))
-            setTextViewText(R.id.tv_desc, getString(item.descriptionRes))
-        }
-
-    private fun toolNotificationExpandedView(item: ToolNotificationSpec): RemoteViews =
-        RemoteViews(packageName, R.layout.notification_tool_item).apply {
-            setImageViewResource(R.id.iv_icon, item.iconRes)
-            setTextViewText(R.id.tv_title, getString(item.titleRes))
-            setTextViewText(R.id.tv_desc, getString(item.descriptionRes))
-            setTextViewText(R.id.tv_action, getString(item.actionRes))
-        }
-
-    private fun toolNotificationHeadsUpView(item: ToolNotificationSpec): RemoteViews =
-        RemoteViews(packageName, R.layout.notification_tool_heads_up).apply {
-            setImageViewResource(R.id.iv_icon, item.iconRes)
-            setTextViewText(R.id.tv_title, getString(item.titleRes))
-            setTextViewText(R.id.tv_desc, getString(item.descriptionRes))
-            setTextViewText(R.id.tv_action, getString(item.actionRes))
-        }
 
     private fun registerCommandReceiver() {
         val filter =
@@ -648,13 +622,10 @@ class PersistentNotificationService : Service() {
         private const val KEY_NEXT_TOOL_INDEX = "next_tool_index"
         private const val PUSH_WINDOW_MS = 24L * 60L * 60L * 1000L
 
-//        private const val GLOBAL_TRIGGER_INTERVAL_MS = 30L * 60L * 1000L
-        private const val GLOBAL_TRIGGER_INTERVAL_MS = 0L
         private const val DEFAULT_TRIGGER_INTERVAL_MS = 2L * 60L * 60L * 1000L
         private const val BACKGROUND_TRIGGER_INTERVAL_MS = 60L * 60L * 1000L
         private const val POWER_TRIGGER_INTERVAL_MS = 3L * 60L * 60L * 1000L
         private const val SCREEN_ON_TRIGGER_DELAY_MS = 8_000L
-        private const val MAX_TRIGGERED_NOTIFICATIONS_PER_DAY = 500
 
         fun start(context: Context) {
             val appContext = context.applicationContext

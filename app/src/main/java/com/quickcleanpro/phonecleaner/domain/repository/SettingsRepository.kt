@@ -1,6 +1,4 @@
-﻿package com.quickcleanpro.phonecleaner.domain.repository
-
-import android.content.Intent
+package com.quickcleanpro.phonecleaner.domain.repository
 
 interface SettingsRepository {
     fun readTemperatureUnit(): String
@@ -26,32 +24,5 @@ interface SettingsRepository {
     fun hasDeniedNotificationRuntimePermission(): Boolean
 
     fun saveNotificationRuntimePermissionDenied()
-
-    fun hasPostNotificationsPermission(): Boolean
-
-    fun postNotificationsSettingsIntent(): Intent
-
-    fun hasStoragePermission(): Boolean
-
-    fun storagePermissionIntent(): Intent
-
-    fun storagePermissionFallbackIntent(): Intent?
-
-    fun hasAppUsageAccess(): Boolean
-
-    fun resetAppUsagePermissionCache()
-
-    fun appUsageSettingsIntent(): Intent
-
-    fun hasLocationPermission(): Boolean
-
-    fun appSettingsIntent(): Intent
-
-    fun hasNotificationListenerAccess(): Boolean
-
-    fun notificationListenerSettingsIntent(): Intent
-
-    fun hasOverlayPermission(): Boolean
-
-    fun overlayPermissionIntent(): Intent?
 }
+
