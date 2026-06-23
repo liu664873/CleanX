@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
@@ -58,6 +60,7 @@ fun HomeTabContent() {
 @Composable
 fun HomeTabContent(summaryState: HomeSummaryUiState) {
     val router = LocalRouter.current
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     val storageInfo = summaryState.storageInfo
     val usedStorageText =
         if (summaryState.isLoading && storageInfo.totalBytes <= 0L) {
@@ -133,7 +136,11 @@ fun HomeTabContent(summaryState: HomeSummaryUiState) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
-                    onClick = { router.navigate(Screen.Scan) },
+                    onClick = {
+                        permissionCoordinator.guard(CleanXProtectedAction.JunkStartScan) {
+                            router.navigate(Screen.Scan)
+                        }
+                    },
                     shape = RoundedCornerShape(28.dp),
                     colors =
                         ButtonDefaults.buttonColors(

@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
@@ -30,6 +32,7 @@ fun AntiVirusScreen(
     viewModel: VirusScanViewModel,
 ) {
     val router = LocalRouter.current
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
 
     VirusPageScaffold {
         val featureItems = listOf(
@@ -82,8 +85,10 @@ fun AntiVirusScreen(
             VirusPrimaryButton(
                 text = stringResource(R.string.deep_scan),
                 onClick = {
-                    viewModel.resetScanState()
-                    router.navigate(Screen.VirusDeepScan)
+                    permissionCoordinator.guard(CleanXProtectedAction.VirusDeepScanStart) {
+                        viewModel.resetScanState()
+                        router.navigate(Screen.VirusDeepScan)
+                    }
                 },
             )
 

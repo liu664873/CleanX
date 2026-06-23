@@ -1,39 +1,33 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates
 
-import android.app.Activity
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.DeleteConfirmDialog
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.NoResultsDialog
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
-import com.quickcleanpro.phonecleaner.presentation.common.permission.rememberPermissionGranted
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
-import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateFilesManagerViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerPhase
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.requestMediaStoreDeleteOrDeleteDirectly
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerPageBrush
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDeleteConfirmDialog
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerErrorToastEffect
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerNoResultsDialog
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerScaffold
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStartEffect
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStopOperationDialog
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileOperationPhase
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.leaveBack
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.leaveHome
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.rememberFileManagerPermissionState
 import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.views.DuplicateFilesManagerContentView
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import org.koin.androidx.compose.koinViewModel
@@ -54,15 +48,10 @@ private fun DuplicateFilesManagerScreenState(
     permissionGateConfig: PermissionGateConfig? = null
 ) {
     val router = LocalRouter.current
-    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val observedPermissionGranted = rememberPermissionGranted(permissionGateConfig)
-    var permissionGranted by remember(permissionGateConfig?.cleanXFeature) {
-        mutableStateOf(observedPermissionGranted)
-    }
+    val permissionState = rememberFileManagerPermissionState(permissionGateConfig)
     var showStopDialog by remember { mutableStateOf(false) }
-    var blockedOperationPhase by remember { mutableStateOf<FileManagerPhase?>(null) }
-    var isLeavingPage by remember { mutableStateOf(false) }
+    var blockedOperationPhase by remember { mutableStateOf<FileOperationPhase?>(null) }
     val displayState =
         blockedOperationPhase
             ?.let { blockedPhase -> uiState.copy(phase = blockedPhase) }
@@ -72,60 +61,44 @@ private fun DuplicateFilesManagerScreenState(
     fun scrollStateForGroup(groupId: Int): ScrollState =
         groupDetailScrollStates.getOrPut(groupId) { ScrollState(0) }
     val selectedGroup = displayState.selectedGroup
-    val deleteLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            viewModel.deleteSelectedFiles()
-        } else {
-            viewModel.rejectSystemDelete()
-        }
-    }
 
     FileManagerErrorToastEffect(
         errorMessage = uiState.errorMessage,
         onConsumed = viewModel::clearError
     )
 
-    LaunchedEffect(permissionGranted, viewModel) {
-        if (permissionGranted && !isLeavingPage) {
-            viewModel.startIfNeeded()
-        }
-    }
-
-    LaunchedEffect(observedPermissionGranted) {
-        permissionGranted = observedPermissionGranted
-    }
+    FileManagerStartEffect(permissionState, viewModel::startIfNeeded)
 
     fun handleBack() {
         when {
             selectedGroup != null -> viewModel.closeGroup()
-            !permissionGranted -> {
-                isLeavingPage = true
-                router.goBack()
+            !permissionState.granted -> {
+                permissionState.leaveBack(router)
             }
-            displayState.phase == FileManagerPhase.Scanning || displayState.phase == FileManagerPhase.Deleting -> {
+            displayState.phase == FileOperationPhase.Scanning || displayState.phase == FileOperationPhase.Deleting -> {
                 blockedOperationPhase = displayState.phase
                 showStopDialog = true
             }
-            displayState.phase == FileManagerPhase.Result -> router.goHome()
+            displayState.phase == FileOperationPhase.Result -> permissionState.leaveHome(router)
             else -> {
-                isLeavingPage = true
-                router.goBack()
+                permissionState.leaveBack(router)
             }
         }
     }
 
-    BackHandler(enabled = permissionGranted) { handleBack() }
+    BackHandler(enabled = permissionState.granted) { handleBack() }
 
-    CleanXScaffoldPage(
+    FileManagerScaffold(
         title = stringResource(R.string.nav_duplicate_files),
-        scrollEnabled = false,
-        contentPadding = PaddingValues(0.dp),
-        backgroundBrush = FileManagerPageBrush,
-        onBack = ::handleBack,
         permissionGateConfig = permissionGateConfig,
-        onPermissionGrantedChanged = { permissionGranted = it },
+        permissionState = permissionState,
+        onBack = ::handleBack,
         bottomBar = {
-            if (permissionGranted && (displayState.phase == FileManagerPhase.Browsing || displayState.phase == FileManagerPhase.ConfirmDelete) && selectedGroup == null) {
+            if (
+                permissionState.granted &&
+                (displayState.phase == FileOperationPhase.Browsing || displayState.phase == FileOperationPhase.ConfirmDelete) &&
+                selectedGroup == null
+            ) {
                 CleanXBottomActionBar(
                     enabled = displayState.filesToDelete.isNotEmpty(),
                     text = stringResource(R.string.file_clean_up_size, formatDuplicateCleanupSize(displayState.selectedDeleteSize)),
@@ -151,52 +124,35 @@ private fun DuplicateFilesManagerScreenState(
         )
     }
 
-    if (permissionGranted && showStopDialog) {
-        StopScanDialog(
-            onQuit = {
-                showStopDialog = false
-                blockedOperationPhase = null
-                isLeavingPage = true
-                viewModel.cancelActiveOperation()
-                router.goBack()
-            },
-            onResume = {
-                showStopDialog = false
-                blockedOperationPhase = null
-            }
-        )
-    }
+    FileManagerStopOperationDialog(
+        visible = showStopDialog,
+        permissionGranted = permissionState.granted,
+        onQuit = {
+            showStopDialog = false
+            blockedOperationPhase = null
+            viewModel.cancelActiveOperation()
+            permissionState.leaveBack(router)
+        },
+        onResume = {
+            showStopDialog = false
+            blockedOperationPhase = null
+        },
+    )
 
-    if (permissionGranted && displayState.phase == FileManagerPhase.ConfirmDelete) {
-        DeleteConfirmDialog(
-            onCancel = viewModel::cancelDelete,
-            onDelete = {
-                requestMediaStoreDeleteOrDeleteDirectly(
-                    context = context,
-                    uris = displayState.selectedUris,
-                    launchRequest = deleteLauncher::launch,
-                    deleteDirectly = viewModel::deleteSelectedFiles
-                )
-            }
-        )
-    }
+    FileManagerDeleteConfirmDialog(
+        visible = displayState.phase == FileOperationPhase.ConfirmDelete,
+        permissionGranted = permissionState.granted,
+        selectedUris = displayState.selectedUris,
+        onCancel = viewModel::cancelDelete,
+        onDeleteReady = viewModel::deleteSelectedFiles,
+        onRejected = viewModel::rejectSystemDelete,
+    )
 
-    if (permissionGranted && displayState.phase == FileManagerPhase.NoResults) {
-        NoResultsDialog(onBack = { router.goBack() })
-    }
-}
-
-@Composable
-private fun FileManagerErrorToastEffect(
-    errorMessage: String?,
-    onConsumed: () -> Unit
-) {
-    val context = LocalContext.current
-    LaunchedEffect(errorMessage) {
-        val message = errorMessage ?: return@LaunchedEffect
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-        onConsumed()
-    }
+    FileManagerNoResultsDialog(
+        visible = displayState.phase == FileOperationPhase.NoResults,
+        permissionGranted = permissionState.granted,
+        onBack = { permissionState.leaveBack(router) },
+    )
 }
 
 private fun formatDuplicateCleanupSize(bytes: Long): String =

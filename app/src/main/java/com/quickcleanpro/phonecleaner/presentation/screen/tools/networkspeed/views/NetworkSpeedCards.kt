@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXStatusBadge
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXStatusBadgeState
+import com.quickcleanpro.phonecleaner.presentation.common.components.animations.SemiCircularGauge
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkspeed.NetworkSpeedUiState
 
 @Composable
@@ -59,10 +61,10 @@ internal fun NetworkSpeedInfoCard(uiState: NetworkSpeedUiState) {
     }
 }
 
+
 @Composable
 internal fun NetworkSpeedMetricCard(
     uiState: NetworkSpeedUiState,
-    showRobot: Boolean,
     showActiveBadges: Boolean = false,
 ) {
     Surface(
@@ -74,24 +76,27 @@ internal fun NetworkSpeedMetricCard(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (showRobot) {
-                Image(
-                    painter = painterResource(id = R.drawable.robot),
-                    contentDescription = null,
-                    modifier = Modifier.size(width = 166.dp, height = 126.dp),
-                    contentScale = ContentScale.Fit,
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-                HorizontalDivider(color = NetworkSpeedDivider, thickness = 1.dp)
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+            // ★ 替换静态图片为动态仪表盘 ★
+            val isMeasuring = uiState.speed?.measured == false  // ① 动画开关
+            SemiCircularGauge(
+                modifier = Modifier.size(width = 166.dp, height = 126.dp),
+                isAnimating = isMeasuring,
+                arcStartColor = Color(0xFF4179FC),   // ② 蓝色渐变起点
+                arcEndColor = Color(0xFF6B9BFF),     // ③ 蓝色渐变终点（更亮）
+                needleColor = Color.White,           // ④ 白色指针，对比清晰
+                tickColor = Color(0xFFB0C4DE)        // ⑤ 浅灰蓝刻度
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            HorizontalDivider(color = NetworkSpeedDivider, thickness = 1.dp)
+            Spacer(modifier = Modifier.height(16.dp))
             NetworkSpeedMetricsRow(
                 downloadValue = uiState.downloadLabel,
                 uploadValue = uiState.uploadLabel,
                 showDownloadBadge = showActiveBadges && uiState.progress.downloadMbps == null,
                 showUploadBadge = showActiveBadges && uiState.progress.uploadMbps == null,
-                valueFontSize = if (showRobot) 34 else 38,
+                valueFontSize = 34,
             )
+            // 保留底部 fallback 提示，与动画条件一致
             if (uiState.speed?.measured == false) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(

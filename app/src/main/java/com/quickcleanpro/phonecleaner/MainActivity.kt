@@ -8,9 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.quickcleanpro.phonecleaner.core.permission.appSettingsIntent
 import com.quickcleanpro.phonecleaner.domain.repository.AppLockRepository
-import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 import com.quickcleanpro.phonecleaner.presentation.app.AppLaunchCoordinator
 import com.quickcleanpro.phonecleaner.presentation.app.CleanXAppRoot
 import com.quickcleanpro.phonecleaner.presentation.app.PersistentNotificationLifecycleController
@@ -18,7 +16,6 @@ import com.quickcleanpro.phonecleaner.presentation.theme.CleanXTheme
 import org.koin.android.ext.android.inject
 
 class MainActivity : AppCompatActivity() {
-    private val settingsRepository: SettingsRepository by inject()
     private val appLockRepository: AppLockRepository by inject()
     private val launchCoordinator = AppLaunchCoordinator()
 
@@ -39,16 +36,6 @@ class MainActivity : AppCompatActivity() {
             CleanXTheme {
                 CleanXAppRoot(
                     launchCoordinator = launchCoordinator,
-                    settingsRepository = settingsRepository,
-                    hasNotificationPermission = ::hasNotificationPermission,
-                    openAppSettings = {
-                        launchCoordinator.markExternalActivityLaunch()
-                        runCatching { startActivity(appSettingsIntent(this)) }
-                            .onFailure { launchCoordinator.cancelExternalActivityLaunch() }
-                    },
-                    onStartPersistentNotification = {
-                        runCatching { notificationLifecycleController.startServiceWhenAllowed() }
-                    },
                 )
             }
         }

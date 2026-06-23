@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionCoordinatorProvider
 import com.quickcleanpro.phonecleaner.presentation.common.route.AppNavGraph
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.screen.splash.SplashScreen
@@ -18,10 +18,6 @@ import com.quickcleanpro.phonecleaner.presentation.screen.splash.SplashScreen
 @Composable
 fun CleanXAppRoot(
     launchCoordinator: AppLaunchCoordinator,
-    settingsRepository: SettingsRepository,
-    hasNotificationPermission: () -> Boolean,
-    openAppSettings: () -> Unit,
-    onStartPersistentNotification: () -> Unit,
 ) {
     val navController = rememberNavController()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -40,43 +36,31 @@ fun CleanXAppRoot(
     CompositionLocalProvider(
         LocalExternalActivityLaunchHandler provides externalActivityLaunchHandler,
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            AppNavGraph(
-                navController = navController,
-                launchCoordinator = launchCoordinator,
-                startDestination = Screen.Splash.route,
-            )
+        CleanXPermissionCoordinatorProvider {
+            Box(modifier = Modifier.fillMaxSize()) {
+                AppNavGraph(
+                    navController = navController,
+                    launchCoordinator = launchCoordinator,
+                    startDestination = Screen.Splash.route,
+                )
 
-            if (pendingRequest is AppLaunchRequest.ForegroundReturn &&
-                currentRoute != Screen.Splash.route
-            ) {
-                SplashScreen {
-                    launchCoordinator.consumeRequestIfCurrent(pendingRequest)
+                if (pendingRequest is AppLaunchRequest.ForegroundReturn &&
+                    currentRoute != Screen.Splash.route
+                ) {
+                    SplashScreen {
+                        launchCoordinator.consumeRequestIfCurrent(pendingRequest)
+                    }
+                }
+            }
+
+            LaunchedEffect(navController, pendingRequest) {
+                if (pendingRequest !is AppLaunchRequest.NotificationTarget) return@LaunchedEffect
+                if (currentRoute == Screen.Splash.route) return@LaunchedEffect
+                navController.navigate(Screen.Splash.route) {
+                    launchSingleTop = true
                 }
             }
         }
-
-        LaunchedEffect(navController, pendingRequest) {
-            if (pendingRequest !is AppLaunchRequest.NotificationTarget) return@LaunchedEffect
-            if (currentRoute == Screen.Splash.route) return@LaunchedEffect
-            navController.navigate(Screen.Splash.route) {
-                launchSingleTop = true
-            }
-        }
-
-        NotificationPermissionPrompt(
-            isHomeVisible = currentRoute == Screen.Home.route &&
-                pendingRequest !is AppLaunchRequest.ForegroundReturn,
-            hasNotificationPermission = hasNotificationPermission,
-            hasDeniedNotificationPermission = {
-                runCatching { settingsRepository.hasDeniedNotificationRuntimePermission() }.getOrDefault(false)
-            },
-            rememberNotificationDenied = {
-                runCatching { settingsRepository.saveNotificationRuntimePermissionDenied() }
-            },
-            openAppSettings = openAppSettings,
-            onPermissionGranted = onStartPersistentNotification,
-        )
     }
 }
 

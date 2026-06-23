@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
@@ -64,6 +66,7 @@ fun ToolBoxTabContent() {
 @Composable
 fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
     val router = LocalRouter.current
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     val batteryCapacity =
         summaryState.batteryInfo.levelPercent
             .takeIf { it >= 0 }
@@ -115,13 +118,19 @@ fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     ToolItem(R.drawable.ic_app_usage, stringResource(R.string.app_usage)) {
-                        router.navigate(Screen.AppUsage)
+                        permissionCoordinator.guard(CleanXProtectedAction.AppUsageLoadStats) {
+                            router.navigate(Screen.AppUsage)
+                        }
                     }
                     ToolItem(R.drawable.ic_notification_bar, stringResource(R.string.notification_bar)) {
-                        router.navigate(Screen.NotificationBar)
+                        permissionCoordinator.guard(CleanXProtectedAction.NotificationBarEnable) {
+                            router.navigate(Screen.NotificationBar)
+                        }
                     }
                     ToolItem(R.drawable.ic_whatsapp_cleaner, stringResource(R.string.whatsapp_cleaner)) {
-                        router.navigate(Screen.WhatsAppCleaner)
+                        permissionCoordinator.guard(CleanXProtectedAction.WhatsAppStartScan) {
+                            router.navigate(Screen.WhatsAppCleaner)
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -132,7 +141,9 @@ fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     ToolItem(R.drawable.ic_network_usage, stringResource(R.string.network_usage)) {
-                        router.navigate(Screen.NetworkUsage)
+                        permissionCoordinator.guard(CleanXProtectedAction.NetworkUsageLoadStats) {
+                            router.navigate(Screen.NetworkUsage)
+                        }
                     }
                     ToolItem(R.drawable.ic_network_scan, stringResource(R.string.network_scan)) {
                         router.navigate(Screen.NetworkScan)

@@ -45,9 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.DuplicateFileEntry
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.DuplicateGroupItem
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.duplicateFileKey
+import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateFileEntry
+import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateGroupItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.duplicateFileKey
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerCardColor
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerDivider
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerListBottomPadding

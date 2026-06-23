@@ -18,7 +18,6 @@ internal fun NetworkSpeedTestingView(uiState: NetworkSpeedUiState) {
     Spacer(modifier = Modifier.height(20.dp))
     NetworkSpeedMetricCard(
         uiState = uiState,
-        showRobot = true,
         showActiveBadges = true,
     )
     Spacer(modifier = Modifier.height(8.dp))

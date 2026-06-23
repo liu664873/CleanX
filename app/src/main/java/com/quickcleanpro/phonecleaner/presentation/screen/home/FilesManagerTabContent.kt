@@ -31,6 +31,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
@@ -45,6 +47,7 @@ private val OnboardingNavy = Color(0xFF1D2959)
 @Composable
 fun FilesManagerTabContent() {
     val router = LocalRouter.current
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     val items =
         listOf(
             FileManagerItem(R.drawable.ic_photos, R.string.nav_photos, Screen.PhotosManager),
@@ -71,7 +74,11 @@ fun FilesManagerTabContent() {
         items(items) { item ->
             FileManagerCard(
                 item = item,
-                onClick = { router.navigate(item.screen) },
+                onClick = {
+                    permissionCoordinator.guard(CleanXProtectedAction.FileManagerLoadFiles) {
+                        router.navigate(item.screen)
+                    }
+                },
             )
         }
     }

@@ -49,6 +49,8 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.animations.
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerCategory
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerGroup
@@ -69,6 +71,7 @@ private val CardRadius = 12.dp
 @Composable
 internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
 
     LaunchedEffect(viewModel) {
         viewModel.startScanIfNeeded()
@@ -86,7 +89,11 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
             if (uiState.phase == WhatsAppCleanerPhase.ScanResult) {
                 WhatsAppScanResultBottomBar(
                     selectedBytes = uiState.selectedBytes,
-                    onClean = viewModel::cleanSelectedFiles,
+                    onClean = {
+                        permissionCoordinator.guard(CleanXProtectedAction.WhatsAppCleanSelected) {
+                            viewModel.cleanSelectedFiles()
+                        }
+                    },
                 )
             }
         },

@@ -17,8 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -37,70 +37,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBackground
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXHeader
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXSegmentedTabs
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXTabItem
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerLayout
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerMediaConfig
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerItemKind
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerListConfig
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerListStyle
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerTab
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerListItem
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerMediaGroup
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerMediaItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileImageDisplayItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileListDisplayItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileListDisplayStyle
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileListIconKind
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerTabDisplayItem
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.list.FileManagerRealImage
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.formatFileDate
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.list.FileManagerPhotoPrivacyView
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.list.FileManagerScreenshotGridView
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.list.FileManagerSimilarPhotosView
-
-@Composable
-internal fun FileManagerHeader(
-    title: String,
-    onBack: () -> Unit,
-    selectionAction: String?,
-    onSelectionAction: () -> Unit
-) {
-    FileManagerTopBar(title = title, onBack = onBack)
-    FileManagerSelectionAction(
-        selectionAction = selectionAction,
-        onSelectionAction = onSelectionAction
-    )
-}
-
-@Composable
-internal fun FileManagerTopBar(
-    title: String,
-    onBack: () -> Unit,
-    actionText: String? = null,
-    actionEnabled: Boolean = true,
-    onAction: () -> Unit = {}
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(CleanXBackground)
-            .padding(horizontal = 16.dp)
-    ) {
-        CleanXHeader(
-            title = title,
-            onBack = onBack,
-            actions = {
-                if (actionText != null) {
-                    Text(
-                        text = actionText,
-                        color = CleanXBlue.copy(alpha = if (actionEnabled) 1f else 0.45f),
-                        fontSize = 16.sp,
-                        modifier = Modifier.clickable(enabled = actionEnabled) { onAction() }
-                    )
-                }
-            }
-        )
-    }
-}
 
 @Composable
 internal fun FileManagerTopAction(
@@ -119,103 +64,17 @@ internal fun FileManagerTopAction(
 }
 
 @Composable
-internal fun FileManagerSelectionAction(
-    selectionAction: String?,
-    onSelectionAction: () -> Unit
-) {
-    if (selectionAction == null) return
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(36.dp),
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = selectionAction,
-            color = CleanXBlue,
-            fontSize = 16.sp,
-            modifier = Modifier.clickable { onSelectionAction() }
-        )
-    }
-}
-
-@Composable
-internal fun FileManagerMediaBrowserView(
-    config: FileManagerMediaConfig,
-    selectedIds: Set<Int>,
-    allSelected: Boolean,
-    onToggleAll: () -> Unit,
-    onToggleIds: (Set<Int>) -> Unit,
-    onToggleGroup: (FileManagerMediaGroup) -> Unit,
-    onSelect: (Int) -> Unit,
-    onOpenDetail: (FileManagerMediaItem) -> Unit = {},
-    scrollState: ScrollState,
-    selectedMediaTabIndex: Int = 0,
-    onMediaTabSelected: (Int) -> Unit = {}
-) {
-    when (config.layout) {
-        FileManagerLayout.Screenshots -> FileManagerScreenshotGridView(
-            items = config.items,
-            allSelected = allSelected,
-            selectedIds = selectedIds,
-            scrollState = scrollState,
-            onToggleAll = onToggleAll,
-            onSelect = onSelect,
-            onOpenDetail = onOpenDetail
-        )
-        FileManagerLayout.MediaGrid -> FileManagerMediaGridView(
-            tabs = config.tabs,
-            items = config.items,
-            selectedIds = selectedIds,
-            scrollState = scrollState,
-            onToggleVisibleItems = onToggleIds,
-            onSelect = onSelect,
-            onOpenDetail = onOpenDetail,
-            selectedTabIndex = selectedMediaTabIndex,
-            onTabSelected = onMediaTabSelected
-        )
-        FileManagerLayout.AudioList -> FileManagerAudioListView(
-            tabs = config.tabs,
-            items = config.items,
-            selectedIds = selectedIds,
-            scrollState = scrollState,
-            onToggleVisibleItems = onToggleIds,
-            onSelect = onSelect,
-            onOpenDetail = onOpenDetail,
-            selectedTabIndex = selectedMediaTabIndex,
-            onTabSelected = onMediaTabSelected
-        )
-        FileManagerLayout.SimilarPhotos -> FileManagerSimilarPhotosView(
-            groups = config.groups,
-            selectedIds = selectedIds,
-            scrollState = scrollState,
-            onToggleGroup = onToggleGroup,
-            onSelect = onSelect,
-            onOpenDetail = onOpenDetail
-        )
-        FileManagerLayout.PhotoPrivacy -> FileManagerPhotoPrivacyView(
-            items = config.items,
-            selectedIds = selectedIds,
-            allSelected = allSelected,
-            onToggleAll = onToggleAll,
-            onSelect = onSelect
-        )
-    }
-}
-
-@Composable
 internal fun FileManagerMediaGridView(
-    tabs: List<FileManagerTab>,
-    items: List<FileManagerMediaItem>,
+    tabs: List<FileManagerTabDisplayItem>,
+    items: List<FileImageDisplayItem>,
     selectedIds: Set<Int>,
     scrollState: ScrollState,
     onToggleVisibleItems: (Set<Int>) -> Unit,
     onSelect: (Int) -> Unit,
-    onOpenDetail: (FileManagerMediaItem) -> Unit,
+    onOpenDetail: (FileImageDisplayItem) -> Unit,
     selectedTabIndex: Int = 0,
-    onTabSelected: (Int) -> Unit = {}
+    onTabSelected: (Int) -> Unit = {},
+    showPlayBadge: Boolean = true,
 ) {
     val visibleItems = remember(items, selectedTabIndex) {
         filterMediaGridItems(tabs.getOrNull(selectedTabIndex)?.title.orEmpty(), items)
@@ -267,7 +126,7 @@ internal fun FileManagerMediaGridView(
                                 selected = item.id in selectedIds,
                                 onOpen = { onOpenDetail(item) },
                                 onToggleSelection = { onSelect(item.id) },
-                                showPlayBadge = true,
+                                showPlayBadge = showPlayBadge,
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(114.dp)
@@ -289,16 +148,17 @@ internal fun FileManagerMediaGridView(
 
 @Composable
 internal fun FileManagerListView(
-    config: FileManagerListConfig,
-    items: List<FileManagerListItem>,
+    tabs: List<FileManagerTabDisplayItem>,
+    items: List<FileListDisplayItem>,
     selectedTabIndex: Int,
     selectedIds: Set<Int>,
     allSelected: Boolean,
     scrollState: ScrollState,
+    style: FileListDisplayStyle,
     onTabSelected: (Int) -> Unit,
     onToggleAll: () -> Unit,
     onSelect: (Int) -> Unit,
-    onOpenDetail: (FileManagerListItem) -> Unit = {}
+    onOpenDetail: (FileListDisplayItem) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -307,7 +167,7 @@ internal fun FileManagerListView(
             .padding(bottom = FileManagerListBottomPadding)
     ) {
         CleanXSegmentedTabs(
-            items = config.tabs.map { tab ->
+            items = tabs.map { tab ->
                 CleanXTabItem(
                     title = localizedFileManagerTabTitle(tab.title),
                 )
@@ -349,7 +209,7 @@ internal fun FileManagerListView(
                     FileManagerListRow(
                         item = item,
                         selected = item.id in selectedIds,
-                        style = config.style,
+                        style = style,
                         onOpen = { onOpenDetail(item) },
                         onToggleSelection = { onSelect(item.id) }
                     )
@@ -365,14 +225,14 @@ internal fun FileManagerListView(
 }
 
 @Composable
-private fun FileManagerAudioListView(
-    tabs: List<FileManagerTab>,
-    items: List<FileManagerMediaItem>,
+internal fun FileManagerAudioListView(
+    tabs: List<FileManagerTabDisplayItem>,
+    items: List<FileImageDisplayItem>,
     selectedIds: Set<Int>,
     scrollState: ScrollState,
     onToggleVisibleItems: (Set<Int>) -> Unit,
     onSelect: (Int) -> Unit,
-    onOpenDetail: (FileManagerMediaItem) -> Unit,
+    onOpenDetail: (FileImageDisplayItem) -> Unit,
     selectedTabIndex: Int = 0,
     onTabSelected: (Int) -> Unit = {}
 ) {
@@ -442,10 +302,10 @@ private fun FileManagerAudioListView(
     }
 }
 
-internal fun filterMediaGridItems(tabTitle: String, items: List<FileManagerMediaItem>): List<FileManagerMediaItem> {
-    fun FileManagerMediaItem.matchesFolder(name: String): Boolean =
-        realFile?.bucketName?.contains(name, ignoreCase = true) == true ||
-            realFile?.path?.contains("/$name/", ignoreCase = true) == true
+internal fun filterMediaGridItems(tabTitle: String, items: List<FileImageDisplayItem>): List<FileImageDisplayItem> {
+    fun FileImageDisplayItem.matchesFolder(name: String): Boolean =
+        bucketName?.contains(name, ignoreCase = true) == true ||
+            path?.contains("/$name/", ignoreCase = true) == true
 
     return when (tabTitle) {
         "DCIM" -> items.filter { it.matchesFolder("DCIM") || it.matchesFolder("Camera") }
@@ -456,10 +316,10 @@ internal fun filterMediaGridItems(tabTitle: String, items: List<FileManagerMedia
     }
 }
 
-internal fun filterFileManagerListItems(tabTitle: String, items: List<FileManagerListItem>): List<FileManagerListItem> {
-    fun FileManagerListItem.matchesFolder(name: String): Boolean =
-        realFile?.bucketName?.contains(name, ignoreCase = true) == true ||
-            realFile?.path?.contains("/$name/", ignoreCase = true) == true
+internal fun filterFileManagerListItems(tabTitle: String, items: List<FileListDisplayItem>): List<FileListDisplayItem> {
+    fun FileListDisplayItem.matchesFolder(name: String): Boolean =
+        bucketName?.contains(name, ignoreCase = true) == true ||
+            path?.contains("/$name/", ignoreCase = true) == true
 
     return when (tabTitle) {
         "Download" -> items.filter { it.matchesFolder("Download") }
@@ -470,13 +330,13 @@ internal fun filterFileManagerListItems(tabTitle: String, items: List<FileManage
 
 @Composable
 internal fun FileManagerListRow(
-    item: FileManagerListItem,
+    item: FileListDisplayItem,
     selected: Boolean,
-    style: FileManagerListStyle,
+    style: FileListDisplayStyle,
     onOpen: () -> Unit,
     onToggleSelection: () -> Unit
 ) {
-    val isDocumentsStyle = style == FileManagerListStyle.Documents
+    val isDocumentsStyle = style == FileListDisplayStyle.Documents
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -529,25 +389,13 @@ internal fun FileManagerListRow(
 }
 
 @Composable
-internal fun localizedFileManagerTabTitle(title: String): String =
-    when (title) {
-        "All" -> stringResource(R.string.file_all)
-        "Photo" -> stringResource(R.string.file_photo)
-        "Pictures" -> stringResource(R.string.file_pictures)
-        "Download" -> stringResource(R.string.file_download)
-        "Music" -> stringResource(R.string.file_music)
-        "Other" -> stringResource(R.string.file_other)
-        else -> title
-    }
-
-@Composable
 internal fun FileManagerItemTypeIcon(
-    kind: FileManagerItemKind,
+    kind: FileListIconKind,
     modifier: Modifier = Modifier
 ) {
     val colors = when (kind) {
-        FileManagerItemKind.LargeVideo -> listOf(Color(0xFFD92BFF), Color(0xFF921CF0))
-        FileManagerItemKind.Document -> listOf(Color(0xFFFF943F), Color(0xFFFF7A21))
+        FileListIconKind.LargeVideo -> listOf(Color(0xFFD92BFF), Color(0xFF921CF0))
+        FileListIconKind.Document -> listOf(Color(0xFFFF943F), Color(0xFFFF7A21))
     }
     Box(
         modifier = modifier
@@ -557,8 +405,8 @@ internal fun FileManagerItemTypeIcon(
     ) {
         Icon(
             imageVector = when (kind) {
-                FileManagerItemKind.LargeVideo -> Icons.Default.PlayArrow
-                FileManagerItemKind.Document -> Icons.AutoMirrored.Filled.InsertDriveFile
+                FileListIconKind.LargeVideo -> Icons.Default.PlayArrow
+                FileListIconKind.Document -> Icons.AutoMirrored.Filled.InsertDriveFile
             },
             contentDescription = null,
             tint = Color.White,
@@ -612,7 +460,7 @@ internal fun FileManagerDivider(modifier: Modifier = Modifier) {
 
 @Composable
 private fun MediaGridTile(
-    item: FileManagerMediaItem,
+    item: FileImageDisplayItem,
     selected: Boolean,
     onOpen: () -> Unit,
     onToggleSelection: () -> Unit,
@@ -655,7 +503,7 @@ private fun MediaGridTile(
 
 @Composable
 private fun FileManagerMediaFileRow(
-    item: FileManagerMediaItem,
+    item: FileImageDisplayItem,
     selected: Boolean,
     iconResId: Int,
     onOpen: () -> Unit,
@@ -679,7 +527,7 @@ private fun FileManagerMediaFileRow(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = item.realFile?.name ?: item.sizeLabel,
+                text = item.name.ifBlank { item.sizeLabel },
                 color = FileManagerNavy,
                 fontSize = 20.sp,
                 lineHeight = 24.sp,
@@ -689,7 +537,7 @@ private fun FileManagerMediaFileRow(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = item.realFile?.let { "${formatFileDate(it.modifiedSeconds)} ${item.sizeLabel}" } ?: item.sizeLabel,
+                text = item.meta.ifBlank { item.sizeLabel },
                 color = FileManagerNavy,
                 fontSize = 16.sp,
                 lineHeight = 19.sp,

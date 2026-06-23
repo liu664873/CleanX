@@ -36,6 +36,8 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.styles.Clea
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXButtonHeight
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXButtonShape
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkscan.views.NetworkScanContentView
@@ -47,6 +49,7 @@ fun NetworkScanScreen(viewModel: NetworkScanViewModel = koinViewModel()) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     DisposableEffect(lifecycleOwner, viewModel) {
@@ -81,7 +84,11 @@ fun NetworkScanScreen(viewModel: NetworkScanViewModel = koinViewModel()) {
                     }
                     viewModel.refreshNetworkStateUntilWifiConnected()
                 },
-                onScan = viewModel::startScan,
+                onScan = {
+                    permissionCoordinator.guard(CleanXProtectedAction.NetworkScanStart) {
+                        viewModel.startScan()
+                    }
+                },
             )
         },
     ) {

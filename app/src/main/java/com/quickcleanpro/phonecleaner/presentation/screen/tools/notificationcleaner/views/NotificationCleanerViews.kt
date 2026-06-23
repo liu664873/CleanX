@@ -67,6 +67,8 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.animations.
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarPage
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarUiState
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationCleanerViewModel
@@ -104,6 +106,7 @@ internal fun NotificationCleanerScreenState(
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     var pendingCompletion by rememberSaveable { mutableStateOf(false) }
     var showComplete by rememberSaveable { mutableStateOf(false) }
 
@@ -180,8 +183,10 @@ internal fun NotificationCleanerScreenState(
                         onEnableClick = {
                             showComplete = false
                             pendingCompletion = true
-                            if (viewModel.setBlockingEnabled(true)) {
-                                pendingCompletion = false
+                            permissionCoordinator.guard(CleanXProtectedAction.NotificationCleanerEnable) {
+                                if (viewModel.setBlockingEnabled(true)) {
+                                    pendingCompletion = false
+                                }
                             }
                         },
                     )
@@ -213,7 +218,13 @@ internal fun NotificationCleanerScreenState(
                         onEnabledChange = { checked ->
                             showComplete = false
                             pendingCompletion = false
-                            viewModel.setBlockingEnabled(checked)
+                            if (checked) {
+                                permissionCoordinator.guard(CleanXProtectedAction.NotificationCleanerEnable) {
+                                    viewModel.setBlockingEnabled(true)
+                                }
+                            } else {
+                                viewModel.setBlockingEnabled(false)
+                            }
                         },
                         onTogglePackage = viewModel::togglePackage,
                         onDone = viewModel::leaveSettings,

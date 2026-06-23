@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBackground
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXText
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDetailItem
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDetailPreview
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileDetailDisplayItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileDetailDisplayPreview
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerItemTypeIcon
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.SelectionCircle
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.list.FileManagerImageQuality
@@ -45,7 +45,7 @@ private val DetailContentBottomPadding = FileManagerDetailSelectionBarHeight + 3
 
 @Composable
 internal fun FileManagerDetailView(
-    items: List<FileManagerDetailItem>,
+    items: List<FileDetailDisplayItem>,
     initialIndex: Int,
     selectedIds: Set<Int>,
     selectedSize: Long,
@@ -93,23 +93,23 @@ internal fun FileManagerDetailView(
 }
 
 @Composable
-private fun FileManagerDetailPage(item: FileManagerDetailItem) {
+private fun FileManagerDetailPage(item: FileDetailDisplayItem) {
     when (val preview = item.preview) {
-        is FileManagerDetailPreview.MediaPreview -> {
+        is FileDetailDisplayPreview.MediaPreview -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Brush.linearGradient(preview.mediaItem.colors)),
+                    .background(Brush.linearGradient(preview.item.colors)),
                 contentAlignment = Alignment.Center,
             ) {
                 FileManagerRealImage(
-                    item = preview.mediaItem,
+                    item = preview.item,
                     contentScale = ContentScale.Fit,
                     quality = FileManagerImageQuality.Detail,
                 )
             }
         }
-        is FileManagerDetailPreview.FileIconPreview -> {
+        is FileDetailDisplayPreview.FileIconPreview -> {
             FileManagerIconDetailPage(
                 item = item,
                 preview = preview,
@@ -120,8 +120,8 @@ private fun FileManagerDetailPage(item: FileManagerDetailItem) {
 
 @Composable
 private fun FileManagerIconDetailPage(
-    item: FileManagerDetailItem,
-    preview: FileManagerDetailPreview.FileIconPreview,
+    item: FileDetailDisplayItem,
+    preview: FileDetailDisplayPreview.FileIconPreview,
 ) {
     Column(
         modifier = Modifier

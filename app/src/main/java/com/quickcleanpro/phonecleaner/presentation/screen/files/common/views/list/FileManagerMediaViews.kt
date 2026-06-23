@@ -26,8 +26,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
@@ -35,8 +35,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,11 +61,11 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXMuted
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXSegmentedTabs
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXTabItem
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXText
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerMediaGroup
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerMediaItem
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerMediaTab
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerListBottomPadding
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileImageDisplayItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileImageGroupDisplayItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerTabDisplayItem
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerCardColor
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerListBottomPadding
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerMutedNavy
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerNavy
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerSelectAllAction
@@ -101,13 +101,13 @@ private val FileManagerBitmapCache = object : LruCache<FileManagerBitmapCacheKey
 
 @Composable
 internal fun FileManagerScreenshotGridView(
-    items: List<FileManagerMediaItem>,
+    items: List<FileImageDisplayItem>,
     allSelected: Boolean,
     selectedIds: Set<Int>,
     scrollState: ScrollState,
     onToggleAll: () -> Unit,
     onSelect: (Int) -> Unit,
-    onOpenDetail: (FileManagerMediaItem) -> Unit
+    onOpenDetail: (FileImageDisplayItem) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -159,18 +159,18 @@ internal fun FileManagerScreenshotGridView(
 
 @Composable
 internal fun FileManagerSimilarPhotosView(
-    groups: List<FileManagerMediaGroup>,
+    groups: List<FileImageGroupDisplayItem>,
     selectedIds: Set<Int>,
     scrollState: ScrollState,
-    onToggleGroup: (FileManagerMediaGroup) -> Unit,
+    onToggleGroup: (FileImageGroupDisplayItem) -> Unit,
     onSelect: (Int) -> Unit,
-    onOpenDetail: (FileManagerMediaItem) -> Unit
+    onOpenDetail: (FileImageDisplayItem) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding( bottom = FileManagerListBottomPadding)
+            .padding(bottom = FileManagerListBottomPadding)
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -224,7 +224,7 @@ internal fun FileManagerSimilarPhotosView(
 
 @Composable
 internal fun FileManagerPhotoPrivacyView(
-    items: List<FileManagerMediaItem>,
+    items: List<FileImageDisplayItem>,
     selectedIds: Set<Int>,
     allSelected: Boolean,
     onToggleAll: () -> Unit,
@@ -277,12 +277,8 @@ internal fun FileManagerPhotoPrivacyView(
                 modifier = Modifier.padding(top = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                val firstDateSec = items.firstOrNull()?.realFile?.modifiedSeconds ?: 0L
-                val dateLabel = if (firstDateSec > 0) {
-                    SimpleDateFormat("yyyy-MM", Locale.US).format(Date(firstDateSec * 1000))
-                } else {
-                    stringResource(R.string.file_photos)
-                }
+                val firstDateSec = items.firstOrNull()?.meta?.takeIf { it.isNotBlank() }
+                val dateLabel = firstDateSec?.substringBefore(" ") ?: stringResource(R.string.file_photos)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -346,7 +342,7 @@ internal fun FileManagerGroupHeader(
 
 @Composable
 internal fun FileManagerThumbnail(
-    item: FileManagerMediaItem,
+    item: FileImageDisplayItem,
     selected: Boolean,
     onOpen: () -> Unit,
     onToggleSelection: () -> Unit,
@@ -394,15 +390,15 @@ internal fun FileManagerThumbnail(
 
 @Composable
 internal fun FileManagerGalleryBrowserView(
-    tabs: List<FileManagerMediaTab>,
+    tabs: List<FileManagerTabDisplayItem>,
     selectedTabIndex: Int,
-    items: List<FileManagerMediaItem>,
+    items: List<FileImageDisplayItem>,
     selectedIds: Set<Int>,
     scrollState: ScrollState,
     onTabSelected: (Int) -> Unit,
     onSelect: (Int) -> Unit,
     onSelectAll: () -> Unit,
-    onOpenDetail: (FileManagerMediaItem) -> Unit
+    onOpenDetail: (FileImageDisplayItem) -> Unit
 ) {
     val allSelected = items.isNotEmpty() && selectedIds.containsAll(items.map { it.id })
     Column(
@@ -527,38 +523,8 @@ private fun FileManagerGalleryGroupHeader(
 }
 
 @Composable
-internal fun FileManagerGalleryTab(title: String, size: String?, selected: Boolean, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .width(68.dp)
-            .clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = localizedFileManagerTabTitle(title),
-            color = if (selected) CleanXText else CleanXMutedText,
-            fontSize = 16.sp,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
-        )
-        Text(
-            text = size ?: "",
-            color = CleanXText,
-            fontSize = 10.sp,
-            lineHeight = 12.sp
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Box(
-            modifier = Modifier
-                .width(66.dp)
-                .height(2.dp)
-                .background(if (selected) CleanXBlue else Color.Transparent)
-        )
-    }
-}
-
-@Composable
 internal fun FileManagerGalleryTile(
-    item: FileManagerMediaItem,
+    item: FileImageDisplayItem,
     selected: Boolean,
     onOpen: () -> Unit,
     onToggleSelection: () -> Unit,
@@ -583,7 +549,7 @@ internal fun FileManagerGalleryTile(
 
 @Composable
 internal fun FileManagerRealImage(
-    item: FileManagerMediaItem,
+    item: FileImageDisplayItem,
     contentScale: ContentScale = ContentScale.Crop,
     quality: FileManagerImageQuality = FileManagerImageQuality.Grid
 ) {
@@ -600,8 +566,8 @@ internal fun FileManagerRealImage(
             }
         }
     }
-    val bitmap by produceState<Bitmap?>(initialValue = null, item.realFile?.uri, quality, targetSizePx) {
-        val uri = item.realFile?.uri
+    val bitmap by produceState<Bitmap?>(initialValue = null, item.uri, quality, targetSizePx) {
+        val uri = item.uri
         value = if (uri == null) {
             null
         } else {

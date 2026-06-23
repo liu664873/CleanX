@@ -1,4 +1,4 @@
-package com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.process
+package com.quickcleanpro.phonecleaner.presentation.screen.files.common.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box

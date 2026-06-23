@@ -61,3 +61,15 @@ internal fun FileManagerSelectAllAction(
         SelectionCircle(selected = selected)
     }
 }
+
+@Composable
+internal fun localizedFileManagerTabTitle(title: String): String =
+    when (title) {
+        "All" -> stringResource(R.string.file_all)
+        "Photo" -> stringResource(R.string.file_photo)
+        "Pictures" -> stringResource(R.string.file_pictures)
+        "Download" -> stringResource(R.string.file_download)
+        "Music" -> stringResource(R.string.file_music)
+        "Other" -> stringResource(R.string.file_other)
+        else -> title
+    }

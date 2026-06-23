@@ -14,7 +14,6 @@ import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkspeed.Net
 internal fun NetworkSpeedResultView(uiState: NetworkSpeedUiState) {
     NetworkSpeedMetricCard(
         uiState = uiState,
-        showRobot = false,
     )
     Spacer(modifier = Modifier.height(40.dp))
     ToolFeatureBanners(

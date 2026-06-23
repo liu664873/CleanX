@@ -10,16 +10,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXEmptyScanResult
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.DuplicateFileEntry
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.DuplicateGroupItem
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerPhase
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.FileManagerCompleteView
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.FileManagerDeletingView
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.FileManagerResultView
+import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateFileEntry
+import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateGroupItem
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileOperationPhase
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerPageBrush
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.splitSizeLabel
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.process.FileManagerScanningView
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.splitFileSizeLabel
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.FileOperationPhaseContent
 import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateFilesManagerUiState
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 
@@ -35,21 +31,23 @@ internal fun DuplicateFilesManagerContentView(
     onToggleGroupSelection: () -> Unit,
     onContinue: () -> Unit,
 ) {
-    if (uiState.phase == FileManagerPhase.Deleting) {
-        FileManagerDeletingView(stringResource(R.string.file_deleting_duplicate_files))
-        return
-    }
-
+    val result = FileSizeFormatter.format(uiState.deletedBytes).splitFileSizeLabel()
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(FileManagerPageBrush)
             .padding(horizontal = 16.dp),
     ) {
-        when (uiState.phase) {
-            FileManagerPhase.Scanning -> FileManagerScanningView(text = stringResource(R.string.file_scanning_duplicate_files))
-            FileManagerPhase.Browsing,
-            FileManagerPhase.ConfirmDelete -> {
+        FileOperationPhaseContent(
+            phase = uiState.phase,
+            scanningText = stringResource(R.string.file_scanning_duplicate_files),
+            deletingText = stringResource(R.string.file_deleting_duplicate_files),
+            resultAmount = result.first,
+            resultUnit = result.second,
+            resultCaption = stringResource(R.string.file_deleted_in_cleanup),
+            onContinue = onContinue,
+        ) {
+            if (uiState.phase == FileOperationPhase.Browsing || uiState.phase == FileOperationPhase.ConfirmDelete) {
                 val group = uiState.selectedGroup
                 if (group == null) {
                     DuplicateFilesGroupListView(
@@ -71,20 +69,6 @@ internal fun DuplicateFilesManagerContentView(
                     )
                 }
             }
-            FileManagerPhase.Deleting -> Unit
-            FileManagerPhase.CompleteAnimation -> FileManagerCompleteView()
-            FileManagerPhase.Result -> {
-                val result = FileSizeFormatter.format(uiState.deletedBytes).splitSizeLabel()
-                FileManagerResultView(
-                    amount = result.first,
-                    unit = result.second,
-                    caption = stringResource(R.string.file_deleted_in_cleanup),
-                    onContinue = onContinue,
-                )
-            }
-            FileManagerPhase.NoResults -> CleanXEmptyScanResult(
-                message = stringResource(R.string.file_scan_completed_no_results),
-            )
         }
     }
 }

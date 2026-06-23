@@ -120,7 +120,7 @@ internal class AppLockViewModel(
                 pinInput = "",
                 firstPin = "",
                 pinErrorRes = null,
-                overlayPermissionRequired = shouldPromptOverlayPermission(page = AppLockPage.Manage)
+                overlayPermissionRequired = false
             )
         }
     }
@@ -209,7 +209,7 @@ internal class AppLockViewModel(
                 firstPin = "",
                 pinErrorRes = null,
                 isPinSet = repository.isPinSet(),
-                overlayPermissionRequired = shouldPromptOverlayPermission(page = targetPage)
+                overlayPermissionRequired = false
             )
         }
     }
@@ -236,22 +236,6 @@ internal class AppLockViewModel(
 
     fun consumeToast() {
         _uiState.update { it.copy(toastRes = null) }
-    }
-
-    fun overlayPermissionIntent(): android.content.Intent? =
-        repository.overlayPermissionIntent()
-
-    fun refreshOverlayPermission() {
-        _uiState.update {
-            it.copy(
-                isPinSet = repository.isPinSet(),
-                overlayPermissionRequired = shouldPromptOverlayPermission(page = it.page)
-            )
-        }
-    }
-
-    fun dismissOverlayPermissionDialog() {
-        _uiState.update { it.copy(overlayPermissionRequired = false) }
     }
 
     private fun processCompletePin(pin: String) {
@@ -285,7 +269,7 @@ internal class AppLockViewModel(
                             pinErrorRes = null,
                             monitoringEnabled = true,
                             isPinSet = true,
-                            overlayPermissionRequired = shouldPromptOverlayPermission(page = AppLockPage.Manage)
+                            overlayPermissionRequired = false
                         )
                     }
                     loadApps()
@@ -303,7 +287,7 @@ internal class AppLockViewModel(
                             pinInput = "",
                             pinErrorRes = null,
                             isPinSet = true,
-                            overlayPermissionRequired = shouldPromptOverlayPermission(page = AppLockPage.Manage)
+                            overlayPermissionRequired = false
                         )
                     }
                     loadApps()
@@ -348,7 +332,7 @@ internal class AppLockViewModel(
                             firstPin = "",
                             pinErrorRes = null,
                             isPinSet = true,
-                            overlayPermissionRequired = shouldPromptOverlayPermission(page = it.pinReturnPage),
+                            overlayPermissionRequired = false,
                             toastRes = R.string.pin_updated_successfully
                         )
                     }
@@ -411,9 +395,7 @@ internal class AppLockViewModel(
     }
 
     private fun shouldPromptOverlayPermission(page: AppLockPage): Boolean =
-        repository.isPinSet() &&
-            page == AppLockPage.Manage &&
-            !repository.hasOverlayPermission()
+        false
 
     companion object {
         private const val PIN_LENGTH = 4

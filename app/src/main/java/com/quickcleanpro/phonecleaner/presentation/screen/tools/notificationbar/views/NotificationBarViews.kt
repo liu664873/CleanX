@@ -53,6 +53,8 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.Cle
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.NotificationBlockingTurnedOffDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarPage
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarUiState
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarViewModel
@@ -68,6 +70,7 @@ private val CardRadius = 12.dp
 internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     var showBlockingTurnedOffDialog by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner, viewModel) {
@@ -106,7 +109,9 @@ internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
                 when (uiState.page) {
                     NotificationBarPage.Onboarding -> OnboardingContent(
                         onEnableClick = {
-                            viewModel.setBlockingEnabled(true)
+                            permissionCoordinator.guard(CleanXProtectedAction.NotificationBarEnable) {
+                                viewModel.setBlockingEnabled(true)
+                            }
                         },
                     )
                     NotificationBarPage.Scanning -> ScanningContent(
@@ -118,7 +123,9 @@ internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
                         uiState = uiState,
                         onEnabledChange = { checked ->
                             if (checked) {
-                                viewModel.setBlockingEnabled(true)
+                                permissionCoordinator.guard(CleanXProtectedAction.NotificationBarEnable) {
+                                    viewModel.setBlockingEnabled(true)
+                                }
                             } else {
                                 viewModel.setBlockingEnabled(false)
                                 showBlockingTurnedOffDialog = true

@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.views.JunkCleanContentView
 import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.views.JunkScanResultBottomBar
@@ -30,6 +32,7 @@ fun JunkCleanScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
 
     val deleteAuthorizationLauncher =
         rememberLauncherForActivityResult(
@@ -74,7 +77,11 @@ fun JunkCleanScreen(
             if (uiState.phase == JunkCleanPhase.Preview) {
                 JunkScanResultBottomBar(
                     selectedSummary = uiState.selectedSummary,
-                    onClean = { viewModel.startCleaning(context) },
+                    onClean = {
+                        permissionCoordinator.guard(CleanXProtectedAction.JunkCleanSelected) {
+                            viewModel.startCleaning(context)
+                        }
+                    },
                 )
             }
         },

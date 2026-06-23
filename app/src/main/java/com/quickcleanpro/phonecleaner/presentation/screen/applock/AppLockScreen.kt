@@ -1,7 +1,6 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.applock
 
 import android.content.Context
-import android.content.ActivityNotFoundException
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -70,13 +69,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.applock.AppLockApp
-import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXIconButtonSize
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXPillShape
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.AppLockOverlayPermissionDialog
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import org.koin.androidx.compose.koinViewModel
@@ -90,27 +89,9 @@ internal fun AppLockRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
-    val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     val toastRes = uiState.toastRes
     val toastMessage = toastRes?.let { stringResource(it) }
-
-    fun openOverlayPermissionSettings() {
-        val intent = viewModel.overlayPermissionIntent()
-        if (intent == null) {
-            viewModel.dismissOverlayPermissionDialog()
-            return
-        }
-        try {
-            externalActivityLaunchHandler.markLaunch()
-            context.startActivity(intent)
-        } catch (_: ActivityNotFoundException) {
-            externalActivityLaunchHandler.cancelLaunch()
-            viewModel.dismissOverlayPermissionDialog()
-        } catch (_: Exception) {
-            externalActivityLaunchHandler.cancelLaunch()
-            viewModel.dismissOverlayPermissionDialog()
-        }
-    }
 
     DisposableEffect(lifecycleOwner, viewModel) {
         val observer = LifecycleEventObserver { _, event ->
@@ -136,24 +117,37 @@ internal fun AppLockRoute(
         onOpenSearch = viewModel::openSearch,
         onOpenSettings = viewModel::openSettings,
         onSearch = viewModel::updateSearchQuery,
-        onTogglePackage = viewModel::togglePackage,
-        onToggleAll = viewModel::toggleAllApps,
-        onBeginCreatePin = viewModel::beginCreatePin,
+        onTogglePackage = { packageName ->
+            permissionCoordinator.guard(CleanXProtectedAction.AppLockEnableMonitoring) {
+                viewModel.togglePackage(packageName)
+            }
+        },
+        onToggleAll = {
+            permissionCoordinator.guard(CleanXProtectedAction.AppLockEnableMonitoring) {
+                viewModel.toggleAllApps()
+            }
+        },
+        onBeginCreatePin = {
+            permissionCoordinator.guard(CleanXProtectedAction.AppLockEnableMonitoring) {
+                viewModel.beginCreatePin()
+            }
+        },
         onStartChangePin = viewModel::startChangePin,
         onDigit = viewModel::addPinDigit,
         onDeleteDigit = viewModel::removePinDigit,
-        onMonitoringChange = viewModel::setMonitoringEnabled,
+        onMonitoringChange = { enabled ->
+            if (enabled) {
+                permissionCoordinator.guard(CleanXProtectedAction.AppLockEnableMonitoring) {
+                    viewModel.setMonitoringEnabled(true)
+                }
+            } else {
+                viewModel.setMonitoringEnabled(false)
+            }
+        },
         onAutoLockChange = viewModel::setAutoLockEnabled,
         onVibrationChange = viewModel::setVibrationEnabled,
         permissionGateConfig = permissionGateConfig
     )
-
-    if (uiState.overlayPermissionRequired) {
-        AppLockOverlayPermissionDialog(
-            onAllowNow = ::openOverlayPermissionSettings,
-            onCancel = viewModel::dismissOverlayPermissionDialog
-        )
-    }
 }
 
 @Composable

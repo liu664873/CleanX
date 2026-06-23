@@ -69,7 +69,7 @@ fun CleanXPermissionGate(
     var granted by remember(feature, permissionManager) {
         mutableStateOf(checkPermissionFresh(context, feature, permissionManager))
     }
-    var showDialog by remember(feature) { mutableStateOf(!granted) }
+    var showDialog by remember(feature) { mutableStateOf(false) }
     var pendingSettingsRecheck by remember(feature) { mutableStateOf(false) }
     var pendingDeniedAfterDialogClose by remember(feature) { mutableStateOf(false) }
     var settingsLaunchObservedPause by remember(feature) { mutableStateOf(false) }
@@ -162,7 +162,7 @@ fun CleanXPermissionGate(
     }
 
     LaunchedEffect(feature, permissionManager) {
-        recheckPermission(showMissingDialog = true)
+        recheckPermission(showMissingDialog = false)
     }
 
     LaunchedEffect(granted) {

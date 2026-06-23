@@ -7,28 +7,24 @@ import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.file.ManagedFileItem
 import com.quickcleanpro.phonecleaner.domain.repository.FileRepository
 import com.quickcleanpro.phonecleaner.presentation.common.fileRepositoryOrPreview
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.DuplicateFileEntry
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.DuplicateGroupItem
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FILE_DELETE_ANIMATION_MIN_MILLIS
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerPhase
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileOperationPhase
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileOperationRunner
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.appString
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.deletionFailedMessage
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.duplicateFileKey
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.duplicateScanFailedMessage
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.mapDuplicateGroups
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.toggleId
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.toggleIds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 internal data class DuplicateFilesManagerUiState(
-    val phase: FileManagerPhase = FileManagerPhase.Scanning,
+    val phase: FileOperationPhase = FileOperationPhase.Scanning,
     val groups: List<DuplicateGroupItem> = emptyList(),
     val selectedGroupId: Int? = null,
     val selectedFileKeys: Set<String> = emptySet(),
@@ -79,7 +75,7 @@ internal class DuplicateFilesManagerViewModel(
 
     private val _uiState = MutableStateFlow(DuplicateFilesManagerUiState())
     val uiState: StateFlow<DuplicateFilesManagerUiState> = _uiState.asStateFlow()
-    private var activeOperationJob: Job? = null
+    private val operationRunner = FileOperationRunner(viewModelScope, ioDispatcher, testLoader)
 
     fun startIfNeeded() {
         if (hasStartedForCurrentState()) return
@@ -87,13 +83,13 @@ internal class DuplicateFilesManagerViewModel(
     }
 
     fun refresh() {
-        _uiState.value = DuplicateFilesManagerUiState(phase = FileManagerPhase.Scanning)
-        launchLoad {
+        _uiState.value = DuplicateFilesManagerUiState(phase = FileOperationPhase.Scanning)
+        operationRunner.launch {
             runCatching { mapDuplicateGroups(repository.loadDuplicateFiles()) }
                 .onSuccess { groups ->
-                    delayIfNeeded(scanDelayMillis)
+                    operationRunner.delayIfNeeded(scanDelayMillis)
                     _uiState.value = DuplicateFilesManagerUiState(
-                        phase = if (groups.isEmpty()) FileManagerPhase.NoResults else FileManagerPhase.Browsing,
+                        phase = if (groups.isEmpty()) FileOperationPhase.NoResults else FileOperationPhase.Browsing,
                         groups = groups,
                         selectedFileKeys = groups.flatMap { it.files.drop(1).map(::duplicateFileKey) }.toSet()
                     )
@@ -102,7 +98,7 @@ internal class DuplicateFilesManagerViewModel(
                     if (error is CancellationException) throw error
                     _uiState.update {
                         it.copy(
-                            phase = FileManagerPhase.NoResults,
+                            phase = FileOperationPhase.NoResults,
                             errorMessage = error.message ?: duplicateScanFailedMessage()
                         )
                     }
@@ -120,20 +116,14 @@ internal class DuplicateFilesManagerViewModel(
 
     fun toggleAll() {
         _uiState.update {
-            it.copy(selectedFileKeys = if (it.allSelected) emptySet() else it.allDeleteFileKeys)
+            it.copy(selectedFileKeys = toggleIds(it.selectedFileKeys, it.allDeleteFileKeys))
         }
     }
 
     fun toggleFile(file: DuplicateFileEntry) {
         val key = duplicateFileKey(file)
         _uiState.update {
-            it.copy(
-                selectedFileKeys = if (key in it.selectedFileKeys) {
-                    it.selectedFileKeys - key
-                } else {
-                    it.selectedFileKeys + key
-                }
-            )
+            it.copy(selectedFileKeys = toggleId(it.selectedFileKeys, key))
         }
     }
 
@@ -164,12 +154,12 @@ internal class DuplicateFilesManagerViewModel(
 
     fun requestDelete() {
         if (_uiState.value.filesToDelete.isNotEmpty()) {
-            _uiState.update { it.copy(phase = FileManagerPhase.ConfirmDelete) }
+            _uiState.update { it.copy(phase = FileOperationPhase.ConfirmDelete) }
         }
     }
 
     fun cancelDelete() {
-        _uiState.update { it.copy(phase = FileManagerPhase.Browsing) }
+        _uiState.update { it.copy(phase = FileOperationPhase.Browsing) }
     }
 
     fun rejectSystemDelete() {
@@ -181,42 +171,41 @@ internal class DuplicateFilesManagerViewModel(
     }
 
     fun cancelActiveOperation() {
-        activeOperationJob?.cancel()
-        activeOperationJob = null
+        operationRunner.cancelActiveOperation()
     }
 
     fun deleteSelectedFiles() {
         val selectedFiles = _uiState.value.filesToDelete
         if (selectedFiles.isEmpty()) {
-            _uiState.update { it.copy(phase = FileManagerPhase.Browsing) }
+            _uiState.update { it.copy(phase = FileOperationPhase.Browsing) }
             return
         }
 
-        _uiState.update { it.copy(phase = FileManagerPhase.Deleting, selectedGroupId = null) }
-        launchLoad {
+        _uiState.update { it.copy(phase = FileOperationPhase.Deleting, selectedGroupId = null) }
+        operationRunner.launch {
             runCatching {
                 val freedBytes = repository.deleteFiles(selectedFiles)
                 if (freedBytes <= 0L) {
                     error(deletionFailedMessage())
                 }
-                delayIfNeeded(deleteDelayMillis)
+                operationRunner.delayIfNeeded(deleteDelayMillis)
                 val groups = mapDuplicateGroups(repository.loadDuplicateFiles())
                 _uiState.update {
                     it.copy(
-                        phase = FileManagerPhase.CompleteAnimation,
+                        phase = FileOperationPhase.CompleteAnimation,
                         groups = groups,
                         selectedGroupId = null,
                         selectedFileKeys = emptySet(),
                         deletedBytes = freedBytes
                     )
                 }
-                delayIfNeeded(completeDelayMillis)
-                _uiState.update { it.copy(phase = FileManagerPhase.Result) }
+                operationRunner.delayIfNeeded(completeDelayMillis)
+                _uiState.update { it.copy(phase = FileOperationPhase.Result) }
             }.onFailure { error ->
                 if (error is CancellationException) throw error
                 _uiState.update {
                     it.copy(
-                        phase = FileManagerPhase.Browsing,
+                        phase = FileOperationPhase.Browsing,
                         errorMessage = error.message ?: appString(R.string.deletion_failed)
                     )
                 }
@@ -225,35 +214,12 @@ internal class DuplicateFilesManagerViewModel(
     }
 
     fun continueManaging() {
-        _uiState.update { it.copy(phase = FileManagerPhase.Browsing, selectedFileKeys = emptySet(), selectedGroupId = null) }
-    }
-
-    private suspend fun delayIfNeeded(millis: Long) {
-        if (millis > 0L) delay(millis)
+        _uiState.update { it.copy(phase = FileOperationPhase.Browsing, selectedFileKeys = emptySet(), selectedGroupId = null) }
     }
 
     private fun hasStartedForCurrentState(): Boolean {
         val state = _uiState.value
-        if (state.phase != FileManagerPhase.Scanning) return true
+        if (state.phase != FileOperationPhase.Scanning) return true
         return state.groups.isNotEmpty() || state.errorMessage != null
     }
-
-    private fun launchLoad(block: suspend () -> Unit) {
-        activeOperationJob?.cancel()
-        val loader = testLoader
-        if (loader != null) {
-            loader(block)
-        } else {
-            activeOperationJob = viewModelScope.launch(ioDispatcher) {
-                try {
-                    block()
-                } finally {
-                    if (activeOperationJob == this.coroutineContext[Job]) {
-                        activeOperationJob = null
-                    }
-                }
-            }
-        }
-    }
-
 }
