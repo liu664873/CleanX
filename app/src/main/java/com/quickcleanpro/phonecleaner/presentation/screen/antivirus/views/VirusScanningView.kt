@@ -53,7 +53,7 @@ internal fun VirusScanningView(
                         ThreatDrawableImage(
                             drawable = uiState.currentIcon,
                             fallback = R.mipmap.ic_protection,
-                            modifier = Modifier.size(36.dp)
+                            modifier = Modifier.size(58.dp)
                         )
                     }
                 }

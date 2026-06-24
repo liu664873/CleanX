@@ -40,7 +40,9 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.styles.Clea
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
+private val StorageBlue = Color(0xFF2281FD)
 private val StorageYellow = Color(0xFFFDBB22)
+private val StorageOrange = Color(0xFFFD6F22)
 private val VirusCardBlue =
     Brush.linearGradient(
         colors = listOf(Color(0xFF90B2FB), Color(0xFF88ABFB)),
@@ -50,13 +52,6 @@ private val AppLockCardBlue =
         colors = listOf(Color(0xFF90E7FB), Color(0xFF88DAFB)),
     )
 
-@Composable
-fun HomeTabContent() {
-    HomeTabContent(
-        summaryState = HomeSummaryUiState(),
-        onFeatureClick = {},
-    )
-}
 
 @Composable
 fun HomeTabContent(
@@ -78,6 +73,7 @@ fun HomeTabContent(
             storageInfo.formattedTotal
         }
     val storageProgress = (storageInfo.usagePercent / 100f).coerceIn(0f, 1f)
+    val storageCardColor = storageCardColor(storageProgress)
     Column(
         modifier =
             Modifier
@@ -86,7 +82,7 @@ fun HomeTabContent(
                 .padding(horizontal = 16.dp)
                 .padding(top = 32.dp),
     ) {
-        // Storage Card (Yellow)
+
         Box(
             modifier =
                 Modifier
@@ -95,7 +91,7 @@ fun HomeTabContent(
         ) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = StorageYellow,
+                color = storageCardColor,
                 shape = RoundedCornerShape(20.dp),
             ) {}
 
@@ -105,14 +101,17 @@ fun HomeTabContent(
                         .fillMaxSize()
                         .padding(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 20.dp),
             ) {
-                Row {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text(
                         text = stringResource(R.string.home_storage_label),
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
                             text = usedStorageText,
@@ -121,23 +120,22 @@ fun HomeTabContent(
                             fontWeight = FontWeight.SemiBold,
                         )
                         Text(
-                            text = " / $totalStorageText",
+                            text = "/$totalStorageText",
                             color = Color.White,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Normal,
-                            modifier = Modifier.padding(bottom = 2.dp, start = 4.dp),
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 RoundedProgressBar(
                     progress = storageProgress,
                     width = 311.dp,
-                    height = 16.dp,
+                    height = 12.dp,
                     trackColor = Color(0xA6FFFFFF),
                     fillColor = Color.White,
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(27.dp))
                 Button(
                     onClick = {
                         onFeatureClick()
@@ -147,7 +145,7 @@ fun HomeTabContent(
                     colors =
                         ButtonDefaults.buttonColors(
                             containerColor = Color.White,
-                            contentColor = StorageYellow,
+                            contentColor = storageCardColor,
                         ),
                     modifier =
                         Modifier
@@ -168,7 +166,7 @@ fun HomeTabContent(
                 modifier =
                     Modifier
                         .align(Alignment.TopEnd)
-                        .offset(x = (-16).dp, y = (-32).dp)
+                        .offset(x = (-16).dp, y = (-24).dp)
                         .size(width = 90.dp, height = 84.dp),
                 contentScale = ContentScale.Fit,
             )
@@ -207,6 +205,13 @@ fun HomeTabContent(
         Spacer(modifier = Modifier.height(100.dp))
     }
 }
+
+private fun storageCardColor(progress: Float): Color =
+    when {
+        progress < 1f / 3f -> StorageBlue
+        progress >= 2f / 3f -> StorageOrange
+        else -> StorageYellow
+    }
 
 @Composable
 private fun EntryCard(

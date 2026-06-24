@@ -77,5 +77,4 @@ fun CleanSpiralAnimation(
             contentScale = ContentScale.Fit,
         )
     }
-
 }

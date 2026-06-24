@@ -87,7 +87,7 @@ private fun DuplicateFilesManagerScreenState(
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_duplicate_files),
-        onBack = ::handleBack,
+        onBack = { handleBack() },
         bottomBar = {
             if (
                 permissionState.granted &&

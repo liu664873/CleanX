@@ -190,4 +190,3 @@ internal fun SettingsDivider() {
 
 private fun String.normalizeTemperatureUnit(): String =
     if (equals("F", ignoreCase = true)) "F" else "C"
-

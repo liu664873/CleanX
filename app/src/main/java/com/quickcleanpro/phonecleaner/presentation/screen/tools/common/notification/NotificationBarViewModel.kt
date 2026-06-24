@@ -107,7 +107,14 @@ open class NotificationBarViewModel(
         return false
     }
 
+    fun disableBlockingAndClearSelections() {
+        repository.setNotificationBlockingEnabled(false)
+        repository.clearSelectedNotificationPackages()
+        refreshState()
+    }
+
     fun togglePackage(packageName: String) {
+        if (!_uiState.value.enabled) return
         val selected = packageName !in _uiState.value.selectedPackages
         viewModelScope.launch(ioDispatcher) {
             runCatching {
@@ -132,6 +139,16 @@ open class NotificationBarViewModel(
     }
 
     fun finishScanning() {
+        _uiState.update {
+            if (it.page == NotificationBarPage.Scanning) {
+                it.copy(page = NotificationBarPage.Status)
+            } else {
+                it
+            }
+        }
+    }
+
+    fun cancelScanning() {
         _uiState.update {
             if (it.page == NotificationBarPage.Scanning) {
                 it.copy(page = NotificationBarPage.Status)

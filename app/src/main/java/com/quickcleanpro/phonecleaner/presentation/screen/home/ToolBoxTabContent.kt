@@ -62,14 +62,6 @@ private val DeviceInfoDarkGradient =
     )
 
 @Composable
-fun ToolBoxTabContent() {
-    ToolBoxTabContent(
-        summaryState = HomeSummaryUiState(),
-        onFeatureClick = {},
-    )
-}
-
-@Composable
 fun ToolBoxTabContent(
     summaryState: HomeSummaryUiState,
     onFeatureClick: () -> Unit = {},

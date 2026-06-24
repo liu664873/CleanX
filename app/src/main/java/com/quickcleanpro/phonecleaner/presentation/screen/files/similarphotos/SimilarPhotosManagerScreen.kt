@@ -89,7 +89,7 @@ private fun SimilarPhotosManagerScreenState(
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_similar_photos),
-        onBack = ::handleBack,
+        onBack = { handleBack() },
         actions = {
             FileManagerTopAction(
                 actionText = if (showDetail) stringResource(R.string.file_delete_count, displayState.selectedIds.size) else null,
@@ -129,13 +129,11 @@ private fun SimilarPhotosManagerScreenState(
         permissionGranted = permissionState.granted,
         onQuit = {
             showStopDialog = false
-            blockedPhase = null
             viewModel.cancelActiveOperation()
             permissionState.leaveBack(router)
         },
         onResume = {
             showStopDialog = false
-            blockedPhase = null
         },
     )
 

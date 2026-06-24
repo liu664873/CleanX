@@ -26,6 +26,7 @@
     <string name="scan_now">Scan Now</string>
     <string name="test_now">Test Now</string>
     <string name="open">Open</string>
+    <string name="continue_scan">Continue</string>
     <string name="remove_size">Remove %1$s</string>
     
     <string name="unnamed_file">Unnamed file</string>
@@ -249,6 +250,8 @@
     <string name="storage_permission_dialog_content">To scan and remove junk files, please grant access to your phone files and media.</string>
     <string name="storage_permission_dialog_hint1">Only junk files will be deleted.</string>
     <string name="storage_permission_dialog_hint2">No personal information will be collected.</string>
+    <string name="virus_scan_notice_title">Notice</string>
+    <string name="virus_scan_notice_message">Quick Clean PRO will check app information on this device to scan for security risks.</string>
 
     <!-- Settings -->
     <string name="settings_manage_permissions">Manage Permissions</string>
@@ -533,8 +536,8 @@
     <string name="notification_enable_step_find_suffix"></string>
     <string name="notification_enable_step_allow">2. Tap "Allow"</string>
     
-    <string name="notification_blocking_off_message">Notification blocking has been turned off.</string>
-    <string name="notification_blocking_off_detail">Selected apps will no longer be blocked until you turn it on again.</string>
+    <string name="notification_blocking_off_message">Turn off notification blocking?</string>
+    <string name="notification_blocking_off_detail">Selected apps will no longer be blocked, and all app selections will be cleared.</string>
     <string name="notification_one_tap_tidy_up">One-tap Tidy Up</string>
     
     

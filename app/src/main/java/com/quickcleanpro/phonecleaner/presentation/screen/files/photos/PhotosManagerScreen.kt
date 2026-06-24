@@ -94,7 +94,7 @@ private fun PhotosManagerScreenState(
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_photos),
-        onBack = ::handleBack,
+        onBack = { handleBack() },
         actions = {
             val actionText = when {
                 showDetail -> stringResource(R.string.file_delete_count, displayState.selectedIds.size)
@@ -152,13 +152,11 @@ private fun PhotosManagerScreenState(
         permissionGranted = permissionState.granted,
         onQuit = {
             showStopDialog = false
-            blockedPhase = null
             viewModel.cancelActiveOperation()
             permissionState.leaveBack(router)
         },
         onResume = {
             showStopDialog = false
-            blockedPhase = null
         },
     )
 

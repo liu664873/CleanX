@@ -244,48 +244,6 @@ fun CleanXBottomActionBar(
 }
 
 
-@Composable
-fun CleanXHeader(
-    title: String,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    actions: @Composable RowScope.() -> Unit = {},
-) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(top = CleanXHeaderTopPadding, bottom = CleanXHeaderBottomPadding),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier =
-                Modifier
-                    .size(CleanXIconButtonSize)
-                    .clip(CleanXPillShape)
-                    .cleanXDebouncedClick { onBack() },
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.back),
-                tint = CleanXText,
-                modifier = Modifier.size(CleanXHeaderIconSize),
-            )
-        }
-        Spacer(modifier = Modifier.size(CleanXCompactPadding / 2))
-        Text(
-            text = title,
-            color = CleanXText,
-            fontSize = CleanXTextTitle,
-            lineHeight = CleanXLineTitle,
-            fontWeight = FontWeight.W500,
-            modifier = Modifier.weight(1f),
-        )
-        actions()
-    }
-}
 
 @Composable
 fun CommonResultContent(

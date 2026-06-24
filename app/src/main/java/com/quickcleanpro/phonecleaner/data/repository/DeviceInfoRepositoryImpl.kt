@@ -98,6 +98,8 @@ class DeviceInfoRepositoryImpl(
      */
     override fun batteryCurrentAverageMa(): Float? = readBatteryCurrentMa(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE)
 
+    override fun cpuTemperatureC(): Float? = readCpuTemperatureC()
+
     /**
      * 读取电池状态（通过注册空广播接收器获取最后一次粘性广播）。
      *
@@ -182,8 +184,34 @@ class DeviceInfoRepositoryImpl(
         }
     }
 
+    private fun readCpuTemperatureC(): Float? {
+        val thermalZones =
+            File(THERMAL_PATH)
+                .listFiles { file -> file.isDirectory && file.name.startsWith(THERMAL_ZONE_PREFIX) }
+                .orEmpty()
+        val candidates =
+            thermalZones
+                .mapNotNull { zone ->
+                    val type = File(zone, THERMAL_TYPE_FILE).readTrimmedText().lowercase(Locale.US)
+                    val temperature = File(zone, THERMAL_TEMP_FILE).readNormalizedTemperatureC() ?: return@mapNotNull null
+                    ThermalTemperature(type = type, temperatureC = temperature)
+                }.filter { candidate ->
+                    CPU_THERMAL_KEYWORDS.any { keyword -> candidate.type.contains(keyword) }
+                }
+        return candidates.maxByOrNull { it.temperatureC }?.temperatureC
+    }
+
+    private data class ThermalTemperature(
+        val type: String,
+        val temperatureC: Float,
+    )
+
     private companion object {
         private const val UNKNOWN = "Unknown"
+        private const val THERMAL_PATH = "/sys/class/thermal"
+        private const val THERMAL_ZONE_PREFIX = "thermal_zone"
+        private const val THERMAL_TYPE_FILE = "type"
+        private const val THERMAL_TEMP_FILE = "temp"
 
         // CPU 最大频率的可能 sysfs 路径
         private val CPU_FREQUENCY_PATHS =
@@ -191,8 +219,27 @@ class DeviceInfoRepositoryImpl(
                 "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq",
                 "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq",
             )
+        private val CPU_THERMAL_KEYWORDS =
+            listOf("cpu", "soc", "ap", "core", "cluster", "big", "little", "tsens")
     }
 }
+
+private fun File.readTrimmedText(): String =
+    runCatching { readText().trim() }.getOrDefault("")
+
+private fun File.readNormalizedTemperatureC(): Float? {
+    val raw = readTrimmedText().toFloatOrNull() ?: return null
+    val normalized =
+        when {
+            raw > 1000f -> raw / 1000f
+            raw > 150f -> raw / 10f
+            else -> raw
+        }
+    return normalized.takeIf { it in MIN_REASONABLE_CPU_TEMPERATURE_C..MAX_REASONABLE_CPU_TEMPERATURE_C }
+}
+
+private const val MIN_REASONABLE_CPU_TEMPERATURE_C = -20f
+private const val MAX_REASONABLE_CPU_TEMPERATURE_C = 125f
 
 /**
  * 将 Android 电池状态码转换为可读文本。

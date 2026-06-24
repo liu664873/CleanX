@@ -128,7 +128,7 @@ internal fun VirusCenterBadge(
     modifier: Modifier = Modifier,
     size: Dp = 56.dp,
     backgroundBrush: Brush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF536BFF), Color(0xFF2387F8)),
+        colors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF)),
     ),
     content: @Composable BoxScope.() -> Unit,
 ) {

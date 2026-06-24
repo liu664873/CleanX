@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 
 object SharedPreferencesUtils {
     const val KEY_ONBOARDING_SCAN_COMPLETED = "onboarding_scan_completed"
+    const val KEY_VIRUS_SCAN_NOTICE_ACCEPTED = "virus_scan_notice_accepted"
 
     private const val DEFAULT_PREFS_NAME = "quick_clean_settings"
 

@@ -65,7 +65,8 @@ data class DeviceInfoUiState(
     val memory: MemoryInfo = EMPTY_MEMORY_INFO,
     val storage: StorageInfo = EMPTY_STORAGE_INFO,
     val hardware: DeviceHardwareInfo = EMPTY_HARDWARE_INFO,
-    val cpuUsagePercent: Int = 0,
+    val cpuUsagePercent: Int? = null,
+    val cpuTemperatureC: Float? = null,
     val currentNow: Float? = null,
     val currentAverage: Float? = null,
     val selectedCurrentRange: BatteryCurrentRange = BatteryCurrentRange.OneMinute,
@@ -200,6 +201,7 @@ open class DeviceInfoViewModel(
         val memory = repository.memoryInfo()
         val storage = repository.internalStorageInfo()
         val hardware = repository.hardwareInfo()
+        val cpuTemperatureC = repository.cpuTemperatureC()
         val currentNow = repository.batteryCurrentNowMa().normalizedBatteryCurrent()
         val currentAverage = repository.batteryCurrentAverageMa().normalizedBatteryCurrent()
         val historySamples =
@@ -217,6 +219,7 @@ open class DeviceInfoViewModel(
             storage = storage,
             hardware = hardware,
             cpuUsagePercent = readCpuUsagePercent(previousState.cpuUsagePercent),
+            cpuTemperatureC = cpuTemperatureC ?: previousState.cpuTemperatureC,
             currentNow = currentNow,
             currentAverage = currentAverage,
             selectedCurrentRange = previousState.selectedCurrentRange,
@@ -463,11 +466,11 @@ private fun averageTemperature(
         ?.toFloat()
         ?: fallback
 
-private fun readCpuUsagePercent(previousPercent: Int = 0): Int {
+private fun readCpuUsagePercent(previousPercent: Int? = null): Int? {
     readCpuUsagePercentFromProcStat()?.let { return it }
     readCpuUsagePercentFromLoadAverage()?.let { return it }
     readCpuUsagePercentFromFrequencies()?.let { return it }
-    return previousPercent.coerceIn(0, 100)
+    return previousPercent?.coerceIn(0, 100)
 }
 
 private fun readCpuUsagePercentFromProcStat(): Int? {

@@ -63,6 +63,10 @@ object NotificationDataSource {
         prefs(context).edit().putStringSet(KEY_SELECTED_PACKAGES, current).apply()
     }
 
+    fun clearSelectedPackages(context: Context) {
+        prefs(context).edit().putStringSet(KEY_SELECTED_PACKAGES, emptySet()).apply()
+    }
+
     fun apps(context: Context): List<BlockableNotificationApp> {
         val pm = context.packageManager
         val defaults = defaultPackages(context)

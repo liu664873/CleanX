@@ -76,7 +76,7 @@ private fun PhotoPrivacyManagerScreenState(
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_photo_privacy),
-        onBack = ::handleBack,
+        onBack = { handleBack() },
         bottomBar = {
             if (permissionState.granted && displayState.phase == FileOperationPhase.Browsing) {
                 CleanXBottomActionBar(
@@ -104,13 +104,11 @@ private fun PhotoPrivacyManagerScreenState(
         permissionGranted = permissionState.granted,
         onQuit = {
             showStopDialog = false
-            blockedPhase = null
             viewModel.cancelActiveOperation()
             permissionState.leaveBack(router)
         },
         onResume = {
             showStopDialog = false
-            blockedPhase = null
         },
     )
 

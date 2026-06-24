@@ -1,5 +1,7 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.tools.notificationbar.views
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,7 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +49,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.notification.BlockableNotificationApp
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
@@ -51,9 +61,12 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.PackageAppI
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.NotificationBlockingTurnedOffDialog
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
+import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerNavy
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarPage
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarUiState
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarViewModel
@@ -67,10 +80,12 @@ private val CardRadius = 12.dp
 
 @Composable
 internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
+    val router = LocalRouter.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     var showBlockingTurnedOffDialog by remember { mutableStateOf(false) }
+    var showStopDialog by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner, viewModel) {
         val observer =
@@ -83,11 +98,30 @@ internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    fun handleBack() {
+        when (uiState.page) {
+            NotificationBarPage.Settings -> viewModel.leaveSettings()
+            NotificationBarPage.Scanning -> {
+                showStopDialog = true
+            }
+            else -> router.goBack()
+        }
+    }
+
+    BackHandler(
+        enabled = uiState.page == NotificationBarPage.Settings ||
+            uiState.page == NotificationBarPage.Scanning,
+        onBack = ::handleBack,
+    )
+
     CleanXScaffoldPage(
         title = stringResource(R.string.notification_bar),
+        onBack = ::handleBack,
         actions = {
             if (uiState.page == NotificationBarPage.Status) {
-                IconButton(onClick = viewModel::showSettings) {
+                IconButton(
+                    onClick = { viewModel.showSettings() },
+                ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = stringResource(R.string.settings),
@@ -125,7 +159,6 @@ internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
                                     viewModel.setBlockingEnabled(true)
                                 }
                             } else {
-                                viewModel.setBlockingEnabled(false)
                                 showBlockingTurnedOffDialog = true
                             }
                         },
@@ -139,7 +172,26 @@ internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
     }
 
     if (showBlockingTurnedOffDialog) {
-        NotificationBlockingTurnedOffDialog(onDismiss = { showBlockingTurnedOffDialog = false })
+        NotificationBlockingTurnedOffDialog(
+            onCancel = { showBlockingTurnedOffDialog = false },
+            onConfirm = {
+                showBlockingTurnedOffDialog = false
+                viewModel.disableBlockingAndClearSelections()
+            },
+        )
+    }
+
+    if (showStopDialog) {
+        StopScanDialog(
+            onQuit = {
+                showStopDialog = false
+                viewModel.cancelScanning()
+                router.goBack()
+            },
+            onResume = {
+                showStopDialog = false
+            },
+        )
     }
 }
 
@@ -149,22 +201,12 @@ private fun OnboardingContent(onEnableClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(44.dp))
-        Box(
+        LottieNotificationGuide(
             modifier =
                 Modifier
-                    .size(220.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFEAF3FF)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = null,
-                tint = CleanXBlue,
-                modifier = Modifier.size(96.dp),
-            )
-        }
+                    .fillMaxWidth()
+                    .height(420.dp),
+        )
         Spacer(modifier = Modifier.height(28.dp))
         Text(
             text = stringResource(R.string.notification_tidy_one_tap),
@@ -183,6 +225,37 @@ private fun OnboardingContent(onEnableClick: () -> Unit) {
 }
 
 @Composable
+private fun LottieNotificationGuide(modifier: Modifier = Modifier) {
+    val composition by rememberLottieComposition(
+        spec = LottieCompositionSpec.Asset("notification_animation/notification.json"),
+        imageAssetsFolder = "notification_animation/images/",
+    )
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+        isPlaying = true,
+        speed = 1f,
+    )
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        if (composition == null) {
+            Text(
+                text = stringResource(R.string.notification_loading_animation),
+                color = NavyMuted,
+                fontSize = 14.sp,
+            )
+        } else {
+            LottieAnimation(
+                composition = composition,
+                progress = { progress },
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit,
+            )
+        }
+    }
+}
+
+@Composable
 private fun ScanningContent(
     blockedCount: Int,
     onFinished: () -> Unit,
@@ -192,19 +265,14 @@ private fun ScanningContent(
         onFinished()
     }
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 67.dp),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
-        Box(
-            modifier = Modifier.size(252.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            CleanSpiralAnimation(
-                modifier = Modifier.size(252.dp),
-                centerSize = 100.dp,
-            ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CleanSpiralAnimation {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = blockedCount.toString(),
@@ -333,6 +401,7 @@ private fun SettingsContent(
     uiState.apps.forEach { app ->
         NotificationAppRow(
             app = app,
+            enabled = uiState.enabled,
             selected = app.packageName in uiState.selectedPackages,
             onToggleSelection = { onTogglePackage(app.packageName) },
         )
@@ -348,6 +417,7 @@ private fun SettingsContent(
 @Composable
 private fun NotificationAppRow(
     app: BlockableNotificationApp,
+    enabled: Boolean,
     selected: Boolean,
     onToggleSelection: () -> Unit,
 ) {
@@ -355,7 +425,7 @@ private fun NotificationAppRow(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onToggleSelection),
+                .clickable(enabled = enabled, onClick = onToggleSelection),
         color = CardBg,
         shape = RoundedCornerShape(CardRadius),
     ) {
@@ -371,12 +441,12 @@ private fun NotificationAppRow(
             Spacer(modifier = Modifier.size(12.dp))
             Text(
                 text = app.appName,
-                color = Navy,
+                color = if (enabled) Navy else NavyMuted,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f),
             )
-            SelectionBubble(selected = selected)
+            SelectionBubble(selected = selected, enabled = enabled)
         }
     }
 }
@@ -453,13 +523,22 @@ private fun AppInitialBadge(text: String) {
 }
 
 @Composable
-private fun SelectionBubble(selected: Boolean) {
+private fun SelectionBubble(
+    selected: Boolean,
+    enabled: Boolean = true,
+) {
     Box(
         modifier =
             Modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .background(if (selected) CleanXBlue else Color.White),
+                .background(
+                    when {
+                        selected && enabled -> CleanXBlue
+                        selected -> CleanXBlue.copy(alpha = 0.35f)
+                        else -> Color.White
+                    },
+                ),
         contentAlignment = Alignment.Center,
     ) {
         if (selected) {

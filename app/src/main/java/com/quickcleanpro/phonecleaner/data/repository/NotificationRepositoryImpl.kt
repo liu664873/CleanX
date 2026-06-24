@@ -34,6 +34,10 @@ class NotificationRepositoryImpl(
         NotificationDataSource.setPackageSelected(appContext, packageName, selected)
     }
 
+    override fun clearSelectedNotificationPackages() {
+        NotificationDataSource.clearSelectedPackages(appContext)
+    }
+
     override fun notificationListenerSettingsIntent(): Intent = NotificationDataSource.listenerSettingsIntent()
 
     override fun appNotificationSettingsIntent(packageName: String): Intent =

@@ -78,6 +78,8 @@
 -keep class com.quickcleanpro.phonecleaner.data.source.** { *; }
 -keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen { *; }
 -keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen$* { *; }
+-keep class com.quickcleanpro.phonecleaner.presentation.common.route.Screen { *; }
+-keep class com.quickcleanpro.phonecleaner.presentation.common.route.Screen$* { *; }
 -keep class com.quickcleanpro.phonecleaner.presentation.screen.**.*ViewModel { *; }
 -keep class com.quickcleanpro.phonecleaner.util.** { *; }
 -keep class com.quickcleanpro.phonecleaner.utils.** { *; }
@@ -104,6 +106,7 @@
 -dontwarn androidx.lifecycle.**
 -dontwarn androidx.navigation.**
 -dontwarn androidx.appcompat.**
+-dontwarn com.android.internal.os.PowerProfile
 -dontwarn okio.**
 -dontwarn okhttp3.**
 -dontwarn javax.annotation.**

@@ -23,6 +23,8 @@ interface NotificationRepository {
         selected: Boolean,
     )
 
+    fun clearSelectedNotificationPackages()
+
     fun notificationListenerSettingsIntent(): Intent
 
     fun appNotificationSettingsIntent(packageName: String): Intent

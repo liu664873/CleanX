@@ -51,6 +51,8 @@ interface DeviceInfoRepository {
      */
     fun hardwareInfo(): DeviceHardwareInfo
 
+    fun cpuTemperatureC(): Float?
+
     /**
      * 获取当前瞬时电流，单位为毫安（mA）。
      *

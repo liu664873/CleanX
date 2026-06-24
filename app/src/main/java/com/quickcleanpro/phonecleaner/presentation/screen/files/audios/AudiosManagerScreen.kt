@@ -89,7 +89,7 @@ private fun AudiosManagerScreenState(
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_audios),
-        onBack = ::handleBack,
+        onBack = { handleBack() },
         actions = {
             FileManagerTopAction(
                 actionText = if (showDetail) stringResource(R.string.file_delete_count, displayState.selectedIds.size) else null,
@@ -130,13 +130,11 @@ private fun AudiosManagerScreenState(
         permissionGranted = permissionState.granted,
         onQuit = {
             showStopDialog = false
-            blockedPhase = null
             viewModel.cancelActiveOperation()
             permissionState.leaveBack(router)
         },
         onResume = {
             showStopDialog = false
-            blockedPhase = null
         },
     )
 

@@ -1,6 +1,7 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.views
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -57,6 +59,7 @@ import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProte
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerNavy
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerCategory
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerGroup
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerGroupItem
@@ -157,35 +160,30 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
 
 @Composable
 private fun WhatsAppLoadingContent(text: String) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 67.dp),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
-        Box(
-            modifier = Modifier.size(252.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            CleanSpiralAnimation(
-                modifier = Modifier.size(252.dp),
-                centerSize = 100.dp,
-            ) {
-                Icon(
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CleanSpiralAnimation {
+                Image(
                     painter = painterResource(R.drawable.ic_whatsapp_cleaner),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(84.dp),
+                    contentDescription = text,
+                    modifier = Modifier.size(70.dp),
                 )
             }
+            Spacer(modifier = Modifier.height(57.dp))
+            Text(
+                text = text,
+                color = Navy,
+                fontSize = 18.sp,
+                lineHeight = 24.sp,
+                textAlign = TextAlign.Center,
+            )
         }
-        Spacer(modifier = Modifier.height(28.dp))
-        Text(
-            text = text,
-            color = Navy,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-        )
     }
 }
 

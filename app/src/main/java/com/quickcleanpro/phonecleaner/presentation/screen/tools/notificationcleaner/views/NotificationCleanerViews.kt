@@ -204,7 +204,7 @@ internal fun NotificationCleanerScreenState(
                     )
                     NotificationCleanerPage.Status -> NotificationStatusContent(
                         uiState = uiState,
-                        onOpenSettings = viewModel::showSettings,
+                        onOpenSettings = { viewModel.showSettings() },
                         onDeviceInfo = onDeviceInfo,
                         onJunkRemoval = onJunkRemoval,
                         onBatteryInfo = onBatteryInfo,
@@ -632,6 +632,7 @@ private fun NotificationSettingsContent(
         uiState.apps.forEach { app ->
             NotificationAppRow(
                 app = app,
+                enabled = uiState.enabled,
                 selected = app.packageName in uiState.selectedPackages,
                 onToggleSelection = { onTogglePackage(app.packageName) },
             )
@@ -648,13 +649,14 @@ private fun NotificationSettingsContent(
 @Composable
 private fun NotificationAppRow(
     app: BlockableNotificationApp,
+    enabled: Boolean,
     selected: Boolean,
     onToggleSelection: () -> Unit,
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onToggleSelection),
+            .clickable(enabled = enabled, onClick = onToggleSelection),
         color = CardBg,
         shape = RoundedCornerShape(CardRadius),
     ) {
@@ -666,12 +668,12 @@ private fun NotificationAppRow(
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = app.appName,
-                color = Navy,
+                color = if (enabled) Navy else NavyMuted,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.weight(1f),
             )
-            SelectionBubble(selected = selected)
+            SelectionBubble(selected = selected, enabled = enabled)
         }
     }
 }
@@ -839,12 +841,21 @@ private fun AppInitialBadge(text: String) {
 }
 
 @Composable
-private fun SelectionBubble(selected: Boolean) {
+private fun SelectionBubble(
+    selected: Boolean,
+    enabled: Boolean = true,
+) {
     Box(
         modifier = Modifier
             .size(24.dp)
             .clip(CircleShape)
-            .background(if (selected) CleanXBlue else Color.White),
+            .background(
+                when {
+                    selected && enabled -> CleanXBlue
+                    selected -> CleanXBlue.copy(alpha = 0.35f)
+                    else -> Color.White
+                },
+            ),
         contentAlignment = Alignment.Center,
     ) {
         if (selected) {

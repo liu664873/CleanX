@@ -59,7 +59,6 @@ fun DeviceInfoScreen(viewModel: DeviceInfoViewModel = koinInject()) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner, viewModel) {
-        viewModel.load(DeviceInfoMode.Device)
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.load(DeviceInfoMode.Device)
@@ -130,6 +129,8 @@ private fun DeviceModelCard(hardware: DeviceHardwareInfo) {
 
 @Composable
 private fun StateInfoCard(uiState: DeviceInfoUiState) {
+    val cpuUsageText = uiState.cpuUsagePercent?.let { "$it%" } ?: "--"
+    val cpuTemperatureText = formatBatteryTemperature(uiState.cpuTemperatureC, uiState.temperatureUnit, includeSpace = false)
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color.White,
@@ -141,8 +142,8 @@ private fun StateInfoCard(uiState: DeviceInfoUiState) {
             SectionTitle(stringResource(R.string.device_state_info))
             Spacer(modifier = Modifier.height(18.dp))
             ProgressInfoRow(
-                label = "CPU:${uiState.cpuUsagePercent}%/1`C",
-                progress = uiState.cpuUsagePercent / 100f,
+                label = "CPU:$cpuUsageText/$cpuTemperatureText",
+                progress = uiState.cpuUsagePercent?.let { it / 100f },
                 color = DeviceCpuProgressColor,
                 trackColor = DeviceCpuProgressTrackColor,
             )
@@ -167,7 +168,7 @@ private fun StateInfoCard(uiState: DeviceInfoUiState) {
 @Composable
 private fun ProgressInfoRow(
     label: String,
-    progress: Float,
+    progress: Float?,
     color: Color,
     trackColor: Color,
 ) {
@@ -186,13 +187,15 @@ private fun ProgressInfoRow(
                     .height(12.dp)
                     .background(trackColor, RoundedCornerShape(50)),
         ) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth(progress.coerceIn(0f, 1f))
-                        .height(12.dp)
-                        .background(color, RoundedCornerShape(50)),
-            )
+            progress?.let { value ->
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(value.coerceIn(0f, 1f))
+                            .height(12.dp)
+                            .background(color, RoundedCornerShape(50)),
+                )
+            }
         }
     }
 }

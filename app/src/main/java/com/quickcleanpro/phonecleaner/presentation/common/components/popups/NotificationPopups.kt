@@ -17,9 +17,12 @@ private val NotificationNavy = Color(0xFF1D2959)
 private val NotificationNavyMuted = Color(0xA61D2959)
 
 @Composable
-internal fun NotificationBlockingTurnedOffDialog(onDismiss: () -> Unit) {
+internal fun NotificationBlockingTurnedOffDialog(
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+) {
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = onCancel,
         containerColor = Color.White,
         shape = RoundedCornerShape(12.dp),
         title = {
@@ -38,8 +41,13 @@ internal fun NotificationBlockingTurnedOffDialog(onDismiss: () -> Unit) {
             )
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onConfirm) {
                 Text(text = stringResource(R.string.ok), color = CleanXBlue)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancel) {
+                Text(text = stringResource(R.string.cancel), color = NotificationNavyMuted)
             }
         },
     )

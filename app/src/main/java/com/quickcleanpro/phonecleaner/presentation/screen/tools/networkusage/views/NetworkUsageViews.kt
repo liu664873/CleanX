@@ -298,7 +298,7 @@ private fun SummaryColumn(
         Text(
             text = value,
             color = Navy,
-            fontSize = 20.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
             maxLines = 1,
@@ -307,7 +307,7 @@ private fun SummaryColumn(
         Text(
             text = label,
             color = Navy,
-            fontSize = 10.sp,
+            fontSize = 12.sp,
             lineHeight = 16.sp,
             fontWeight = FontWeight.Normal,
             textAlign = TextAlign.Center,

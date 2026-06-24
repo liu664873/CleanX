@@ -123,7 +123,7 @@ private fun LargeFilesManagerScreenState(
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_large_files),
-        onBack = ::handleBack,
+        onBack = { handleBack() },
         actions = {
             FileManagerTopAction(
                 actionText = if (isDetailMode) stringResource(R.string.file_delete_count, displayState.selectedIds.size) else null,
@@ -168,13 +168,11 @@ private fun LargeFilesManagerScreenState(
         permissionGranted = permissionState.granted,
         onQuit = {
             showStopDialog = false
-            blockedPhase = null
             viewModel.cancelActiveOperation()
             permissionState.leaveBack(router)
         },
         onResume = {
             showStopDialog = false
-            blockedPhase = null
         },
     )
 
