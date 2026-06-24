@@ -1,5 +1,6 @@
 package com.quickcleanpro.phonecleaner.presentation.common.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,21 +50,21 @@ data class ToolFeature(
 
 val AllToolFeatures
     get() = listOf(
-        ToolFeature("Device Info", "View detailed specs of your phone", Screen.DeviceInfo, R.drawable.ic_ok,
+        ToolFeature("Device Info", "View detailed specs of your phone", Screen.DeviceInfo, R.drawable.ic_n_device_info,
             Brush.linearGradient(listOf(Color(0xFF7F6CFF), Color(0xFF462BF9))), "View Now"),
-        ToolFeature("Battery Info", "View battery health and status", Screen.BatteryInfo, R.drawable.ic_ok,
+        ToolFeature("Battery Info", "View battery health and status", Screen.BatteryInfo, R.drawable.ic_n_battery_info,
             Brush.linearGradient(listOf(Color(0xFF90FB9C), Color(0xFF8AFB88))), "View Now"),
-        ToolFeature("App Usage", "See your app usage statistics", Screen.AppUsage, R.drawable.ic_ok,
+        ToolFeature("App Usage", "See your app usage statistics", Screen.AppUsage, R.drawable.ic_app_usage,
             Brush.linearGradient(listOf(Color(0xFF6EC6FF), Color(0xFF2196F3))), "View Now"),
-        ToolFeature("Notification Bar", "Manage notification settings", Screen.NotificationBar, R.drawable.ic_ok,
+        ToolFeature("Notification Bar", "Manage notification settings", Screen.NotificationBar, R.drawable.ic_n_notification_bar,
             Brush.linearGradient(listOf(Color(0xFFFF9A80), Color(0xFFFF6E40))), "View Now"),
-        ToolFeature("WhatsApp Cleaner", "Free up space from WhatsApp", Screen.WhatsAppCleaner, R.drawable.ic_ok,
+        ToolFeature("WhatsApp Cleaner", "Free up space from WhatsApp", Screen.WhatsAppCleaner, R.drawable.ic_n_whatsapp,
             Brush.linearGradient(listOf(Color(0xFF81C784), Color(0xFF4CAF50))), "View Now"),
-        ToolFeature("Network Usage", "Monitor your data usage", Screen.NetworkUsage, R.drawable.ic_ok,
+        ToolFeature("Network Usage", "Monitor your data usage", Screen.NetworkUsage, R.drawable.ic_n_network_usage,
             Brush.linearGradient(listOf(Color(0xFF64B5F6), Color(0xFF1976D2))), "View Now"),
-        ToolFeature("Network Scan", "Network Scan", Screen.NetworkScan, R.drawable.ic_ok,
+        ToolFeature("Network Scan", "Network Scan", Screen.NetworkScan, R.drawable.ic_n_network_scan,
             Brush.linearGradient(listOf(Color(0xFFFFC745), Color(0xFFFE9915))), "Scan Now"),
-        ToolFeature("Network Speed", "Test your internet speed", Screen.NetworkSpeed, R.drawable.ic_ok,
+        ToolFeature("Network Speed", "Test your internet speed", Screen.NetworkSpeed, R.drawable.ic_network_speed,
             Brush.linearGradient(listOf(Color(0xFFCE93D8), Color(0xFF9C27B0))), "Test Now"),
     )
 
@@ -116,17 +117,15 @@ private fun ToolFeatureBanner(feature: ToolFeature, onClick: () -> Unit) {
         color = CardBg,
         shape = RoundedCornerShape(CardRadius),
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 8.dp, top = 16.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
                 Box(
-                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(9.dp)).background(feature.gradient),
+                    modifier = Modifier.size(44.dp).clip(RoundedCornerShape(9.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(painterResource(feature.iconRes), null, Modifier.size(28.dp), tint = Color.White)
+                    Image(painterResource(feature.iconRes), null, Modifier.size(44.dp))
                 }
                 Spacer(Modifier.width(10.dp))
                 Column {
@@ -134,8 +133,13 @@ private fun ToolFeatureBanner(feature: ToolFeature, onClick: () -> Unit) {
                     Text(feature.subtitle, fontSize = 16.sp, fontWeight = FontWeight.Normal, color = NavyMuted)
                 }
             }
-            TextButton(onClick = onClick) {
-                Text(feature.actionLabel, fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Blue)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onClick) {
+                    Text(feature.actionLabel, fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Blue)
+                }
             }
         }
     }

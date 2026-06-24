@@ -17,6 +17,16 @@ interface RuntimePermissionDenialStore {
     fun hasDenied(permission: AppPermission): Boolean
 
     fun markDenied(permission: AppPermission)
+
+    fun hasRequestedBefore(permission: AppPermission): Boolean = hasDenied(permission)
+
+    fun markRequested(permission: AppPermission) = Unit
+
+    fun shouldRequestRuntimePermission(
+        context: Context,
+        permission: AppPermission,
+        runtimePermissions: Array<String>,
+    ): Boolean = !hasDenied(permission)
 }
 
 object NoOpRuntimePermissionDenialStore : RuntimePermissionDenialStore {
@@ -24,4 +34,3 @@ object NoOpRuntimePermissionDenialStore : RuntimePermissionDenialStore {
 
     override fun markDenied(permission: AppPermission) = Unit
 }
-

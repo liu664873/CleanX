@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXMutedText
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXPrimaryButton
+import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXText
 import com.quickcleanpro.phonecleaner.presentation.common.components.CommonResultCheckIcon
 import com.quickcleanpro.phonecleaner.presentation.common.components.CommonResultContent
@@ -40,20 +40,23 @@ internal fun FileManagerResultView(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CommonResultCheckIcon(size = 45.dp)
-            Spacer(modifier = Modifier.height(20.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(amount, color = CleanXText, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CommonResultCheckIcon(size = 45.dp)
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(unit, color = CleanXText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(amount, color = CleanXText, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(unit, color = CleanXText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
             Text(caption, color = CleanXMutedText, fontSize = 16.sp)
             Spacer(modifier = Modifier.height(24.dp))
             CleanXPrimaryButton(
                 text = stringResource(R.string.file_continue_managing),
-                onClick = onContinue,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                onClick = onContinue
             )
         }
     }

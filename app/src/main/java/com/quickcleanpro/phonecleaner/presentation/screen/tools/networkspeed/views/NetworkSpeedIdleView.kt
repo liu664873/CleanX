@@ -16,6 +16,8 @@ internal fun NetworkSpeedIdleView(uiState: NetworkSpeedUiState) {
     if (uiState.hasNetwork) {
         NetworkSpeedMetricCard(
             uiState = uiState,
+            showGauge = true,
+            gaugeAnimating = false,
         )
     } else {
         NetworkSpeedEmptyCard(

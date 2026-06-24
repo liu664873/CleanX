@@ -141,7 +141,7 @@ private fun StateInfoCard(uiState: DeviceInfoUiState) {
             SectionTitle(stringResource(R.string.device_state_info))
             Spacer(modifier = Modifier.height(18.dp))
             ProgressInfoRow(
-                label = "CPU:${uiState.cpuUsagePercent}%/${formatBatteryTemperature(uiState.battery.temperature, uiState.temperatureUnit, includeSpace = false)}",
+                label = "CPU:${uiState.cpuUsagePercent}%/1`C",
                 progress = uiState.cpuUsagePercent / 100f,
                 color = DeviceCpuProgressColor,
                 trackColor = DeviceCpuProgressTrackColor,

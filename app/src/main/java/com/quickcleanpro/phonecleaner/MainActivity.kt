@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
             CleanXTheme {
                 CleanXAppRoot(
                     launchCoordinator = launchCoordinator,
+                    onNotificationPermissionGranted = notificationLifecycleController::startServiceWhenAllowed,
                 )
             }
         }

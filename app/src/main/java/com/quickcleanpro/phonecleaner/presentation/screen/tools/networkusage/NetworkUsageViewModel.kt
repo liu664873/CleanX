@@ -52,6 +52,7 @@ data class NetworkUsageDisplayItem(
 
 data class NetworkUsageUiState(
     val selectedTab: NetworkUsageTab = NetworkUsageTab.Wifi,
+    val hasAccess: Boolean = false,
     val usage: NetworkUsageInfo? = null,
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
@@ -99,7 +100,12 @@ class NetworkUsageViewModel(
     private val repository: NetworkRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(NetworkUsageUiState())
+    private val _uiState =
+        MutableStateFlow(
+            NetworkUsageUiState(
+                hasAccess = repository.hasNetworkUsageAccess(),
+            ),
+        )
 
     val uiState: StateFlow<NetworkUsageUiState> = _uiState.asStateFlow()
 
@@ -117,14 +123,25 @@ class NetworkUsageViewModel(
     }
 
     fun refreshUsage() {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        val hasAccess = repository.hasNetworkUsageAccess()
+        _uiState.update {
+            it.copy(
+                hasAccess = hasAccess,
+                usage = if (hasAccess) it.usage else null,
+                isLoading = hasAccess,
+                errorMessage = null,
+            )
+        }
+        if (!hasAccess) return
+
         viewModelScope.launch(ioDispatcher) {
             runCatching {
                 repository.readNetworkUsage()
             }.onSuccess { usage ->
                 _uiState.update {
                     it.copy(
-                        usage = usage,
+                        hasAccess = !usage.needsUsageAccess,
+                        usage = if (usage.needsUsageAccess) null else usage,
                         isLoading = false,
                         errorMessage = null,
                     )
@@ -132,6 +149,7 @@ class NetworkUsageViewModel(
             }.onFailure { error ->
                 _uiState.update {
                     it.copy(
+                        hasAccess = repository.hasNetworkUsageAccess(),
                         isLoading = false,
                         errorMessage = error.message,
                     )

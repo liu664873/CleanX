@@ -108,6 +108,7 @@ internal fun CleanXSingleActionDialog(
     actionText: String,
     onAction: () -> Unit,
     onDismissRequest: () -> Unit = onAction,
+    message: String? = null,
 ) {
     CleanXPopupDialogFrame(onDismissRequest = onDismissRequest) {
         Text(
@@ -120,6 +121,19 @@ internal fun CleanXSingleActionDialog(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
+        message?.takeIf { it.isNotBlank() }?.let { body ->
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = body,
+                color = DialogNavy,
+                fontSize = 16.sp,
+                lineHeight = 20.sp,
+                letterSpacing = 0.03.em,
+                fontWeight = FontWeight.Normal,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         CleanXPrimaryButton(
             text = actionText,

@@ -16,6 +16,7 @@ internal fun NetworkSpeedErrorView(uiState: NetworkSpeedUiState) {
     if (uiState.hasNetwork) {
         NetworkSpeedMetricCard(
             uiState = uiState,
+            showGauge = false,
         )
     } else {
         NetworkSpeedEmptyCard(

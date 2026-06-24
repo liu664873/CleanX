@@ -15,6 +15,9 @@ fun AppNavGraph(
     startDestination: String = Screen.Splash.route,
     launchCoordinator: AppLaunchCoordinator? = null,
     splashPaused: Boolean = false,
+    externalBlockingPromptActive: Boolean = false,
+    splashNotificationPermissionPrompt: @Composable () -> Unit = {},
+    homeNotificationPermissionPrompt: @Composable () -> Unit = {},
     interceptors: List<NavigationInterceptor> = emptyList(),
     adManager: AdManager = NoOpAdManager,
 ) {
@@ -36,8 +39,12 @@ fun AppNavGraph(
             registerStartupRoutes(
                 splashPaused = splashPaused,
                 launchCoordinator = launchCoordinator,
+                splashNotificationPermissionPrompt = splashNotificationPermissionPrompt,
             )
-            registerHomeRoutes()
+            registerHomeRoutes(
+                externalBlockingPromptActive = externalBlockingPromptActive,
+                homeNotificationPermissionPrompt = homeNotificationPermissionPrompt,
+            )
             registerCleanRoutes()
             registerAntiVirusRoutes()
             registerAppLockRoutes()

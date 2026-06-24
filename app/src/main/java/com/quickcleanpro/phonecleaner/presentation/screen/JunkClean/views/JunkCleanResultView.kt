@@ -60,24 +60,17 @@ internal fun JunkCleanResultView(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                CommonResultCheckIcon(size = 45.dp)
+                Row() {
+                    CommonResultCheckIcon(size = 45.dp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(numberPart, color = CleanXText, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(unitPart, color = CleanXText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
                 Spacer(modifier = Modifier.height(20.dp))
                 if (showResult) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = numberPart,
-                            color = CleanXText,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = unitPart,
-                            color = CleanXText,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text =

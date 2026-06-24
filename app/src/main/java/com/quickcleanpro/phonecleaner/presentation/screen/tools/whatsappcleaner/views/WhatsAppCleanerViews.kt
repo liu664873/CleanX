@@ -1,5 +1,6 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.views
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,10 +51,11 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.ToolFeature
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanCompleteBadge
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
+import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerCategory
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerGroup
@@ -70,15 +75,36 @@ private val CardRadius = 12.dp
 
 @Composable
 internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
+    val router = LocalRouter.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionCoordinator = LocalCleanXPermissionCoordinator.current
+    var showStopDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(viewModel) {
-        viewModel.startScanIfNeeded()
+    LaunchedEffect(viewModel, permissionCoordinator) {
+        permissionCoordinator.guard(CleanXProtectedAction.WhatsAppStartScan) {
+            viewModel.startScanIfNeeded()
+        }
     }
+
+    fun handleBack() {
+        when (uiState.phase) {
+            WhatsAppCleanerPhase.Scanning,
+            WhatsAppCleanerPhase.Cleaning -> {
+                showStopDialog = true
+            }
+            else -> router.goBack()
+        }
+    }
+
+    BackHandler(
+        enabled = uiState.phase == WhatsAppCleanerPhase.Scanning ||
+            uiState.phase == WhatsAppCleanerPhase.Cleaning,
+        onBack = ::handleBack,
+    )
 
     CleanXScaffoldPage(
         title = stringResource(R.string.whatsapp_cleaner),
+        onBack = ::handleBack,
         contentPadding =
             if (uiState.phase == WhatsAppCleanerPhase.ScanResult) {
                 PaddingValues(0.dp)
@@ -97,7 +123,6 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
                 )
             }
         },
-        permissionFeature = CleanXFeature.WhatsAppCleaner,
     ) {
         when (uiState.phase) {
             WhatsAppCleanerPhase.Scanning -> WhatsAppLoadingContent(text = stringResource(R.string.scanning_whatsapp_files))
@@ -114,6 +139,19 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
                 onRetry = viewModel::retry,
             )
         }
+    }
+
+    if (showStopDialog) {
+        StopScanDialog(
+            onQuit = {
+                showStopDialog = false
+                viewModel.cancelActiveOperation()
+                router.goBack()
+            },
+            onResume = {
+                showStopDialog = false
+            },
+        )
     }
 }
 

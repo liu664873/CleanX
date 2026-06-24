@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -17,22 +20,22 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.views.JunkCleanContentView
 import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.views.JunkScanResultBottomBar
 
 @Composable
 fun JunkCleanScreen(
     viewModel: JunkCleanViewModel,
-    permissionGateConfig: PermissionGateConfig? = null,
     onNavigateBack: () -> Unit,
     onNavigateHome: () -> Unit,
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionCoordinator = LocalCleanXPermissionCoordinator.current
+    var showStopDialog by remember { mutableStateOf(false) }
 
     val deleteAuthorizationLauncher =
         rememberLauncherForActivityResult(
@@ -41,8 +44,17 @@ fun JunkCleanScreen(
             viewModel.handleAuthorizationResult(result.resultCode == Activity.RESULT_OK)
         }
 
-    LaunchedEffect(viewModel) {
-        viewModel.startScanIfNeeded()
+    LaunchedEffect(viewModel, permissionCoordinator) {
+        permissionCoordinator.guard(
+            action = CleanXProtectedAction.JunkStartScan,
+            onGranted = {
+                viewModel.startScanIfNeeded()
+            },
+            onRejected = {
+                viewModel.clearResult()
+                onNavigateHome()
+            },
+        )
     }
 
     LaunchedEffect(viewModel) {
@@ -62,14 +74,29 @@ fun JunkCleanScreen(
         onNavigateHome()
     }
 
-    BackHandler(enabled = uiState.phase == JunkCleanPhase.Complete, onBack = ::exitToHome)
+    fun handleBack() {
+        when (uiState.phase) {
+            JunkCleanPhase.Scanning,
+            JunkCleanPhase.Cleaning -> {
+                showStopDialog = true
+            }
+            JunkCleanPhase.Complete -> exitToHome()
+            else -> onNavigateBack()
+        }
+    }
+
+    BackHandler(
+        enabled = uiState.phase == JunkCleanPhase.Scanning ||
+            uiState.phase == JunkCleanPhase.Cleaning ||
+            uiState.phase == JunkCleanPhase.Complete,
+        onBack = ::handleBack,
+    )
 
     CleanXScaffoldPage(
         title = stringResource(R.string.junk_removal),
-        onBack = if (uiState.phase == JunkCleanPhase.Complete) ::exitToHome else onNavigateBack,
+        onBack = ::handleBack,
         scrollEnabled = false,
         contentPadding = PaddingValues(0.dp),
-        permissionGateConfig = permissionGateConfig,
         backgroundBrush = Brush.linearGradient(
             colors = listOf(Color(0xFFE3ECFD), Color(0xFFDFEBF5)),
         ),
@@ -91,6 +118,19 @@ fun JunkCleanScreen(
             onToggleCategorySelection = viewModel::toggleCategorySelection,
             onToggleItem = { item -> viewModel.toggleItemSelection(item.junkFile.id) },
             onContinueFromResult = ::exitToHome,
+        )
+    }
+
+    if (showStopDialog) {
+        StopScanDialog(
+            onQuit = {
+                showStopDialog = false
+                viewModel.cancelActiveOperation()
+                onNavigateBack()
+            },
+            onResume = {
+                showStopDialog = false
+            },
         )
     }
 }

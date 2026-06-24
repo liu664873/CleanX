@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerErrorToastEffect
@@ -40,23 +39,19 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.det
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun VideosManagerScreen(
-    permissionGateConfig: PermissionGateConfig? = null
-) {
+fun VideosManagerScreen() {
     VideosManagerScreenState(
         viewModel = koinViewModel(),
-        permissionGateConfig = permissionGateConfig
     )
 }
 
 @Composable
 private fun VideosManagerScreenState(
     viewModel: VideosManagerViewModel,
-    permissionGateConfig: PermissionGateConfig? = null
 ) {
     val router = LocalRouter.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val permissionState = rememberFileManagerPermissionState(permissionGateConfig)
+    val permissionState = rememberFileManagerPermissionState()
     var showStopDialog by remember { mutableStateOf(false) }
     var blockedPhase by remember { mutableStateOf<FileOperationPhase?>(null) }
     val displayState = blockedPhase?.let { uiState.copy(phase = it) } ?: uiState
@@ -86,14 +81,14 @@ private fun VideosManagerScreenState(
 
     FileManagerErrorToastEffect(uiState.errorMessage, viewModel::clearError)
 
-    FileManagerStartEffect(permissionState, viewModel::startIfNeeded)
+    FileManagerStartEffect(permissionState, viewModel::startIfNeeded) {
+        permissionState.leaveHome(router)
+    }
 
     BackHandler(enabled = permissionState.granted) { handleBack() }
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_videos),
-        permissionGateConfig = permissionGateConfig,
-        permissionState = permissionState,
         onBack = ::handleBack,
         actions = {
             FileManagerTopAction(

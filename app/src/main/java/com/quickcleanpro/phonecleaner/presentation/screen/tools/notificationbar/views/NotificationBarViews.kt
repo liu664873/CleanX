@@ -52,7 +52,6 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.animations.
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.NotificationBlockingTurnedOffDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.notification.NotificationBarPage
@@ -86,7 +85,6 @@ internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
 
     CleanXScaffoldPage(
         title = stringResource(R.string.notification_bar),
-        permissionFeature = CleanXFeature.NotificationBar,
         actions = {
             if (uiState.page == NotificationBarPage.Status) {
                 IconButton(onClick = viewModel::showSettings) {

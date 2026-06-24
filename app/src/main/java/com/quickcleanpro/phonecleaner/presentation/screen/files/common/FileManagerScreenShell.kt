@@ -20,9 +20,9 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaff
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.DeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.NoResultsDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionItem
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.permission.rememberPermissionGranted
 import com.quickcleanpro.phonecleaner.presentation.common.route.RouteManager
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerPageBrush
@@ -39,10 +39,9 @@ internal enum class FileOperationPhase {
 
 @Composable
 internal fun rememberFileManagerPermissionState(
-    permissionGateConfig: PermissionGateConfig?,
 ): FileManagerPermissionState {
-    val observedPermissionGranted = rememberPermissionGranted(permissionGateConfig)
-    var permissionGranted by remember(permissionGateConfig?.cleanXFeature) {
+    val observedPermissionGranted = rememberPermissionGranted(CleanXPermissionItem.StorageFiles)
+    var permissionGranted by remember {
         mutableStateOf(observedPermissionGranted)
     }
     var isLeavingPage by remember { mutableStateOf(false) }
@@ -79,8 +78,6 @@ internal fun FileManagerPermissionState.leaveHome(router: RouteManager) {
 @Composable
 internal fun FileManagerScaffold(
     title: String,
-    permissionGateConfig: PermissionGateConfig?,
-    permissionState: FileManagerPermissionState,
     onBack: () -> Unit,
     actions: @Composable (androidx.compose.foundation.layout.RowScope.() -> Unit)? = null,
     bottomBar: @Composable () -> Unit = {},
@@ -92,8 +89,6 @@ internal fun FileManagerScaffold(
         contentPadding = PaddingValues(0.dp),
         backgroundBrush = FileManagerPageBrush,
         onBack = onBack,
-        permissionGateConfig = permissionGateConfig,
-        onPermissionGrantedChanged = permissionState.onPermissionChanged,
         actions = actions,
         bottomBar = bottomBar,
     ) {
@@ -118,12 +113,25 @@ internal fun FileManagerErrorToastEffect(
 internal fun FileManagerStartEffect(
     permissionState: FileManagerPermissionState,
     onStartIfNeeded: () -> Unit,
+    onPermissionRejected: () -> Unit,
 ) {
     val latestStartIfNeeded by rememberUpdatedState(onStartIfNeeded)
+    val latestPermissionRejected by rememberUpdatedState(onPermissionRejected)
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     LaunchedEffect(permissionState.granted, permissionState.leavingPage) {
-        if (permissionState.granted && !permissionState.leavingPage) {
+        if (permissionState.leavingPage) return@LaunchedEffect
+        if (permissionState.granted) {
             latestStartIfNeeded()
+            return@LaunchedEffect
         }
+        permissionCoordinator.guard(
+            action = CleanXProtectedAction.FileManagerLoadFiles,
+            onGranted = {
+                permissionState.onPermissionChanged(true)
+                latestStartIfNeeded()
+            },
+            onRejected = latestPermissionRejected,
+        )
     }
 }
 

@@ -25,13 +25,17 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -39,9 +43,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.CleanXSingleActionDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
-import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
@@ -60,13 +63,20 @@ private val DeviceInfoDarkGradient =
 
 @Composable
 fun ToolBoxTabContent() {
-    ToolBoxTabContent(summaryState = HomeSummaryUiState())
+    ToolBoxTabContent(
+        summaryState = HomeSummaryUiState(),
+        onFeatureClick = {},
+    )
 }
 
 @Composable
-fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
+fun ToolBoxTabContent(
+    summaryState: HomeSummaryUiState,
+    onFeatureClick: () -> Unit = {},
+) {
     val router = LocalRouter.current
-    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
+    val context = LocalContext.current
+    var showWhatsAppNotFoundDialog by remember { mutableStateOf(false) }
     val batteryCapacity =
         summaryState.batteryInfo.levelPercent
             .takeIf { it >= 0 }
@@ -85,7 +95,10 @@ fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
         DeviceInfoCard(
             model = summaryState.deviceModel,
             androidVersion = summaryState.androidVersion,
-            onClick = { router.navigate(Screen.DeviceInfo) },
+            onClick = {
+                onFeatureClick()
+                router.navigate(Screen.DeviceInfo)
+            },
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -93,7 +106,10 @@ fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
         BatteryInfoCard(
             status = batteryStatus,
             capacity = batteryCapacity,
-            onClick = { router.navigate(Screen.BatteryInfo) },
+            onClick = {
+                onFeatureClick()
+                router.navigate(Screen.BatteryInfo)
+            },
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -118,18 +134,19 @@ fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     ToolItem(R.drawable.ic_app_usage, stringResource(R.string.app_usage)) {
-                        permissionCoordinator.guard(CleanXProtectedAction.AppUsageLoadStats) {
-                            router.navigate(Screen.AppUsage)
-                        }
+                        onFeatureClick()
+                        router.navigate(Screen.AppUsage)
                     }
                     ToolItem(R.drawable.ic_notification_bar, stringResource(R.string.notification_bar)) {
-                        permissionCoordinator.guard(CleanXProtectedAction.NotificationBarEnable) {
-                            router.navigate(Screen.NotificationBar)
-                        }
+                        onFeatureClick()
+                        router.navigate(Screen.NotificationBar)
                     }
                     ToolItem(R.drawable.ic_whatsapp_cleaner, stringResource(R.string.whatsapp_cleaner)) {
-                        permissionCoordinator.guard(CleanXProtectedAction.WhatsAppStartScan) {
+                        onFeatureClick()
+                        if (context.hasWhatsAppInstalled()) {
                             router.navigate(Screen.WhatsAppCleaner)
+                        } else {
+                            showWhatsAppNotFoundDialog = true
                         }
                     }
                 }
@@ -141,14 +158,15 @@ fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     ToolItem(R.drawable.ic_network_usage, stringResource(R.string.network_usage)) {
-                        permissionCoordinator.guard(CleanXProtectedAction.NetworkUsageLoadStats) {
-                            router.navigate(Screen.NetworkUsage)
-                        }
+                        onFeatureClick()
+                        router.navigate(Screen.NetworkUsage)
                     }
                     ToolItem(R.drawable.ic_network_scan, stringResource(R.string.network_scan)) {
+                        onFeatureClick()
                         router.navigate(Screen.NetworkScan)
                     }
                     ToolItem(R.drawable.ic_network_speed, stringResource(R.string.network_speed)) {
+                        onFeatureClick()
                         router.navigate(Screen.NetworkSpeed)
                     }
                 }
@@ -157,7 +175,24 @@ fun ToolBoxTabContent(summaryState: HomeSummaryUiState) {
 
         Spacer(modifier = Modifier.height(100.dp))
     }
+
+    if (showWhatsAppNotFoundDialog) {
+        CleanXSingleActionDialog(
+            title = stringResource(R.string.whatsapp_not_found_title),
+            message = stringResource(R.string.whatsapp_not_found_message),
+            actionText = stringResource(R.string.close),
+            onAction = { showWhatsAppNotFoundDialog = false },
+            onDismissRequest = { showWhatsAppNotFoundDialog = false },
+        )
+    }
 }
+
+private fun android.content.Context.hasWhatsAppInstalled(): Boolean =
+    WhatsAppPackageNames.any { packageName ->
+        packageManager.getLaunchIntentForPackage(packageName) != null
+    }
+
+private val WhatsAppPackageNames = listOf("com.whatsapp", "com.whatsapp.w4b")
 
 @Composable
 private fun DeviceInfoCard(

@@ -7,8 +7,10 @@ import com.quickcleanpro.phonecleaner.QuickCleanApplication
 import com.quickcleanpro.phonecleaner.domain.model.file.ManagedFileItem
 import com.quickcleanpro.phonecleaner.domain.model.file.ManagedFileType
 import com.quickcleanpro.phonecleaner.domain.repository.FileRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -76,29 +78,33 @@ class WhatsAppCleanerViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(WhatsAppCleanerUiState())
     private var hasStarted = false
+    private var scanJob: Job? = null
+    private var cleanJob: Job? = null
 
     val uiState: StateFlow<WhatsAppCleanerUiState> = _uiState.asStateFlow()
 
     fun startScanIfNeeded() {
         if (hasStarted) return
         hasStarted = true
+        scanJob?.cancel()
         _uiState.value = WhatsAppCleanerUiState(phase = WhatsAppCleanerPhase.Scanning)
-        viewModelScope.launch(ioDispatcher) {
-            runCatching {
-                val files = repository.loadWhatsAppFiles()
-                delay(SCAN_DELAY_MILLIS)
-                buildScanResultState(files)
-            }.onSuccess { state ->
-                _uiState.value = state
-            }.onFailure { error ->
-                _uiState.update {
-                    it.copy(
-                        phase = WhatsAppCleanerPhase.Error,
-                        errorMessage = error.message ?: appString(R.string.whatsapp_clean_unavailable),
-                    )
+        scanJob =
+            viewModelScope.launch(ioDispatcher) {
+                try {
+                    val files = repository.loadWhatsAppFiles()
+                    delay(SCAN_DELAY_MILLIS)
+                    _uiState.value = buildScanResultState(files)
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Exception) {
+                    _uiState.update {
+                        it.copy(
+                            phase = WhatsAppCleanerPhase.Error,
+                            errorMessage = error.message ?: appString(R.string.whatsapp_clean_unavailable),
+                        )
+                    }
                 }
             }
-        }
     }
 
     fun toggleGroup(group: WhatsAppCleanerGroup) {
@@ -180,31 +186,49 @@ class WhatsAppCleanerViewModel(
                 errorMessage = null,
             )
         }
-        viewModelScope.launch(ioDispatcher) {
-            runCatching {
-                val freedBytes = repository.deleteFiles(selectedFiles).takeIf { it > 0L } ?: expectedBytes
-                delay(RESULT_DELAY_MILLIS)
-                WhatsAppCleanerUiState(
-                    phase = WhatsAppCleanerPhase.Result,
-                    deletedBytes = freedBytes,
-                    deletedCount = selectedFiles.size,
-                )
-            }.onSuccess { resultState ->
-                _uiState.value = resultState
-            }.onFailure { error ->
-                _uiState.update {
-                    it.copy(
-                        phase = WhatsAppCleanerPhase.Error,
-                        errorMessage = error.message ?: appString(R.string.whatsapp_clean_unavailable),
-                    )
+        cleanJob?.cancel()
+        cleanJob =
+            viewModelScope.launch(ioDispatcher) {
+                try {
+                    val freedBytes = repository.deleteFiles(selectedFiles).takeIf { it > 0L } ?: expectedBytes
+                    delay(RESULT_DELAY_MILLIS)
+                    _uiState.value =
+                        WhatsAppCleanerUiState(
+                            phase = WhatsAppCleanerPhase.Result,
+                            deletedBytes = freedBytes,
+                            deletedCount = selectedFiles.size,
+                        )
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Exception) {
+                    _uiState.update {
+                        it.copy(
+                            phase = WhatsAppCleanerPhase.Error,
+                            errorMessage = error.message ?: appString(R.string.whatsapp_clean_unavailable),
+                        )
+                    }
                 }
             }
-        }
     }
 
     fun retry() {
+        cancelActiveOperation()
         hasStarted = false
         startScanIfNeeded()
+    }
+
+    fun cancelActiveOperation() {
+        scanJob?.cancel()
+        scanJob = null
+        cleanJob?.cancel()
+        cleanJob = null
+        hasStarted = false
+    }
+
+    override fun onCleared() {
+        scanJob?.cancel()
+        cleanJob?.cancel()
+        super.onCleared()
     }
 
     private fun buildScanResultState(files: List<ManagedFileItem>): WhatsAppCleanerUiState {

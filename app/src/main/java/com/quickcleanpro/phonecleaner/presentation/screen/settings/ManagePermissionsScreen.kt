@@ -57,7 +57,7 @@ fun ManagePermissionsScreen(
                         label = stringResource(row.labelRes),
                         checked = row.checked,
                         onClick = {
-                            permissionCoordinator.guard(viewModel.actionFor(row.feature)) {
+                            permissionCoordinator.openSettings(row.item) {
                                 viewModel.refresh(context, refreshAgainAfterDelay = true)
                             }
                         },

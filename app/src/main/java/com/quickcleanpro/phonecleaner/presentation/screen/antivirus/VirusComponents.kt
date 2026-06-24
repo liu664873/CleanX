@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 
 private val VirusPageBrush =
     Brush.verticalGradient(
@@ -68,7 +67,6 @@ internal data class VirusFeatureItem(
 internal fun VirusPageScaffold(
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp,
-    permissionGateConfig: PermissionGateConfig? = null,
     content: @Composable () -> Unit,
 ) {
     CleanXScaffoldPage(
@@ -77,7 +75,6 @@ internal fun VirusPageScaffold(
         backgroundBrush = VirusPageBrush,
         scrollEnabled = false,
         contentPadding = PaddingValues(bottom = bottomPadding),
-        permissionGateConfig = permissionGateConfig,
     ) {
         content()
     }

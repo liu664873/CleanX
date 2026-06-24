@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,6 +61,7 @@ import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationSpec
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXText
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.SettingsRateDialog
 import com.quickcleanpro.phonecleaner.presentation.common.route.AppNavigationEvent
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
@@ -82,6 +84,7 @@ fun HomeScreen(externalBlockingPromptActive: Boolean = false) {
     val viewModel: HomeViewModel = koinViewModel()
     val summaryState by viewModel.summaryState.collectAsStateWithLifecycle()
     val exitPromptSpec = viewModel.exitPromptSpec
+    val showAutoRateDialog = viewModel.showAutoRateDialog
     val router = LocalRouter.current
     val scope = rememberCoroutineScope()
     val tabs =
@@ -92,8 +95,12 @@ fun HomeScreen(externalBlockingPromptActive: Boolean = false) {
         )
     val pagerState = rememberPagerState(pageCount = { tabs.size })
 
-    BackHandler(enabled = exitPromptSpec == null && !externalBlockingPromptActive) {
+    BackHandler(enabled = exitPromptSpec == null && !externalBlockingPromptActive && !showAutoRateDialog) {
         viewModel.requestExitPrompt()
+    }
+
+    LaunchedEffect(externalBlockingPromptActive) {
+        viewModel.setExternalBlockingPromptActive(externalBlockingPromptActive)
     }
 
     fun exitApp() {
@@ -121,6 +128,7 @@ fun HomeScreen(externalBlockingPromptActive: Boolean = false) {
                 },
                 actions = {
                     IconButton(onClick = {
+                        viewModel.onFeatureClicked()
                         router.navigate(Screen.Settings)
                     }) {
                         Icon(
@@ -154,6 +162,7 @@ fun HomeScreen(externalBlockingPromptActive: Boolean = false) {
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null,
                                     onClick = {
+                                        viewModel.onTabInteraction()
                                         scope.launch { pagerState.animateScrollToPage(index) }
                                     },
                                 ).padding(top = 8.dp),
@@ -190,9 +199,20 @@ fun HomeScreen(externalBlockingPromptActive: Boolean = false) {
                 modifier = Modifier.fillMaxSize(),
             ) { page ->
                 when (page) {
-                    0 -> HomeTabContent(summaryState = summaryState)
-                    1 -> FilesManagerTabContent()
-                    2 -> ToolBoxTabContent(summaryState = summaryState)
+                    0 ->
+                        HomeTabContent(
+                            summaryState = summaryState,
+                            onFeatureClick = viewModel::onFeatureClicked,
+                        )
+                    1 ->
+                        FilesManagerTabContent(
+                            onFeatureClick = viewModel::onFeatureClicked,
+                        )
+                    2 ->
+                        ToolBoxTabContent(
+                            summaryState = summaryState,
+                            onFeatureClick = viewModel::onFeatureClicked,
+                        )
                 }
             }
         }
@@ -204,6 +224,10 @@ fun HomeScreen(externalBlockingPromptActive: Boolean = false) {
             onExit = ::exitApp,
             onViewNow = ::openExitPromptFeature,
         )
+    }
+
+    if (showAutoRateDialog && !externalBlockingPromptActive && exitPromptSpec == null) {
+        SettingsRateDialog(onDismiss = viewModel::dismissAutoRateDialog)
     }
 }
 

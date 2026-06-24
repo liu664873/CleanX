@@ -15,10 +15,15 @@ import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+
+private const val AUTO_RATE_PROMPT_DELAY_MS = 15_000L
+private const val AUTO_RATE_PROMPT_COOLDOWN_MS = 24L * 60 * 60 * 1000
 
 data class HomeSummaryUiState(
     val storageInfo: StorageInfo = StorageInfo(0, 0, 0),
@@ -35,6 +40,8 @@ class HomeViewModel(
     private val appLockRepository: AppLockRepository,
     private val settingsRepository: SettingsRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val autoRateDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val autoRatePromptDelayMillis: Long = AUTO_RATE_PROMPT_DELAY_MS,
 ) : ViewModel() {
     private val _summaryState = MutableStateFlow(HomeSummaryUiState())
     val summaryState: StateFlow<HomeSummaryUiState> = _summaryState.asStateFlow()
@@ -42,12 +49,21 @@ class HomeViewModel(
     var exitPromptSpec by mutableStateOf<ToolNotificationSpec?>(null)
         private set
 
+    var showAutoRateDialog by mutableStateOf(false)
+        private set
+
+    private var autoRatePromptJob: Job? = null
+    private var featureClicked = false
+    private var externalBlockingPromptActive = false
+
     init {
         refreshSummary()
+        scheduleAutoRatePrompt()
     }
 
     fun requestExitPrompt() {
         if (exitPromptSpec != null) return
+        autoRatePromptJob?.cancel()
         exitPromptSpec = nextExitPromptSpec()
     }
 
@@ -55,8 +71,34 @@ class HomeViewModel(
         exitPromptSpec = null
     }
 
+    fun dismissAutoRateDialog() {
+        showAutoRateDialog = false
+    }
+
+    fun onFeatureClicked() {
+        featureClicked = true
+        autoRatePromptJob?.cancel()
+        showAutoRateDialog = false
+    }
+
+    fun setExternalBlockingPromptActive(active: Boolean) {
+        if (externalBlockingPromptActive == active) return
+        externalBlockingPromptActive = active
+        if (active) {
+            autoRatePromptJob?.cancel()
+            showAutoRateDialog = false
+            return
+        }
+        scheduleAutoRatePrompt()
+    }
+
+    fun onTabInteraction() {
+        onFeatureClicked()
+    }
+
     fun consumeExitPromptForNavigation(): ToolNotificationSpec? {
         val spec = exitPromptSpec ?: return null
+        onFeatureClicked()
         exitPromptSpec = null
         return spec
     }
@@ -93,4 +135,29 @@ class HomeViewModel(
         return suggestions.randomOrNull() ?: notificationBarSpec
     }
 
+    private fun scheduleAutoRatePrompt() {
+        autoRatePromptJob?.cancel()
+        if (!canShowAutoRatePrompt()) return
+        if (externalBlockingPromptActive) return
+
+        autoRatePromptJob =
+            viewModelScope.launch(autoRateDispatcher) {
+                delay(autoRatePromptDelayMillis)
+                if (featureClicked) return@launch
+                if (externalBlockingPromptActive) return@launch
+                settingsRepository.saveLastAutoRatePromptAt(System.currentTimeMillis())
+                showAutoRateDialog = true
+            }
+    }
+
+    private fun canShowAutoRatePrompt(): Boolean {
+        val lastPromptAt = settingsRepository.readLastAutoRatePromptAt()
+        if (lastPromptAt <= 0L) return true
+        return System.currentTimeMillis() - lastPromptAt >= AUTO_RATE_PROMPT_COOLDOWN_MS
+    }
+
+    override fun onCleared() {
+        autoRatePromptJob?.cancel()
+        super.onCleared()
+    }
 }

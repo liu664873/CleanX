@@ -57,27 +57,26 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.toolbox.AppUsageInfo
 import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXSegmentedTabs
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXTabItem
-import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.PackageAppIcon
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
+import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionItem
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
-// ==================== 颜色与样式常量 ====================
 private val CardBg = Color(0xFFF6F7FB)
 private val Navy = Color(0xFF1D2959)
 private val NavyMuted = Color(0xA61D2959)
 private val Divider = Color(0x332D3748)
 private val Blue = Color(0xFF4179FC)
 private val CardRadius = 12.dp
-private val OtherColor = Color(0xFFB0BEC5) // “其他”扇区颜色
-
-// 甜甜圈图颜色（前3个应用）
+private val OtherColor = Color(0xFFB0BEC5)
 private val DonutColors = listOf(
     Color(0xFFFF565D),
     Color(0xFFA03CFE),
@@ -90,6 +89,7 @@ internal fun AppUsageScreen(viewModel: AppUsageViewModel = koinViewModel()) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
 
     DisposableEffect(lifecycleOwner, viewModel) {
         val observer = LifecycleEventObserver { _, event ->
@@ -104,45 +104,93 @@ internal fun AppUsageScreen(viewModel: AppUsageViewModel = koinViewModel()) {
     CleanXScaffoldPage(
         title = stringResource(R.string.app_usage),
         backgroundBrush = Brush.linearGradient(
-            colors = listOf(Color(0xFFE3ECFD), Color(0xFFDFEBF5))
+            colors = listOf(Color(0xFFE3ECFD), Color(0xFFDFEBF5)),
         ),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-        permissionFeature = CleanXFeature.AppUsage,
     ) {
-        // 1. 时间选择器
-        TimeRangeSelector(
-            selectedRange = uiState.selectedRange,
-            onRangeSelected = viewModel::selectRange,
-        )
+        if (!uiState.hasAccess) {
+            UsageAccessRequiredCard(
+                title = stringResource(R.string.app_usage_permission_title),
+                description = stringResource(R.string.app_usage_permission_desc),
+                onGrantClick = {
+                    permissionCoordinator.request(CleanXPermissionItem.UsageAccess) {
+                        viewModel.refreshAfterResume()
+                    }
+                },
+            )
+        } else {
+            TimeRangeSelector(
+                selectedRange = uiState.selectedRange,
+                onRangeSelected = viewModel::selectRange,
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // 2. 甜甜圈图卡片
-        PieChartCard(uiState = uiState)
+            PieChartCard(uiState = uiState)
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // 3. 使用数据卡片（含滑动切换 Tab）
-        UsageDataCard(
-            uiState = uiState,
-            onTabSelected = viewModel::selectTab,
-            onStopApp = { packageName ->
-                try {
-                    externalActivityLaunchHandler.markLaunch()
-                    context.startActivity(viewModel.appInfoIntent(packageName))
-                } catch (_: ActivityNotFoundException) {
-                    externalActivityLaunchHandler.cancelLaunch()
-                } catch (_: Exception) {
-                    externalActivityLaunchHandler.cancelLaunch()
-                }
-            },
-        )
+            UsageDataCard(
+                uiState = uiState,
+                onTabSelected = viewModel::selectTab,
+                onStopApp = { packageName ->
+                    try {
+                        externalActivityLaunchHandler.markLaunch()
+                        context.startActivity(viewModel.appInfoIntent(packageName))
+                    } catch (_: ActivityNotFoundException) {
+                        externalActivityLaunchHandler.cancelLaunch()
+                    } catch (_: Exception) {
+                        externalActivityLaunchHandler.cancelLaunch()
+                    }
+                },
+            )
+        }
 
         Spacer(modifier = Modifier.height(100.dp))
     }
 }
 
-// ==================== 时间选择器 ====================
+@Composable
+private fun UsageAccessRequiredCard(
+    title: String,
+    description: String,
+    onGrantClick: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 32.dp),
+        color = CardBg,
+        shape = RoundedCornerShape(CardRadius),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            Text(
+                text = title,
+                color = Navy,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = description,
+                color = NavyMuted,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+            )
+            CleanXPrimaryButton(
+                text = stringResource(R.string.allow_now),
+                onClick = onGrantClick,
+            )
+        }
+    }
+}
+
 @Composable
 private fun TimeRangeSelector(
     selectedRange: AppUsageDateRange,
@@ -161,53 +209,54 @@ private fun TimeRangeSelector(
     )
 }
 
-// ==================== 甜甜圈图卡片（前3个应用 + 其他） ====================
 @Composable
 private fun PieChartCard(uiState: AppUsageUiState) {
-    // 使用完整的 usages 列表，按当前 Tab 排序
     val allUsages = uiState.usages
     val sortedUsages = when (uiState.selectedTab) {
         AppUsageMetricTab.Duration -> allUsages.sortedWith(
             compareByDescending<AppUsageInfo> { it.totalForegroundMs }
                 .thenByDescending { it.launchCount }
-                .thenBy { it.appName.lowercase(Locale.US) }
+                .thenBy { it.appName.lowercase(Locale.US) },
         )
         AppUsageMetricTab.LaunchCount -> allUsages.sortedWith(
             compareByDescending<AppUsageInfo> { it.launchCount }
                 .thenByDescending { it.totalForegroundMs }
-                .thenBy { it.appName.lowercase(Locale.US) }
+                .thenBy { it.appName.lowercase(Locale.US) },
         )
     }
 
-    val topItems = sortedUsages.take(3)          // 前3个
-    val otherItems = sortedUsages.drop(3)        // 其余全部
+    val topItems = sortedUsages.take(3)
+    val otherItems = sortedUsages.drop(3)
 
     val donutItems = mutableListOf<DonutItem>()
     topItems.forEachIndexed { index, usage ->
         val fraction = if (uiState.totalUsageMs > 0) {
             usage.totalForegroundMs.toFloat() / uiState.totalUsageMs
-        } else 0f
+        } else {
+            0f
+        }
         donutItems.add(
             DonutItem(
                 fraction = fraction.coerceAtLeast(0.02f),
-                color = donutColor(index)
-            )
+                color = donutColor(index),
+            ),
         )
     }
     if (otherItems.isNotEmpty()) {
         val otherTotalMs = otherItems.sumOf { it.totalForegroundMs }
         val otherFraction = if (uiState.totalUsageMs > 0) {
             otherTotalMs.toFloat() / uiState.totalUsageMs
-        } else 0f
+        } else {
+            0f
+        }
         donutItems.add(
             DonutItem(
                 fraction = otherFraction.coerceAtLeast(0.02f),
-                color = OtherColor
-            )
+                color = OtherColor,
+            ),
         )
     }
 
-    // 无数据时显示占位环
     if (donutItems.isEmpty()) {
         donutItems.add(DonutItem(1f, NavyMuted.copy(alpha = 0.2f)))
     }
@@ -232,9 +281,8 @@ private fun PieChartCard(uiState: AppUsageUiState) {
                     items = donutItems,
                 )
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    val totalText = formatDurationForCenter(uiState.totalUsageMs)
                     Text(
-                        text = totalText,
+                        text = formatDurationForCenter(uiState.totalUsageMs),
                         color = Navy,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
@@ -245,7 +293,6 @@ private fun PieChartCard(uiState: AppUsageUiState) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 图例：前3个应用 + “其他”
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -301,7 +348,6 @@ private fun LegendItem(color: Color, label: String) {
     }
 }
 
-// ==================== 使用数据卡片（支持滑动切换 Tab） ====================
 @Composable
 private fun UsageDataCard(
     uiState: AppUsageUiState,
@@ -310,13 +356,17 @@ private fun UsageDataCard(
 ) {
     val pagerState = rememberPagerState(
         initialPage = if (uiState.selectedTab == AppUsageMetricTab.Duration) 0 else 1,
-        pageCount = { 2 }
+        pageCount = { 2 },
     )
     val coroutineScope = rememberCoroutineScope()
 
-    // 当页面滑动时，同步更新 Tab
     LaunchedEffect(pagerState.currentPage) {
-        val newTab = if (pagerState.currentPage == 0) AppUsageMetricTab.Duration else AppUsageMetricTab.LaunchCount
+        val newTab =
+            if (pagerState.currentPage == 0) {
+                AppUsageMetricTab.Duration
+            } else {
+                AppUsageMetricTab.LaunchCount
+            }
         if (newTab != uiState.selectedTab) {
             onTabSelected(newTab)
         }
@@ -333,7 +383,6 @@ private fun UsageDataCard(
                 .padding(horizontal = 16.dp, vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Tab 文字行（点击切换）
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -362,12 +411,10 @@ private fun UsageDataCard(
             HorizontalDivider(color = Divider, thickness = 1.dp)
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 水平滑动的 Pager
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxWidth(),
-            ) { page ->
-                // 两个页面显示相同列表（根据当前 Tab 排序），但指标文字会因 selectedTab 不同而变化
+            ) {
                 if (uiState.visibleItems.isEmpty()) {
                     EmptyUsageText()
                 } else {
@@ -405,7 +452,6 @@ private fun EmptyUsageText() {
     }
 }
 
-// ==================== 列表行（含进度条） ====================
 @Composable
 private fun AppUsageHeaderTab(
     selected: Boolean,
@@ -415,12 +461,11 @@ private fun AppUsageHeaderTab(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier =
-            Modifier.clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            ),
+        modifier = Modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClick,
+        ),
     ) {
         Text(
             text = title,
@@ -430,11 +475,10 @@ private fun AppUsageHeaderTab(
             textAlign = TextAlign.Center,
         )
         Box(
-            modifier =
-                Modifier
-                    .width(86.dp)
-                    .height(2.dp)
-                    .background(if (selected) Blue else Color.Transparent),
+            modifier = Modifier
+                .width(86.dp)
+                .height(2.dp)
+                .background(if (selected) Blue else Color.Transparent),
         )
     }
 }
@@ -453,7 +497,7 @@ private fun AppUsageRow(
             packageName = item.packageName,
             fallbackText = item.iconText.take(1).ifBlank { "A" },
             color = donutColor(item.colorIndex),
-            modifier = Modifier.size(44.dp)
+            modifier = Modifier.size(44.dp),
         )
 
         Spacer(modifier = Modifier.width(10.dp))
@@ -512,18 +556,16 @@ private fun AppUsageRow(
 }
 
 @Composable
-private fun itemValueText(item: AppUsageDisplayItem, selectedTab: AppUsageMetricTab): String {
-    return when (selectedTab) {
+private fun itemValueText(item: AppUsageDisplayItem, selectedTab: AppUsageMetricTab): String =
+    when (selectedTab) {
         AppUsageMetricTab.Duration -> formatDuration(item.totalForegroundMs)
         AppUsageMetricTab.LaunchCount -> pluralStringResource(
             R.plurals.launch_times_count,
             item.launchCount,
-            item.launchCount
+            item.launchCount,
         )
     }
-}
 
-// ==================== 环形图绘制 ====================
 private data class DonutItem(
     val fraction: Float,
     val color: Color,
@@ -573,7 +615,6 @@ private fun DonutChart(
     }
 }
 
-// ==================== 辅助函数 ====================
 private fun donutColor(index: Int): Color = DonutColors[index % DonutColors.size]
 
 @Composable

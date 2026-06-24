@@ -1,5 +1,6 @@
 package com.quickcleanpro.phonecleaner.presentation.common.route
 
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.quickcleanpro.phonecleaner.presentation.app.AppLaunchCoordinator
@@ -13,6 +14,7 @@ import org.koin.androidx.compose.koinViewModel
 internal fun NavGraphBuilder.registerStartupRoutes(
     splashPaused: Boolean,
     launchCoordinator: AppLaunchCoordinator?,
+    splashNotificationPermissionPrompt: @Composable () -> Unit = {},
 ) {
     composable(Screen.Splash.route) {
         val router = LocalRouter.current
@@ -36,6 +38,7 @@ internal fun NavGraphBuilder.registerStartupRoutes(
                 }
             }
         }
+        splashNotificationPermissionPrompt()
     }
 
     composable(Screen.OnboardingScan.route) {

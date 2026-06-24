@@ -50,7 +50,11 @@ class PermissionManager<F : PermissionFeature>(
                     ContextCompat.checkSelfPermission(context, runtimePermission) != PackageManager.PERMISSION_GRANTED
                 }
                 .toTypedArray()
-        if (runtimePermissions.isNotEmpty() && !denialStore.hasDenied(permission)) {
+        if (
+            runtimePermissions.isNotEmpty() &&
+            denialStore.shouldRequestRuntimePermission(context, permission, runtimePermissions)
+        ) {
+            denialStore.markRequested(permission)
             pendingRuntimeRequestsByFeature[feature.key] = runtimePermissions.associateWith { permission }
             return PermissionRequestPlan.RequestRuntime(runtimePermissions)
         }
@@ -68,10 +72,7 @@ class PermissionManager<F : PermissionFeature>(
         context: Context,
         feature: F,
     ): PermissionRequestPlan {
-        val missing = missingPermissions(context, feature)
-        if (missing.isEmpty()) return PermissionRequestPlan.AlreadyGranted
-
-        val permission = missing.first()
+        val permission = specOf(feature).permissions.firstOrNull() ?: return PermissionRequestPlan.Unavailable
         val handler = handlersByPermission[permission.key] ?: return PermissionRequestPlan.Unavailable
         val settingsIntents = handler.settingsIntents(context).distinctBy { it.toUri(0) }
         return if (settingsIntents.isNotEmpty()) {

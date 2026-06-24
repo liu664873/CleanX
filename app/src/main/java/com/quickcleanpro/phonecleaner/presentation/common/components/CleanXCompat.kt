@@ -324,24 +324,13 @@ fun CommonResultCheckIcon(
         modifier =
             modifier
                 .size(size)
-                .clip(CircleShape)
-                .background(Color(0xFFCFEFFF)),
+                .clip(CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .size(size * 0.74f)
-                    .clip(CircleShape)
-                    .background(Color(0xFF1AA7EC)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(size * 0.52f),
-            )
-        }
+        Image(
+            painter = painterResource(R.drawable.ic_ok),
+            contentDescription = null,
+            modifier = Modifier.size(size),
+        )
     }
 }

@@ -3,9 +3,8 @@ package com.quickcleanpro.phonecleaner.presentation.screen.settings
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionItem
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionRegistry
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -16,7 +15,7 @@ import kotlinx.coroutines.launch
 
 data class ManagePermissionRowState(
     val labelRes: Int,
-    val feature: CleanXFeature,
+    val item: CleanXPermissionItem,
     val checked: Boolean,
 )
 
@@ -28,7 +27,7 @@ private fun initialRows(): List<ManagePermissionRowState> =
     CleanXPermissionRegistry.manageItems.map { item ->
         ManagePermissionRowState(
             labelRes = item.labelRes,
-            feature = item.feature,
+            item = item.item,
             checked = false,
         )
     }
@@ -57,29 +56,17 @@ class ManagePermissionsViewModel(
         }
     }
 
-    fun actionFor(
-        feature: CleanXFeature,
-    ): CleanXProtectedAction =
-        when (feature) {
-            CleanXFeature.AppUsage -> CleanXProtectedAction.AppUsageLoadStats
-            CleanXFeature.NetworkScan -> CleanXProtectedAction.NetworkScanStart
-            CleanXFeature.NotificationBar -> CleanXProtectedAction.NotificationBarEnable
-            CleanXFeature.Overlay -> CleanXProtectedAction.AppLockRequestOverlay
-            CleanXFeature.PostNotifications -> CleanXProtectedAction.PostNotificationsEnable
-            else -> CleanXProtectedAction.FileManagerLoadFiles
-        }
-
     fun onResume(context: Context) {
         refresh(context, refreshAgainAfterDelay = true)
     }
 
     private fun buildRows(context: Context): List<ManagePermissionRowState> {
-        val manager = CleanXPermissionRegistry.permissionManager(context)
+        val manager = CleanXPermissionRegistry.permissionItemManager(context)
         return CleanXPermissionRegistry.manageItems.map { item ->
             ManagePermissionRowState(
                 labelRes = item.labelRes,
-                feature = item.feature,
-                checked = manager.status(context, item.feature).granted,
+                item = item.item,
+                checked = manager.status(context, item.item).granted,
             )
         }
     }

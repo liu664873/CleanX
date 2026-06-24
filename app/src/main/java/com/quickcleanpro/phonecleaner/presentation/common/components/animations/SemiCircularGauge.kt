@@ -59,7 +59,7 @@ fun SemiCircularGauge(
         val tickCount = 11
         for (i in 0..tickCount) {
             val ratio = i.toFloat() / tickCount
-            val arcAngle = 180f * (1 - ratio)
+            val arcAngle = 180f + 180f * ratio
             val innerRadius = radius - 8f
             val outerRadius = radius + 8f
             val startPoint = getPointOnCircle(centerX, centerY, innerRadius, arcAngle)

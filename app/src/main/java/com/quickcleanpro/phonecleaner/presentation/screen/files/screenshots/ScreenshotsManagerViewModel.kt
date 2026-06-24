@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-internal class ScreenshotsManagerViewModel(
+internal class  ScreenshotsManagerViewModel(
     private val repository: FileRepository = fileRepositoryOrPreview(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val testLoader: (((suspend () -> Unit)) -> Unit)? = null,

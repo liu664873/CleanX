@@ -66,6 +66,8 @@ internal fun NetworkSpeedInfoCard(uiState: NetworkSpeedUiState) {
 internal fun NetworkSpeedMetricCard(
     uiState: NetworkSpeedUiState,
     showActiveBadges: Boolean = false,
+    showGauge: Boolean = false,
+    gaugeAnimating: Boolean = false,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -76,25 +78,25 @@ internal fun NetworkSpeedMetricCard(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // ★ 替换静态图片为动态仪表盘 ★
-            val isMeasuring = uiState.speed?.measured == false  // ① 动画开关
-            SemiCircularGauge(
-                modifier = Modifier.size(width = 166.dp, height = 126.dp),
-                isAnimating = isMeasuring,
-                arcStartColor = Color(0xFF4179FC),   // ② 蓝色渐变起点
-                arcEndColor = Color(0xFF6B9BFF),     // ③ 蓝色渐变终点（更亮）
-                needleColor = Color.White,           // ④ 白色指针，对比清晰
-                tickColor = Color(0xFFB0C4DE)        // ⑤ 浅灰蓝刻度
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-            HorizontalDivider(color = NetworkSpeedDivider, thickness = 1.dp)
-            Spacer(modifier = Modifier.height(16.dp))
+            if (showGauge) {
+                SemiCircularGauge(
+                    modifier = Modifier.size(width = 166.dp, height = 126.dp),
+                    isAnimating = gaugeAnimating,
+                    arcStartColor = Color(0xFF4179FC),   // ② 蓝色渐变起点
+                    arcEndColor = Color(0xFF6B9BFF),     // ③ 蓝色渐变终点（更亮）
+                    needleColor = Color(0xFF4179FC),
+                    tickColor = Color(0xFFB0C4DE)        // ⑤ 浅灰蓝刻度
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                HorizontalDivider(color = NetworkSpeedDivider, thickness = 1.dp)
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             NetworkSpeedMetricsRow(
                 downloadValue = uiState.downloadLabel,
                 uploadValue = uiState.uploadLabel,
                 showDownloadBadge = showActiveBadges && uiState.progress.downloadMbps == null,
                 showUploadBadge = showActiveBadges && uiState.progress.uploadMbps == null,
-                valueFontSize = 34,
+                valueFontSize = 30,
             )
             // 保留底部 fallback 提示，与动画条件一致
             if (uiState.speed?.measured == false) {
@@ -250,15 +252,15 @@ private fun NetworkSpeedMetricColumn(
                     text = value.speedPlaceholder(),
                     color = NetworkSpeedNavy,
                     fontSize = valueFontSize.sp,
-                    lineHeight = 39.sp,
+                    lineHeight = 34.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = stringResource(R.string.mbps),
                     color = NetworkSpeedNavy,
-                    fontSize = 20.sp,
-                    lineHeight = 24.sp,
+                    fontSize = 18.sp,
+                    lineHeight = 22.sp,
                     fontWeight = FontWeight.Normal,
                 )
             }

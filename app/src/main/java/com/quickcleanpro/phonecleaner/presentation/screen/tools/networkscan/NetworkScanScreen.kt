@@ -35,7 +35,6 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.Cle
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXButtonHeight
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXButtonShape
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
@@ -67,7 +66,6 @@ fun NetworkScanScreen(viewModel: NetworkScanViewModel = koinViewModel()) {
         title = stringResource(R.string.network_scan),
         titleFontSize = 20.sp,
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-        permissionFeature = CleanXFeature.NetworkScan,
         bottomBar = {
             NetworkScanBottomBar(
                 uiState = uiState,
@@ -85,7 +83,7 @@ fun NetworkScanScreen(viewModel: NetworkScanViewModel = koinViewModel()) {
                     viewModel.refreshNetworkStateUntilWifiConnected()
                 },
                 onScan = {
-                    permissionCoordinator.guard(CleanXProtectedAction.NetworkScanStart) {
+                    permissionCoordinator.guardDirect(CleanXProtectedAction.NetworkScanStart) {
                         viewModel.startScan()
                     }
                 },

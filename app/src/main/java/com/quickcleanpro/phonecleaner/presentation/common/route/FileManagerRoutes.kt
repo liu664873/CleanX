@@ -3,9 +3,6 @@ package com.quickcleanpro.phonecleaner.presentation.common.route
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.screen.files.audios.AudiosManagerScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates.DuplicateFilesManagerScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.files.documents.DocumentsManagerScreen
@@ -18,46 +15,30 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.videos.VideosMan
 
 internal fun NavGraphBuilder.registerFileManagerRoutes() {
     composable(Screen.PhotosManager.route) {
-        PhotosManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
+        PhotosManagerScreen()
     }
     composable(Screen.SimilarPhotosManager.route) {
-        SimilarPhotosManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
+        SimilarPhotosManagerScreen()
     }
     composable(Screen.PhotoPrivacyManager.route) {
-        PhotoPrivacyManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
+        PhotoPrivacyManagerScreen()
     }
     composable(Screen.ScreenshotsManager.route) {
-        ScreenshotsManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
+        ScreenshotsManagerScreen()
     }
     composable(Screen.VideosManager.route) {
-        VideosManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
+        VideosManagerScreen()
     }
     composable(Screen.AudiosManager.route) {
-        AudiosManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
+        AudiosManagerScreen()
     }
     composable(Screen.LargeFilesManager.route) {
-        LargeFilesManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
+        LargeFilesManagerScreen()
     }
     composable(Screen.DuplicateFilesManager.route) {
-        DuplicateFilesManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
+        DuplicateFilesManagerScreen()
     }
     composable(Screen.DocumentsManager.route) {
-        DocumentsManagerScreen(permissionGateConfig = fileManagerPermissionConfig())
+        DocumentsManagerScreen()
     }
-}
-
-@Composable
-private fun fileManagerPermissionConfig(): PermissionGateConfig {
-    val router = LocalRouter.current
-    return PermissionGateConfig(
-        cleanXFeature = CleanXFeature.FileManager,
-        onDenied = { router.goBack() },
-        deniedContent = { onRetry ->
-            FilePermissionDeniedContent(
-                titleRes = R.string.home_tab_file_manager,
-                onBack = { router.goBack() },
-                onRetry = onRetry,
-            )
-        },
-    )
 }

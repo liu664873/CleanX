@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerErrorToastEffect
@@ -33,23 +32,19 @@ import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun DuplicateFilesManagerScreen(
-    permissionGateConfig: PermissionGateConfig? = null
-) {
+fun DuplicateFilesManagerScreen() {
     DuplicateFilesManagerScreenState(
         viewModel = koinViewModel(),
-        permissionGateConfig = permissionGateConfig
     )
 }
 
 @Composable
 private fun DuplicateFilesManagerScreenState(
     viewModel: DuplicateFilesManagerViewModel,
-    permissionGateConfig: PermissionGateConfig? = null
 ) {
     val router = LocalRouter.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val permissionState = rememberFileManagerPermissionState(permissionGateConfig)
+    val permissionState = rememberFileManagerPermissionState()
     var showStopDialog by remember { mutableStateOf(false) }
     var blockedOperationPhase by remember { mutableStateOf<FileOperationPhase?>(null) }
     val displayState =
@@ -67,7 +62,9 @@ private fun DuplicateFilesManagerScreenState(
         onConsumed = viewModel::clearError
     )
 
-    FileManagerStartEffect(permissionState, viewModel::startIfNeeded)
+    FileManagerStartEffect(permissionState, viewModel::startIfNeeded) {
+        permissionState.leaveHome(router)
+    }
 
     fun handleBack() {
         when {
@@ -90,8 +87,6 @@ private fun DuplicateFilesManagerScreenState(
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_duplicate_files),
-        permissionGateConfig = permissionGateConfig,
-        permissionState = permissionState,
         onBack = ::handleBack,
         bottomBar = {
             if (

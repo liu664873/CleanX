@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileImageGroupDisplayItem
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDeleteConfirmDialog
@@ -41,23 +40,19 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.lis
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun SimilarPhotosManagerScreen(
-    permissionGateConfig: PermissionGateConfig? = null
-) {
+fun SimilarPhotosManagerScreen() {
     SimilarPhotosManagerScreenState(
         viewModel = koinViewModel(),
-        permissionGateConfig = permissionGateConfig
     )
 }
 
 @Composable
 private fun SimilarPhotosManagerScreenState(
     viewModel: SimilarPhotosManagerViewModel,
-    permissionGateConfig: PermissionGateConfig? = null
 ) {
     val router = LocalRouter.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val permissionState = rememberFileManagerPermissionState(permissionGateConfig)
+    val permissionState = rememberFileManagerPermissionState()
     var showStopDialog by remember { mutableStateOf(false) }
     var blockedPhase by remember { mutableStateOf<FileOperationPhase?>(null) }
     val displayState = blockedPhase?.let { uiState.copy(phase = it) } ?: uiState
@@ -86,14 +81,14 @@ private fun SimilarPhotosManagerScreenState(
 
     FileManagerErrorToastEffect(uiState.errorMessage, viewModel::clearError)
 
-    FileManagerStartEffect(permissionState, viewModel::startIfNeeded)
+    FileManagerStartEffect(permissionState, viewModel::startIfNeeded) {
+        permissionState.leaveHome(router)
+    }
 
     BackHandler(enabled = permissionState.granted) { handleBack() }
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_similar_photos),
-        permissionGateConfig = permissionGateConfig,
-        permissionState = permissionState,
         onBack = ::handleBack,
         actions = {
             FileManagerTopAction(

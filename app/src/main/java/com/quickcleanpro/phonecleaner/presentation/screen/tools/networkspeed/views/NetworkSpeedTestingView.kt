@@ -19,6 +19,8 @@ internal fun NetworkSpeedTestingView(uiState: NetworkSpeedUiState) {
     NetworkSpeedMetricCard(
         uiState = uiState,
         showActiveBadges = true,
+        showGauge = true,
+        gaugeAnimating = true,
     )
     Spacer(modifier = Modifier.height(8.dp))
     Text(

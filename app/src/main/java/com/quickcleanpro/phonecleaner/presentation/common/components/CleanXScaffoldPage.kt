@@ -12,7 +12,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -21,9 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionGate
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 
 /**
  * 通用页面骨架。
@@ -45,11 +41,6 @@ fun CleanXScaffoldPage(
     scrollEnabled: Boolean = true,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-    permissionFeature: CleanXFeature? = null,
-    onPermissionDenied: (() -> Unit)? = null,
-    permissionDeniedContent: (@Composable (onRetry: () -> Unit) -> Unit)? = null,
-    permissionGateConfig: PermissionGateConfig? = null,
-    onPermissionGrantedChanged: (Boolean) -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
@@ -91,21 +82,6 @@ fun CleanXScaffoldPage(
             }
         }
 
-        val resolvedPermissionFeature = permissionFeature ?: permissionGateConfig?.cleanXFeature
-        if (resolvedPermissionFeature != null) {
-            CleanXPermissionGate(
-                feature = resolvedPermissionFeature,
-                onDenied = onPermissionDenied ?: permissionGateConfig?.onDenied ?: {},
-                onPermissionGrantedChanged = onPermissionGrantedChanged,
-                deniedContent = permissionDeniedContent ?: permissionGateConfig?.deniedContent,
-            ) {
-                pageContent()
-            }
-        } else {
-            LaunchedEffect(Unit) {
-                onPermissionGrantedChanged(true)
-            }
-            pageContent()
-        }
+        pageContent()
     }
 }

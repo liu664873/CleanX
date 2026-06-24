@@ -37,8 +37,6 @@ import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
-import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 
@@ -54,13 +52,18 @@ private val AppLockCardBlue =
 
 @Composable
 fun HomeTabContent() {
-    HomeTabContent(summaryState = HomeSummaryUiState())
+    HomeTabContent(
+        summaryState = HomeSummaryUiState(),
+        onFeatureClick = {},
+    )
 }
 
 @Composable
-fun HomeTabContent(summaryState: HomeSummaryUiState) {
+fun HomeTabContent(
+    summaryState: HomeSummaryUiState,
+    onFeatureClick: () -> Unit = {},
+) {
     val router = LocalRouter.current
-    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     val storageInfo = summaryState.storageInfo
     val usedStorageText =
         if (summaryState.isLoading && storageInfo.totalBytes <= 0L) {
@@ -137,9 +140,8 @@ fun HomeTabContent(summaryState: HomeSummaryUiState) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Button(
                     onClick = {
-                        permissionCoordinator.guard(CleanXProtectedAction.JunkStartScan) {
-                            router.navigate(Screen.Scan)
-                        }
+                        onFeatureClick()
+                        router.navigate(Screen.Scan)
                     },
                     shape = RoundedCornerShape(28.dp),
                     colors =
@@ -181,7 +183,10 @@ fun HomeTabContent(summaryState: HomeSummaryUiState) {
             imageHeight = 81.dp,
             title = stringResource(R.string.home_virus_title),
             description = stringResource(R.string.home_virus_desc),
-            onClick = { router.navigate(Screen.AntiVirus) },
+            onClick = {
+                onFeatureClick()
+                router.navigate(Screen.AntiVirus)
+            },
         )
 
         Spacer(modifier = Modifier.height(15.dp))
@@ -193,7 +198,10 @@ fun HomeTabContent(summaryState: HomeSummaryUiState) {
             imageHeight = 81.dp,
             title = stringResource(R.string.home_app_lock_title),
             description = stringResource(R.string.home_app_lock_desc),
-            onClick = { router.navigate(Screen.AppLock) },
+            onClick = {
+                onFeatureClick()
+                router.navigate(Screen.AppLock)
+            },
         )
 
         Spacer(modifier = Modifier.height(100.dp))

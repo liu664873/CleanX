@@ -1,4 +1,4 @@
-package com.quickcleanpro.phonecleaner.presentation.screen.splash
+ package com.quickcleanpro.phonecleaner.presentation.screen.splash
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable

@@ -27,6 +27,7 @@ import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkscan.Netw
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkspeed.NetworkSpeedViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkusage.NetworkUsageViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerViewModel
+import com.quickcleanpro.phonecleaner.presentation.app.NotificationPermissionSessionViewModel
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
@@ -36,6 +37,7 @@ import org.koin.dsl.module
 val presentationModule =
     module {
         viewModel { HomeViewModel(get(), get(), get()) }
+        viewModel { NotificationPermissionSessionViewModel() }
         viewModel { AppUsageViewModel(get()) }
         viewModel { DeviceInfoViewModel(get(), get(), get(), get()) }
         viewModel { BatteryInfoViewModel(get(), get(), get(), get()) }

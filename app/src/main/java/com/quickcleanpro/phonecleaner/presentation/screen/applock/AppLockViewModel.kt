@@ -10,9 +10,11 @@ import com.quickcleanpro.phonecleaner.domain.model.applock.AppLockApp
 import com.quickcleanpro.phonecleaner.domain.repository.AppLockRepository
 import com.quickcleanpro.phonecleaner.presentation.common.appLockRepositoryOrPreview
 import com.quickcleanpro.phonecleaner.utils.AppLockManager
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -80,6 +82,7 @@ internal class AppLockViewModel(
         )
     )
     val uiState: StateFlow<AppLockUiState> = _uiState.asStateFlow()
+    private var completePinJob: Job? = null
 
     init {
         loadApps()
@@ -151,6 +154,7 @@ internal class AppLockViewModel(
 
     fun beginCreatePin() {
         if (!_uiState.value.hasSelectedApps) return
+        cancelCompletePinJob()
         _uiState.update {
             it.copy(
                 page = AppLockPage.Pin,
@@ -158,12 +162,18 @@ internal class AppLockViewModel(
                 pinInput = "",
                 firstPin = "",
                 pinReturnPage = AppLockPage.Manage,
-                pinErrorRes = null
+                pinErrorRes = null,
+                overlayPermissionRequired = false
             )
         }
     }
 
+    fun consumeOverlayPermissionRequest() {
+        _uiState.update { it.copy(overlayPermissionRequired = false) }
+    }
+
     fun startChangePin() {
+        cancelCompletePinJob()
         _uiState.update {
             it.copy(
                 page = AppLockPage.Pin,
@@ -182,15 +192,24 @@ internal class AppLockViewModel(
         val nextPin = current.pinInput + digit
         _uiState.update { it.copy(pinInput = nextPin, pinErrorRes = null) }
         if (nextPin.length == PIN_LENGTH) {
-            processCompletePin(nextPin)
+            completePinJob?.cancel()
+            completePinJob = viewModelScope.launch {
+                delay(PIN_COMPLETE_DISPLAY_DELAY_MS)
+                if (_uiState.value.pinInput == nextPin) {
+                    processCompletePin(nextPin)
+                }
+                completePinJob = null
+            }
         }
     }
 
     fun removePinDigit() {
+        cancelCompletePinJob()
         _uiState.update { it.copy(pinInput = it.pinInput.dropLast(1), pinErrorRes = null) }
     }
 
     fun leavePinPage() {
+        cancelCompletePinJob()
         val current = _uiState.value
         val targetPage = when {
             current.pinStep == AppLockPinStep.Verify && repository.isPinSet() -> AppLockPage.Pin
@@ -238,6 +257,16 @@ internal class AppLockViewModel(
         _uiState.update { it.copy(toastRes = null) }
     }
 
+    override fun onCleared() {
+        cancelCompletePinJob()
+        super.onCleared()
+    }
+
+    private fun cancelCompletePinJob() {
+        completePinJob?.cancel()
+        completePinJob = null
+    }
+
     private fun processCompletePin(pin: String) {
         when (_uiState.value.pinStep) {
             AppLockPinStep.Create -> {
@@ -269,7 +298,7 @@ internal class AppLockViewModel(
                             pinErrorRes = null,
                             monitoringEnabled = true,
                             isPinSet = true,
-                            overlayPermissionRequired = false
+                            overlayPermissionRequired = !repository.hasOverlayPermission()
                         )
                     }
                     loadApps()
@@ -287,7 +316,7 @@ internal class AppLockViewModel(
                             pinInput = "",
                             pinErrorRes = null,
                             isPinSet = true,
-                            overlayPermissionRequired = false
+                            overlayPermissionRequired = !repository.hasOverlayPermission()
                         )
                     }
                     loadApps()
@@ -395,9 +424,12 @@ internal class AppLockViewModel(
     }
 
     private fun shouldPromptOverlayPermission(page: AppLockPage): Boolean =
-        false
+        page == AppLockPage.Manage &&
+            _uiState.value.overlayPermissionRequired &&
+            !repository.hasOverlayPermission()
 
     companion object {
         private const val PIN_LENGTH = 4
+        private const val PIN_COMPLETE_DISPLAY_DELAY_MS = 220L
     }
 }

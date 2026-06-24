@@ -19,7 +19,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.DeleteConfirmDialog
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerErrorToastEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerNoResultsDialog
@@ -36,23 +35,19 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.lis
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun PhotoPrivacyManagerScreen(
-    permissionGateConfig: PermissionGateConfig? = null
-) {
+fun PhotoPrivacyManagerScreen() {
     PhotoPrivacyManagerScreenState(
         viewModel = koinViewModel(),
-        permissionGateConfig = permissionGateConfig
     )
 }
 
 @Composable
 private fun PhotoPrivacyManagerScreenState(
     viewModel: PhotoPrivacyManagerViewModel,
-    permissionGateConfig: PermissionGateConfig? = null
 ) {
     val router = LocalRouter.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val permissionState = rememberFileManagerPermissionState(permissionGateConfig)
+    val permissionState = rememberFileManagerPermissionState()
     var showStopDialog by remember { mutableStateOf(false) }
     var blockedPhase by remember { mutableStateOf<FileOperationPhase?>(null) }
     val displayState = blockedPhase?.let { uiState.copy(phase = it) } ?: uiState
@@ -73,14 +68,14 @@ private fun PhotoPrivacyManagerScreenState(
 
     FileManagerErrorToastEffect(uiState.errorMessage, viewModel::clearError)
 
-    FileManagerStartEffect(permissionState, viewModel::startIfNeeded)
+    FileManagerStartEffect(permissionState, viewModel::startIfNeeded) {
+        permissionState.leaveHome(router)
+    }
 
     BackHandler(enabled = permissionState.granted) { handleBack() }
 
     FileManagerScaffold(
         title = stringResource(R.string.nav_photo_privacy),
-        permissionGateConfig = permissionGateConfig,
-        permissionState = permissionState,
         onBack = ::handleBack,
         bottomBar = {
             if (permissionState.granted && displayState.phase == FileOperationPhase.Browsing) {

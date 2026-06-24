@@ -8,7 +8,11 @@ internal const val KEY_LAST_AUTO_RATE_PROMPT_AT = "last_auto_rate_prompt_at"
 internal const val KEY_NOTIFICATION_BAR_EXIT_PROMPT_SHOWN = "notification_bar_exit_prompt_shown"
 internal const val KEY_ONBOARDING_SCAN_COMPLETED = "onboarding_scan_completed"
 internal const val KEY_LOCATION_RUNTIME_PERMISSION_DENIED = "location_runtime_permission_denied"
+internal const val KEY_LOCATION_RUNTIME_PERMISSION_REQUESTED_BEFORE = "location_runtime_permission_requested_before"
 internal const val KEY_NOTIFICATION_RUNTIME_PERMISSION_DENIED = "notification_runtime_permission_denied"
+internal const val KEY_NOTIFICATION_RUNTIME_PERMISSION_REQUESTED_BEFORE = "notification_runtime_permission_requested_before"
+internal const val KEY_NOTIFICATION_RUNTIME_PERMISSION_REQUEST_COUNT = "notification_runtime_permission_request_count"
+internal const val KEY_LAST_NOTIFICATION_PERMISSION_CUSTOM_PROMPT_AT = "last_notification_permission_custom_prompt_at"
 
 internal fun readTemperatureUnit(context: Context): String =
     context
@@ -82,6 +86,22 @@ internal fun saveLocationRuntimePermissionDenied(context: Context) {
         .apply()
 }
 
+internal fun hasRequestedLocationRuntimePermissionBefore(context: Context): Boolean =
+    context
+        .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
+        .getBoolean(
+            KEY_LOCATION_RUNTIME_PERMISSION_REQUESTED_BEFORE,
+            hasDeniedLocationRuntimePermission(context),
+        )
+
+internal fun saveLocationRuntimePermissionRequestedBefore(context: Context) {
+    context
+        .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
+        .edit()
+        .putBoolean(KEY_LOCATION_RUNTIME_PERMISSION_REQUESTED_BEFORE, true)
+        .apply()
+}
+
 internal fun hasDeniedNotificationRuntimePermission(context: Context): Boolean =
     context
         .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
@@ -92,5 +112,39 @@ internal fun saveNotificationRuntimePermissionDenied(context: Context) {
         .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
         .edit()
         .putBoolean(KEY_NOTIFICATION_RUNTIME_PERMISSION_DENIED, true)
+        .apply()
+}
+
+internal fun hasRequestedNotificationRuntimePermissionBefore(context: Context): Boolean =
+    context
+        .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
+        .getBoolean(
+            KEY_NOTIFICATION_RUNTIME_PERMISSION_REQUESTED_BEFORE,
+            context
+                .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
+                .getInt(KEY_NOTIFICATION_RUNTIME_PERMISSION_REQUEST_COUNT, 0) > 0,
+        )
+
+internal fun saveNotificationRuntimePermissionRequestedBefore(context: Context) {
+    context
+        .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
+        .edit()
+        .putBoolean(KEY_NOTIFICATION_RUNTIME_PERMISSION_REQUESTED_BEFORE, true)
+        .apply()
+}
+
+internal fun readLastNotificationPermissionCustomPromptAt(context: Context): Long =
+    context
+        .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
+        .getLong(KEY_LAST_NOTIFICATION_PERMISSION_CUSTOM_PROMPT_AT, 0L)
+
+internal fun saveLastNotificationPermissionCustomPromptAt(
+    context: Context,
+    timestampMillis: Long,
+) {
+    context
+        .getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE)
+        .edit()
+        .putLong(KEY_LAST_NOTIFICATION_PERMISSION_CUSTOM_PROMPT_AT, timestampMillis)
         .apply()
 }

@@ -24,6 +24,7 @@ import com.quickcleanpro.phonecleaner.domain.state.SharedScanState
 import com.quickcleanpro.phonecleaner.domain.usecase.MemoryCleanUseCase
 import com.quickcleanpro.phonecleaner.domain.usecase.ScanJunkUseCase
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -126,6 +127,7 @@ class JunkCleanViewModel(
 
     private var progressJob: Job? = null
     private var scanJob: Job? = null
+    private var cleaningJob: Job? = null
     private var hasStarted = false
     private var checkedEmptyCategories: Set<JunkCategory> = emptySet()
     private var cleaningExecutionState = CleaningExecutionState()
@@ -213,59 +215,63 @@ class JunkCleanViewModel(
                 errorMessage = null,
             )
         val cleaningStartedAt = System.currentTimeMillis()
-        viewModelScope.launch {
-            try {
-                val outcomes =
-                    withContext(ioDispatcher) {
-                        selectedItems.map { JunkFileDeleteHelper.delete(requestContext, it.junkFile) }
-                    }
-                val deleted = outcomes.filter { it.deleted }
-                val pending = outcomes.filter { !it.deleted && it.authorizationUri != null }
-                val failed = outcomes.filter { !it.deleted && it.authorizationUri == null }
-                val memoryResult = withContext(ioDispatcher) { memoryCleanUseCase() }
+        cleaningJob?.cancel()
+        cleaningJob =
+            viewModelScope.launch {
+                try {
+                    val outcomes =
+                        withContext(ioDispatcher) {
+                            selectedItems.map { JunkFileDeleteHelper.delete(requestContext, it.junkFile) }
+                        }
+                    val deleted = outcomes.filter { it.deleted }
+                    val pending = outcomes.filter { !it.deleted && it.authorizationUri != null }
+                    val failed = outcomes.filter { !it.deleted && it.authorizationUri == null }
+                    val memoryResult = withContext(ioDispatcher) { memoryCleanUseCase() }
 
-                cleaningExecutionState =
-                    CleaningExecutionState(
-                        pendingAuthorizationOutcomes = pending,
-                        directCleanedFiles = deleted.map { it.junkFile },
-                        directFailedFiles = failed.map { it.junkFile },
-                        directFreedSpace = deleted.sumOf { it.freedBytes },
-                        memoryResult = memoryResult,
-                    )
-
-                val uris = JunkFileDeleteHelper.collectAuthorizationUris(pending)
-                if (uris.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    val request = MediaStore.createDeleteRequest(requestContext.contentResolver, uris)
-                    val pendingAuthorization =
-                        PendingDeleteAuthorization(
-                            request = request,
-                            message = appContext.getString(R.string.result_confirm_system_deletion, uris.size),
-                            pendingCount = uris.size,
+                    cleaningExecutionState =
+                        CleaningExecutionState(
+                            pendingAuthorizationOutcomes = pending,
+                            directCleanedFiles = deleted.map { it.junkFile },
+                            directFailedFiles = failed.map { it.junkFile },
+                            directFreedSpace = deleted.sumOf { it.freedBytes },
+                            memoryResult = memoryResult,
                         )
-                    sharedState.setPendingDeleteAuthorization(pendingAuthorization)
+
+                    val uris = JunkFileDeleteHelper.collectAuthorizationUris(pending)
+                    if (uris.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        val request = MediaStore.createDeleteRequest(requestContext.contentResolver, uris)
+                        val pendingAuthorization =
+                            PendingDeleteAuthorization(
+                                request = request,
+                                message = appContext.getString(R.string.result_confirm_system_deletion, uris.size),
+                                pendingCount = uris.size,
+                            )
+                        sharedState.setPendingDeleteAuthorization(pendingAuthorization)
+                        _uiState.value =
+                            _uiState.value.copy(
+                                phase = JunkCleanPhase.AwaitingAuthorization,
+                                awaitingAuthorizationMessage = pendingAuthorization.message,
+                            )
+                        eventsChannel.send(JunkCleanEvent.RequestDeleteAuthorization(request))
+                    } else {
+                        delayRemainingCleaningAnimation(cleaningStartedAt)
+                        finishCleaning(
+                            extraCleanedFiles = emptyList(),
+                            extraFailedFiles = pending.map { it.junkFile },
+                            extraFreedSpace = 0L,
+                        )
+                    }
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Exception) {
                     _uiState.value =
                         _uiState.value.copy(
-                            phase = JunkCleanPhase.AwaitingAuthorization,
-                            awaitingAuthorizationMessage = pendingAuthorization.message,
+                            phase = JunkCleanPhase.Error,
+                            errorMessageRes = R.string.result_clean_error,
+                            errorMessage = error.message,
                         )
-                    eventsChannel.send(JunkCleanEvent.RequestDeleteAuthorization(request))
-                } else {
-                    delayRemainingCleaningAnimation(cleaningStartedAt)
-                    finishCleaning(
-                        extraCleanedFiles = emptyList(),
-                        extraFailedFiles = pending.map { it.junkFile },
-                        extraFreedSpace = 0L,
-                    )
                 }
-            } catch (error: Exception) {
-                _uiState.value =
-                    _uiState.value.copy(
-                        phase = JunkCleanPhase.Error,
-                        errorMessageRes = R.string.result_clean_error,
-                        errorMessage = error.message,
-                    )
             }
-        }
     }
 
     fun handleAuthorizationResult(approved: Boolean) {
@@ -279,35 +285,39 @@ class JunkCleanViewModel(
                 awaitingAuthorizationMessage = null,
             )
         val cleaningStartedAt = System.currentTimeMillis()
-        viewModelScope.launch {
-            try {
-                val authorizedResult =
-                    withContext(ioDispatcher) {
-                        if (approved) {
-                            JunkFileDeleteHelper.finalizeAuthorizedDeletes(pending)
-                        } else {
-                            JunkAuthorizedDeleteResult(
-                                cleanedFiles = emptyList(),
-                                failedFiles = pending.map { it.junkFile },
-                                freedBytes = 0L,
-                            )
+        cleaningJob?.cancel()
+        cleaningJob =
+            viewModelScope.launch {
+                try {
+                    val authorizedResult =
+                        withContext(ioDispatcher) {
+                            if (approved) {
+                                JunkFileDeleteHelper.finalizeAuthorizedDeletes(pending)
+                            } else {
+                                JunkAuthorizedDeleteResult(
+                                    cleanedFiles = emptyList(),
+                                    failedFiles = pending.map { it.junkFile },
+                                    freedBytes = 0L,
+                                )
+                            }
                         }
-                    }
-                delayRemainingCleaningAnimation(cleaningStartedAt)
-                finishCleaning(
-                    extraCleanedFiles = authorizedResult.cleanedFiles,
-                    extraFailedFiles = authorizedResult.failedFiles,
-                    extraFreedSpace = authorizedResult.freedBytes,
-                )
-            } catch (error: Exception) {
-                _uiState.value =
-                    _uiState.value.copy(
-                        phase = JunkCleanPhase.Error,
-                        errorMessageRes = R.string.result_clean_error_after_authorization,
-                        errorMessage = error.message,
+                    delayRemainingCleaningAnimation(cleaningStartedAt)
+                    finishCleaning(
+                        extraCleanedFiles = authorizedResult.cleanedFiles,
+                        extraFailedFiles = authorizedResult.failedFiles,
+                        extraFreedSpace = authorizedResult.freedBytes,
                     )
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Exception) {
+                    _uiState.value =
+                        _uiState.value.copy(
+                            phase = JunkCleanPhase.Error,
+                            errorMessageRes = R.string.result_clean_error_after_authorization,
+                            errorMessage = error.message,
+                        )
+                }
             }
-        }
     }
 
     fun clearResult() {
@@ -348,6 +358,8 @@ class JunkCleanViewModel(
                         )
                     delayRemainingScanAnimation(scanStartedAt)
                     loadPreview(result)
+                } catch (error: CancellationException) {
+                    throw error
                 } catch (error: Exception) {
                     progressJob?.cancel()
                     _uiState.value =
@@ -359,6 +371,18 @@ class JunkCleanViewModel(
                         )
                 }
             }
+        }
+
+    fun cancelActiveOperation() {
+        scanJob?.cancel()
+        scanJob = null
+        progressJob?.cancel()
+        progressJob = null
+        cleaningJob?.cancel()
+        cleaningJob = null
+        hasStarted = false
+        sharedState.setPendingDeleteAuthorization(null)
+        cleaningExecutionState = CleaningExecutionState()
     }
 
     private fun observeProgress() {
@@ -532,6 +556,7 @@ class JunkCleanViewModel(
     override fun onCleared() {
         scanJob?.cancel()
         progressJob?.cancel()
+        cleaningJob?.cancel()
         super.onCleared()
     }
 }

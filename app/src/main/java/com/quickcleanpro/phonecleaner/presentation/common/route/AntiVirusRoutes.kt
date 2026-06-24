@@ -5,9 +5,6 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXFeature
-import com.quickcleanpro.phonecleaner.presentation.common.permission.PermissionGateConfig
 import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.AntiVirusScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.DeepScanVirusScreen
 import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.NoVirusResultScreen
@@ -37,23 +34,12 @@ internal fun NavGraphBuilder.registerAntiVirusRoutes() {
 
     composable(Screen.VirusDeepScan.route) { backStackEntry ->
         val router = LocalRouter.current
-        val parentEntry = remember(backStackEntry) {
+        val parentEntry = remember(backStackEntry, router) {
             router.navController.antiVirusViewModelOwnerOr(backStackEntry)
         }
         val viewModel: VirusScanViewModel = koinViewModel(viewModelStoreOwner = parentEntry)
         DeepScanVirusScreen(
             viewModel = viewModel,
-            permissionGateConfig = PermissionGateConfig(
-                cleanXFeature = CleanXFeature.VirusDeepScan,
-                onDenied = { router.goBack() },
-                deniedContent = { onRetry ->
-                    PermissionDeniedContent(
-                        titleRes = R.string.anti_virus,
-                        onBack = { router.goBack() },
-                        onRetry = onRetry,
-                    )
-                },
-            )
         )
     }
 
