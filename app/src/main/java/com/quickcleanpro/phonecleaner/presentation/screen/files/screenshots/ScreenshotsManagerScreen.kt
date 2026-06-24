@@ -69,7 +69,11 @@ private fun ScreenshotsManagerScreenState(
             !permissionState.granted -> {
                 permissionState.leaveBack(router)
             }
-            displayState.phase == FileOperationPhase.Scanning || displayState.phase == FileOperationPhase.Deleting -> {
+            displayState.phase == FileOperationPhase.Deleting -> {
+                viewModel.cancelDeletingAndReturnToBrowsing()
+                showStopDialog = true
+            }
+            displayState.phase == FileOperationPhase.Scanning -> {
                 blockedPhase = displayState.phase
                 showStopDialog = true
             }
@@ -142,6 +146,7 @@ private fun ScreenshotsManagerScreenState(
         },
         onResume = {
             showStopDialog = false
+            blockedPhase = null
         },
     )
 

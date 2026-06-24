@@ -225,6 +225,18 @@ class WhatsAppCleanerViewModel(
         hasStarted = false
     }
 
+    fun cancelCleaningAndReturnToResult() {
+        cleanJob?.cancel()
+        cleanJob = null
+        _uiState.update { current ->
+            if (current.phase == WhatsAppCleanerPhase.Cleaning) {
+                current.copy(phase = WhatsAppCleanerPhase.ScanResult)
+            } else {
+                current
+            }
+        }
+    }
+
     override fun onCleared() {
         scanJob?.cancel()
         cleanJob?.cancel()

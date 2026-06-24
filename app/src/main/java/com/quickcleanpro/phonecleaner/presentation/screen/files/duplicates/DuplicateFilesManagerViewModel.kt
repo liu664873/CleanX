@@ -174,6 +174,17 @@ internal class DuplicateFilesManagerViewModel(
         operationRunner.cancelActiveOperation()
     }
 
+    fun cancelDeletingAndReturnToBrowsing() {
+        operationRunner.cancelActiveOperation()
+        _uiState.update { current ->
+            if (current.phase == FileOperationPhase.Deleting) {
+                current.copy(phase = FileOperationPhase.Browsing)
+            } else {
+                current
+            }
+        }
+    }
+
     fun deleteSelectedFiles() {
         val selectedFiles = _uiState.value.filesToDelete
         if (selectedFiles.isEmpty()) {

@@ -102,6 +102,7 @@ internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
         when (uiState.page) {
             NotificationBarPage.Settings -> viewModel.leaveSettings()
             NotificationBarPage.Scanning -> {
+                viewModel.cancelScanning()
                 showStopDialog = true
             }
             else -> router.goBack()
@@ -185,11 +186,11 @@ internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
         StopScanDialog(
             onQuit = {
                 showStopDialog = false
-                viewModel.cancelScanning()
                 router.goBack()
             },
             onResume = {
                 showStopDialog = false
+                viewModel.restartScanning()
             },
         )
     }

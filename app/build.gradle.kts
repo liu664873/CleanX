@@ -13,8 +13,20 @@ android {
             }
     }
 
+    flavorDimensions += "variant"
+
+    productFlavors {
+        create("original") {
+            dimension = "variant"
+            applicationId = "com.quickcleanpro.phonecleaner"
+        }
+        create("cleanmaster") {
+            dimension = "variant"
+            applicationId = "com.quickcleanpro.cleanmaster"
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.quickcleanpro.phonecleaner"
         minSdk = 24
         targetSdk = 36
         versionCode = 3

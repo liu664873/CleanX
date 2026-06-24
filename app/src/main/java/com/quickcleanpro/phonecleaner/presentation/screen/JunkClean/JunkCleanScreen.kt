@@ -76,8 +76,12 @@ fun JunkCleanScreen(
 
     fun handleBack() {
         when (uiState.phase) {
-            JunkCleanPhase.Scanning,
+            JunkCleanPhase.Scanning -> {
+                viewModel.cancelActiveOperation()
+                showStopDialog = true
+            }
             JunkCleanPhase.Cleaning -> {
+                viewModel.cancelCleaningAndReturnToPreview()
                 showStopDialog = true
             }
             JunkCleanPhase.Complete -> exitToHome()
@@ -130,6 +134,9 @@ fun JunkCleanScreen(
             },
             onResume = {
                 showStopDialog = false
+                if (uiState.phase == JunkCleanPhase.Scanning) {
+                    viewModel.startScanIfNeeded()
+                }
             },
         )
     }

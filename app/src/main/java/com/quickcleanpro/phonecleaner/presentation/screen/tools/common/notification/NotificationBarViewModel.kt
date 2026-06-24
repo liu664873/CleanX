@@ -158,6 +158,16 @@ open class NotificationBarViewModel(
         }
     }
 
+    fun restartScanning() {
+        _uiState.update {
+            if (it.page != NotificationBarPage.Scanning) {
+                it.copy(page = NotificationBarPage.Scanning)
+            } else {
+                it
+            }
+        }
+    }
+
     fun notificationListenerSettingsIntent(): Intent = repository.notificationListenerSettingsIntent()
 
     fun appDetailsSettingsIntent(packageName: String): Intent = repository.appDetailsSettingsIntent(packageName)

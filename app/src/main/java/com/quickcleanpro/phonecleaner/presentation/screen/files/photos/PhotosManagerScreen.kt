@@ -72,7 +72,11 @@ private fun PhotosManagerScreenState(
             !permissionState.granted -> {
                 permissionState.leaveBack(router)
             }
-            displayState.phase == FileOperationPhase.Scanning || displayState.phase == FileOperationPhase.Deleting -> {
+            displayState.phase == FileOperationPhase.Deleting -> {
+                viewModel.cancelDeletingAndReturnToBrowsing()
+                showStopDialog = true
+            }
+            displayState.phase == FileOperationPhase.Scanning -> {
                 blockedPhase = displayState.phase
                 showStopDialog = true
             }
@@ -157,6 +161,7 @@ private fun PhotosManagerScreenState(
         },
         onResume = {
             showStopDialog = false
+            blockedPhase = null
         },
     )
 

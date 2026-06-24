@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -381,8 +382,23 @@ class JunkCleanViewModel(
         cleaningJob?.cancel()
         cleaningJob = null
         hasStarted = false
+        _uiState.update { it.copy(scanState = JunkCleanScanState.Idle) }
         sharedState.setPendingDeleteAuthorization(null)
         cleaningExecutionState = CleaningExecutionState()
+    }
+
+    fun cancelCleaningAndReturnToPreview() {
+        cleaningJob?.cancel()
+        cleaningJob = null
+        sharedState.setPendingDeleteAuthorization(null)
+        cleaningExecutionState = CleaningExecutionState()
+        _uiState.update { current ->
+            if (current.phase == JunkCleanPhase.Cleaning || current.phase == JunkCleanPhase.AwaitingAuthorization) {
+                current.copy(phase = JunkCleanPhase.Preview)
+            } else {
+                current
+            }
+        }
     }
 
     private fun observeProgress() {

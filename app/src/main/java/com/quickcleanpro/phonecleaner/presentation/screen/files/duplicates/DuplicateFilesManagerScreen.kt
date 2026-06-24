@@ -72,7 +72,11 @@ private fun DuplicateFilesManagerScreenState(
             !permissionState.granted -> {
                 permissionState.leaveBack(router)
             }
-            displayState.phase == FileOperationPhase.Scanning || displayState.phase == FileOperationPhase.Deleting -> {
+            displayState.phase == FileOperationPhase.Deleting -> {
+                viewModel.cancelDeletingAndReturnToBrowsing()
+                showStopDialog = true
+            }
+            displayState.phase == FileOperationPhase.Scanning -> {
                 blockedOperationPhase = displayState.phase
                 showStopDialog = true
             }

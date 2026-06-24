@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -91,8 +92,12 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
 
     fun handleBack() {
         when (uiState.phase) {
-            WhatsAppCleanerPhase.Scanning,
+            WhatsAppCleanerPhase.Scanning -> {
+                viewModel.cancelActiveOperation()
+                showStopDialog = true
+            }
             WhatsAppCleanerPhase.Cleaning -> {
+                viewModel.cancelCleaningAndReturnToResult()
                 showStopDialog = true
             }
             else -> router.goBack()
@@ -153,6 +158,9 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
             },
             onResume = {
                 showStopDialog = false
+                if (uiState.phase == WhatsAppCleanerPhase.Scanning) {
+                    viewModel.retry()
+                }
             },
         )
     }
@@ -408,25 +416,45 @@ private fun CategoryTile(
                 .clickable(enabled = item.hasFiles, onClick = onToggle),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(item.category.iconBackground),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                painter = painterResource(item.category.iconRes),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(24.dp),
-            )
+        Box(contentAlignment = Alignment.TopEnd) {
+            Box(
+                modifier =
+                    Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(item.category.iconBackground),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(item.category.iconRes),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+            if (item.hasFiles && item.selected) {
+                Box(
+                    modifier =
+                        Modifier
+                            .offset(x = 4.dp, y = (-4).dp)
+                            .size(14.dp)
+                            .clip(CircleShape)
+                            .background(CleanXBlue),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(10.dp),
+                    )
+                }
+            }
         }
         Spacer(modifier = Modifier.height(7.dp))
         Text(
             text = stringResource(item.category.titleRes),
-            color = Color(0xA62D3748),
+            color = if (item.selected) CleanXBlue else Color(0xA62D3748),
             fontSize = 12.sp,
             lineHeight = 16.sp,
             maxLines = 1,
