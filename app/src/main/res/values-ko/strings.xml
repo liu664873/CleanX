@@ -123,16 +123,16 @@
     <string name="notification_enable_step_find_suffix"> 찾기</string>
     <string name="notification_enable_step_allow">2. “허용”을 탭하세요</string>
     <!-- Recently added strings -->
-    <string name="continue_scan">??</string>
-    <string name="home_app_lock_title">? ??</string>
-    <string name="home_app_lock_desc">???? ??? ?? ? ??</string>
-    <string name="no_data_available">?? ??? ??? ??</string>
-    <string name="virus_scan_notice_title">??</string>
-    <string name="virus_scan_notice_message">Quick Clean PRO? ?? ??? ???? ?? ? ??? ? ??? ?????.</string>
-    <string name="settings_overlay_permission">??? ?</string>
-    <string name="settings_post_notifications_permission">? ??</string>
-    <string name="file_unselect">?? ??</string>
-    <string name="file_music">??</string>
-    <string name="app_usage_legend_other">??</string>
-    <string name="device_info_source_hint">???? ?? ??? ????? ??? ???? ???? ?? ?? ??? ?? ? ????. ?? ?? ?? ?? ?? ??? ??? ??? ???? ???? ??? ?? ?? ?? ? ????.</string>
+    <string name="continue_scan">계속</string>
+    <string name="home_app_lock_title">앱 잠금</string>
+    <string name="home_app_lock_desc">개인정보 보호를 위한 앱 잠금</string>
+    <string name="no_data_available">사용 가능한 데이터가 없습니다</string>
+    <string name="virus_scan_notice_title">알림</string>
+    <string name="virus_scan_notice_message">Quick Clean PRO는 보안 위험을 검사하기 위해 이 기기의 앱 정보를 확인합니다.</string>
+    <string name="settings_overlay_permission">플로팅 창</string>
+    <string name="settings_post_notifications_permission">앱 알림</string>
+    <string name="file_unselect">선택 해제</string>
+    <string name="file_music">음악</string>
+    <string name="app_usage_legend_other">기타</string>
+    <string name="device_info_source_hint">표시되는 기기 정보는 시스템에서 제공하는 데이터를 기반으로 하며 공식 사양과 다를 수 있습니다. 예를 들어 저장 공간이나 메모리는 시스템 예약 영역 또는 하드웨어 구성 차이로 인해 약간 다를 수 있습니다.</string>
 </resources>
