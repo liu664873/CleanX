@@ -124,15 +124,15 @@
     <string name="notification_enable_step_allow">2. Appuyez sur « Autoriser »</string>
     <!-- Recently added strings -->
     <string name="continue_scan">Continuer</string>
-    <string name="home_app_lock_title">Verrouillage d'apps</string>
-    <string name="home_app_lock_desc">Verrouillage d'apps pour prot?ger la confidentialit?</string>
+    <string name="home_app_lock_title">Verrouillage des apps</string>
+    <string name="home_app_lock_desc">Verrouillage des apps pour proteger la confidentialite</string>
     <string name="no_data_available">Aucune donn?e disponible</string>
     <string name="virus_scan_notice_title">Avis</string>
     <string name="virus_scan_notice_message">Quick Clean PRO v?rifiera les informations des apps sur cet appareil afin de d?tecter les risques de s?curit?.</string>
     <string name="settings_overlay_permission">Fen?tre flottante</string>
-    <string name="settings_post_notifications_permission">Notifications de l'app</string>
+    <string name="settings_post_notifications_permission">Notifications des apps</string>
     <string name="file_unselect">D?s?lectionner</string>
     <string name="file_music">Musique</string>
     <string name="app_usage_legend_other">Autres</string>
-    <string name="device_info_source_hint">Les informations affich?es sur l'appareil sont bas?es sur les donn?es fournies par le syst?me et peuvent diff?rer des sp?cifications officielles. Par exemple, la capacit? de stockage ou de m?moire peut varier l?g?rement en raison des r?servations syst?me ou de la configuration mat?rielle.</string>
+    <string name="device_info_source_hint">Les informations affichees sur cet appareil sont basees sur les donnees fournies par le systeme et peuvent differer des specifications officielles. Par exemple, la capacite de stockage ou de memoire peut varier legerement selon les reservations systeme ou la configuration materielle.</string>
 </resources>
