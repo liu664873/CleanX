@@ -122,4 +122,17 @@
     <string name="notification_enable_step_find_prefix">1. Suche\u0020</string>
     <string name="notification_enable_step_find_suffix"></string>
     <string name="notification_enable_step_allow">2. Tippe auf „Zulassen“</string>
+    <!-- Recently added strings -->
+    <string name="continue_scan">Fortfahren</string>
+    <string name="home_app_lock_title">App-Sperre</string>
+    <string name="home_app_lock_desc">App-Sperre zum Schutz der Privatsph?re</string>
+    <string name="no_data_available">Keine Daten verf?gbar</string>
+    <string name="virus_scan_notice_title">Hinweis</string>
+    <string name="virus_scan_notice_message">Quick Clean PRO pr?ft App-Informationen auf diesem Ger?t, um Sicherheitsrisiken zu erkennen.</string>
+    <string name="settings_overlay_permission">Schwebendes Fenster</string>
+    <string name="settings_post_notifications_permission">App-Benachrichtigungen</string>
+    <string name="file_unselect">Abw?hlen</string>
+    <string name="file_music">Musik</string>
+    <string name="app_usage_legend_other">Andere</string>
+    <string name="device_info_source_hint">Die angezeigten Ger?teinformationen basieren auf vom System bereitgestellten Daten und k?nnen von den offiziellen Spezifikationen abweichen. Zum Beispiel k?nnen Speicher- oder Arbeitsspeicherkapazit?t aufgrund von Systemreservierungen oder Hardwarekonfiguration leicht abweichen.</string>
 </resources>

@@ -137,4 +137,17 @@
     <string name="notification_enable_step_find_prefix">1. Tìm\u0020</string>
     <string name="notification_enable_step_find_suffix"></string>
     <string name="notification_enable_step_allow">2. Nhấn “Cho phép”</string>
+    <!-- Recently added strings -->
+    <string name="continue_scan">Ti?p t?c</string>
+    <string name="home_app_lock_title">Kh?a ?ng d?ng</string>
+    <string name="home_app_lock_desc">Kh?a ?ng d?ng ?? b?o v? quy?n ri?ng t?</string>
+    <string name="no_data_available">Kh?ng c? d? li?u</string>
+    <string name="virus_scan_notice_title">Th?ng b?o</string>
+    <string name="virus_scan_notice_message">Quick Clean PRO s? ki?m tra th?ng tin ?ng d?ng tr?n thi?t b? n?y ?? qu?t r?i ro b?o m?t.</string>
+    <string name="settings_overlay_permission">C?a s? n?i</string>
+    <string name="settings_post_notifications_permission">Th?ng b?o ?ng d?ng</string>
+    <string name="file_unselect">B? ch?n</string>
+    <string name="file_music">Nh?c</string>
+    <string name="app_usage_legend_other">Kh?c</string>
+    <string name="device_info_source_hint">Th?ng tin thi?t b? ???c hi?n th? d?a tr?n d? li?u do h? th?ng cung c?p v? c? th? kh?c v?i th?ng s? ch?nh th?c. V? d?, dung l??ng l?u tr? ho?c b? nh? c? th? ch?nh l?ch nh? do ph?n h? th?ng d?nh ri?ng ho?c c?u h?nh ph?n c?ng.</string>
 </resources>

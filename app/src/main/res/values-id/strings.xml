@@ -138,4 +138,17 @@
     <string name="notification_enable_step_find_prefix">1. Temukan\u0020</string>
     <string name="notification_enable_step_find_suffix"></string>
     <string name="notification_enable_step_allow">2. Ketuk “Izinkan”</string>
+    <!-- Recently added strings -->
+    <string name="continue_scan">Lanjutkan</string>
+    <string name="home_app_lock_title">Kunci App</string>
+    <string name="home_app_lock_desc">Kunci app untuk perlindungan privasi</string>
+    <string name="no_data_available">Tidak ada data tersedia</string>
+    <string name="virus_scan_notice_title">Pemberitahuan</string>
+    <string name="virus_scan_notice_message">Quick Clean PRO akan memeriksa informasi app di perangkat ini untuk memindai risiko keamanan.</string>
+    <string name="settings_overlay_permission">Jendela mengambang</string>
+    <string name="settings_post_notifications_permission">Notifikasi app</string>
+    <string name="file_unselect">Batalkan pilihan</string>
+    <string name="file_music">Musik</string>
+    <string name="app_usage_legend_other">Lainnya</string>
+    <string name="device_info_source_hint">Informasi perangkat yang ditampilkan didasarkan pada data yang disediakan sistem dan dapat berbeda dari spesifikasi resmi. Misalnya, kapasitas penyimpanan atau memori mungkin sedikit berbeda karena cadangan sistem atau konfigurasi perangkat keras.</string>
 </resources>

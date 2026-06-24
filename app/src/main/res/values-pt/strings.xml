@@ -173,4 +173,17 @@
     <string name="notification_enable_step_find_prefix">1. Encontre\u0020</string>
     <string name="notification_enable_step_find_suffix"></string>
     <string name="notification_enable_step_allow">2. Toque em “Permitir”</string>
+    <!-- Recently added strings -->
+    <string name="continue_scan">Continuar</string>
+    <string name="home_app_lock_title">Bloqueio de apps</string>
+    <string name="home_app_lock_desc">Bloqueio de apps para proteger a privacidade</string>
+    <string name="no_data_available">Nenhum dado dispon?vel</string>
+    <string name="virus_scan_notice_title">Aviso</string>
+    <string name="virus_scan_notice_message">O Quick Clean PRO verificar? informa??es dos apps neste dispositivo para analisar riscos de seguran?a.</string>
+    <string name="settings_overlay_permission">Janela flutuante</string>
+    <string name="settings_post_notifications_permission">Notifica??es do app</string>
+    <string name="file_unselect">Desmarcar</string>
+    <string name="file_music">M?sica</string>
+    <string name="app_usage_legend_other">Outros</string>
+    <string name="device_info_source_hint">As informa??es do dispositivo exibidas s?o baseadas em dados fornecidos pelo sistema e podem variar em rela??o ?s especifica??es oficiais. Por exemplo, a capacidade de armazenamento ou mem?ria pode diferir ligeiramente devido a reservas do sistema ou ? configura??o de hardware.</string>
 </resources>
