@@ -42,6 +42,57 @@ android {
     flavorDimensions += "variant"
 
     productFlavors {
+        create("storagecleaner") {
+            dimension = "variant"
+            applicationId = "com.phonecleanup.storage.cleaner"
+
+            manifestPlaceholders["launcherIcon"] = configValue("STORAGECLEANER_LAUNCHER_ICON", "@mipmap/ic_launcher")
+            manifestPlaceholders["roundLauncherIcon"] = configValue("STORAGECLEANER_ROUND_LAUNCHER_ICON", "@mipmap/ic_launcher_round")
+            manifestPlaceholders["appTheme"] = configValue("STORAGECLEANER_APP_THEME", "@style/Theme.QuickCleanPRO")
+            manifestPlaceholders["trustlookApiKey"] = storagecleanerTrustlookApiKey
+            manifestPlaceholders["admobAppId"] = configValue("ADMOB_STORAGECLEANER_APP_ID", admobTestAppId)
+
+            buildConfigField("String", "VARIANT_KEY", "storagecleaner".asBuildConfigString())
+            buildConfigField("String", "THEME_KEY", "storage_cleaner".asBuildConfigString())
+            buildConfigField("String", "PRIMARY_FEATURE", "JUNK_CLEAN".asBuildConfigString())
+
+            // 只保留清理和文件管理相关功能（按需调整）
+            buildConfigField(
+                "String",
+                "ENABLED_FEATURES",
+                "JUNK_CLEAN,DEVICE_INFO,BATTERY_INFO,PHOTOS,VIDEOS,AUDIOS,LARGE_FILES,DUPLICATE_FILES,DOCUMENTS,WHATSAPP_CLEANER".asBuildConfigString()
+            )
+            buildConfigField("String", "HOME_FEATURE_ORDER", "JUNK_CLEAN,DUPLICATE_FILES,LARGE_FILES".asBuildConfigString())
+            buildConfigField(
+                "String",
+                "FILE_FEATURE_ORDER",
+                "PHOTOS,VIDEOS,AUDIOS,LARGE_FILES,DUPLICATE_FILES,DOCUMENTS".asBuildConfigString()
+            )
+            buildConfigField(
+                "String",
+                "TOOLBOX_FEATURE_ORDER",
+                "DEVICE_INFO,BATTERY_INFO,WHATSAPP_CLEANER".asBuildConfigString()
+            )
+
+            buildConfigField("String", "TRUSTLOOK_API_KEY", storagecleanerTrustlookApiKey.asBuildConfigString())
+            buildConfigField("String", "ADMOB_APP_ID", configValue("ADMOB_STORAGECLEANER_APP_ID", admobTestAppId).asBuildConfigString())
+            buildConfigField("String", "ADMOB_APP_OPEN_UNIT_ID", configValue("ADMOB_STORAGECLEANER_APP_OPEN_UNIT_ID", admobTestAppOpenUnitId).asBuildConfigString())
+            buildConfigField("String", "ADMOB_INTERSTITIAL_UNIT_ID", configValue("ADMOB_STORAGECLEANER_INTERSTITIAL_UNIT_ID", admobTestInterstitialUnitId).asBuildConfigString())
+            buildConfigField("String", "ADMOB_BANNER_UNIT_ID", configValue("ADMOB_STORAGECLEANER_BANNER_UNIT_ID", admobTestBannerUnitId).asBuildConfigString())
+            buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", configValue("ADMOB_STORAGECLEANER_NATIVE_UNIT_ID", admobTestNativeUnitId).asBuildConfigString())
+
+            buildConfigField(
+                "String",
+                "TERMS_OF_SERVICE_URL",
+                configValue("TERMS_OF_SERVICE_STORAGECLEANER_URL", "https://sites.google.com/view/quickcleanpro-termsconditions/home").asBuildConfigString()
+            )
+            buildConfigField(
+                "String",
+                "PRIVACY_POLICY_URL",
+                configValue("PRIVACY_POLICY_STORAGECLEANER_URL", "https://sites.google.com/view/quick-clean-pro-privacy-policy/home").asBuildConfigString()
+            )
+        }
+
         create("original") {
             dimension = "variant"
             applicationId = "com.quickcleanpro.phonecleaner"
@@ -100,57 +151,6 @@ android {
                 "String",
                 "PRIVACY_POLICY_URL",
                 configValue("PRIVACY_POLICY_ORIGINAL_URL", "https://sites.google.com/view/quick-clean-pro-privacy-policy/home").asBuildConfigString(),
-            )
-        }
-
-        create("storagecleaner") {
-            dimension = "variant"
-            applicationId = "com.phonecleanup.storage.cleaner"
-
-            manifestPlaceholders["launcherIcon"] = configValue("STORAGECLEANER_LAUNCHER_ICON", "@mipmap/ic_launcher")
-            manifestPlaceholders["roundLauncherIcon"] = configValue("STORAGECLEANER_ROUND_LAUNCHER_ICON", "@mipmap/ic_launcher_round")
-            manifestPlaceholders["appTheme"] = configValue("STORAGECLEANER_APP_THEME", "@style/Theme.QuickCleanPRO")
-            manifestPlaceholders["trustlookApiKey"] = storagecleanerTrustlookApiKey
-            manifestPlaceholders["admobAppId"] = configValue("ADMOB_STORAGECLEANER_APP_ID", admobTestAppId)
-
-            buildConfigField("String", "VARIANT_KEY", "storagecleaner".asBuildConfigString())
-            buildConfigField("String", "THEME_KEY", "storage_cleaner".asBuildConfigString())
-            buildConfigField("String", "PRIMARY_FEATURE", "JUNK_CLEAN".asBuildConfigString())
-
-            // 只保留清理和文件管理相关功能（按需调整）
-            buildConfigField(
-                "String",
-                "ENABLED_FEATURES",
-                "JUNK_CLEAN,DEVICE_INFO,BATTERY_INFO,PHOTOS,VIDEOS,AUDIOS,LARGE_FILES,DUPLICATE_FILES,DOCUMENTS,WHATSAPP_CLEANER".asBuildConfigString()
-            )
-            buildConfigField("String", "HOME_FEATURE_ORDER", "JUNK_CLEAN,DUPLICATE_FILES,LARGE_FILES".asBuildConfigString())
-            buildConfigField(
-                "String",
-                "FILE_FEATURE_ORDER",
-                "PHOTOS,VIDEOS,AUDIOS,LARGE_FILES,DUPLICATE_FILES,DOCUMENTS".asBuildConfigString()
-            )
-            buildConfigField(
-                "String",
-                "TOOLBOX_FEATURE_ORDER",
-                "DEVICE_INFO,BATTERY_INFO,WHATSAPP_CLEANER".asBuildConfigString()
-            )
-
-            buildConfigField("String", "TRUSTLOOK_API_KEY", storagecleanerTrustlookApiKey.asBuildConfigString())
-            buildConfigField("String", "ADMOB_APP_ID", configValue("ADMOB_STORAGECLEANER_APP_ID", admobTestAppId).asBuildConfigString())
-            buildConfigField("String", "ADMOB_APP_OPEN_UNIT_ID", configValue("ADMOB_STORAGECLEANER_APP_OPEN_UNIT_ID", admobTestAppOpenUnitId).asBuildConfigString())
-            buildConfigField("String", "ADMOB_INTERSTITIAL_UNIT_ID", configValue("ADMOB_STORAGECLEANER_INTERSTITIAL_UNIT_ID", admobTestInterstitialUnitId).asBuildConfigString())
-            buildConfigField("String", "ADMOB_BANNER_UNIT_ID", configValue("ADMOB_STORAGECLEANER_BANNER_UNIT_ID", admobTestBannerUnitId).asBuildConfigString())
-            buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", configValue("ADMOB_STORAGECLEANER_NATIVE_UNIT_ID", admobTestNativeUnitId).asBuildConfigString())
-
-            buildConfigField(
-                "String",
-                "TERMS_OF_SERVICE_URL",
-                configValue("TERMS_OF_SERVICE_STORAGECLEANER_URL", "https://sites.google.com/view/quickcleanpro-termsconditions/home").asBuildConfigString()
-            )
-            buildConfigField(
-                "String",
-                "PRIVACY_POLICY_URL",
-                configValue("PRIVACY_POLICY_STORAGECLEANER_URL", "https://sites.google.com/view/quick-clean-pro-privacy-policy/home").asBuildConfigString()
             )
         }
 

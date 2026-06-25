@@ -24,7 +24,6 @@ import kotlinx.coroutines.withContext
 import android.util.Log
 import java.util.concurrent.ConcurrentHashMap
 
-private const val PROGRESS_CAP = 0.92f
 private const val PROGRESS_TICK_MILLIS = 40L
 
 class VirusScanViewModel constructor(application: Application) : AndroidViewModel(application) {
@@ -37,8 +36,8 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
     private var progressJob: Job? = null
     private var appDisplayJob: Job? = null
     private var pathDisplayJob: Job? = null
-    private var appDisplayChannel = Channel<String>(Channel.CONFLATED)
-    private var pathDisplayChannel = Channel<String>(Channel.CONFLATED)
+    private var appDisplayChannel = Channel<String>(Channel.UNLIMITED)
+    private var pathDisplayChannel = Channel<String>(Channel.UNLIMITED)
     private var scanStartedAt: Long = 0L
     private var scanGeneration = 0
     private var isAppDisplayStarted = false
@@ -122,11 +121,7 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
         cloudScanClient = null
         scanStartedAt = 0L
         _uiState.update { state ->
-            if (state.isScanning) {
-                state.copy(isScanning = false)
-            } else {
-                state
-            }
+            state.copy(isScanning = false, scanCompleted = false)
         }
     }
 
@@ -159,15 +154,8 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
             override fun onScanStarted() = Unit
 
             override fun onScanProgress(progress: Int, total: Int, appInfo: AppInfo?) {
-                if (generation != scanGeneration) return
-                val totalCount = total.takeIf { it > 0 }
-                val sdkProgress =
-                    totalCount?.let {
-                        (progress.toFloat() / it.toFloat()).coerceIn(0f, 1f)
-                    }
-                updateDisplayedProgress(mode, generation, sdkProgress)
                 appInfo ?: return
-                handleScanProgress(mode, appInfo)
+                if (generation == scanGeneration) handleScanProgress(mode, appInfo)
             }
 
             override fun onScanError(code: Int, message: String?) {
@@ -266,7 +254,15 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
                 if (generation != scanGeneration) break
                 val elapsed = System.currentTimeMillis() - scanStartedAt
                 val fraction = (elapsed.toFloat() / mode.minDurationMillis).coerceIn(0f, 1f)
-                updateDisplayedProgress(mode, generation, fraction)
+                _uiState.update { state ->
+                    if (state.isScanning) {
+                        state.copy(progressFraction = maxOf(state.progressFraction, fraction))
+                    } else {
+                        state
+                    }
+                }
+                handleProgressStageTriggers(mode, fraction, generation)
+                if (fraction >= 1f) break
                 delay(PROGRESS_TICK_MILLIS)
             }
         }
@@ -289,23 +285,6 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
             enterPathDisplayStage(generation)
             startPathDisplayConsumer(mode, generation)
         }
-    }
-
-    private fun updateDisplayedProgress(
-        mode: VirusScanMode,
-        generation: Int,
-        fraction: Float?,
-    ) {
-        if (generation != scanGeneration) return
-        val visualFraction = fraction?.coerceIn(0f, PROGRESS_CAP) ?: return
-        _uiState.update { state ->
-            if (state.isScanning) {
-                state.copy(progressFraction = maxOf(state.progressFraction, visualFraction))
-            } else {
-                state
-            }
-        }
-        handleProgressStageTriggers(mode, visualFraction, generation)
     }
 
     private fun handleStartFailure(error: Throwable) {
@@ -410,8 +389,8 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
         stopDisplayQueues()
         appDisplayChannel.cancel()
         pathDisplayChannel.cancel()
-        appDisplayChannel = Channel(Channel.CONFLATED)
-        pathDisplayChannel = Channel(Channel.CONFLATED)
+        appDisplayChannel = Channel(Channel.UNLIMITED)
+        pathDisplayChannel = Channel(Channel.UNLIMITED)
         isAppDisplayStarted = false
         isAppDisplayStopped = false
         isPathDisplayStarted = false

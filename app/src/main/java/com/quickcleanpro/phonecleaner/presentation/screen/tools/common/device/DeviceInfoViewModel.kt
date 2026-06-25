@@ -136,6 +136,7 @@ open class DeviceInfoViewModel(
             it.copy(
                 mode = mode,
                 isLoading = true,
+                cpuUsagePercent = null,
                 errorMessage = null,
             )
         }

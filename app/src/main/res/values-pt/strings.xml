@@ -186,4 +186,23 @@
     <string name="file_music">M?sica</string>
     <string name="app_usage_legend_other">Outros</string>
     <string name="device_info_source_hint">As informa??es do dispositivo exibidas s?o baseadas em dados fornecidos pelo sistema e podem variar em rela??o ?s especifica??es oficiais. Por exemplo, a capacidade de armazenamento ou mem?ria pode diferir ligeiramente devido a reservas do sistema ou ? configura??o de hardware.</string>
+    <string name="running_in_background">Executando em segundo plano</string>
+    <string name="too_many_attempts">Muitas tentativas. Tente novamente mais tarde</string>
+    <string name="too_many_attempts_retry_seconds">Muitas tentativas. Tente novamente em %1$d s</string>
+    <string name="wait_seconds">Muitas tentativas falhadas. Aguarde 30 segundos</string>
+    <string name="permission_overlay_desc">Para mostrar a tela PIN sobre os apps protegidos, permita que o Quick Clean PRO seja exibido sobre outros apps.</string>
+    <string name="permission_hint_overlay">Somente a tela PIN do bloqueio de apps será exibida.</string>
+    <string name="scan_virus_authorization_missing">Esta versão do app não tem a autorização de análise de vírus configurada.</string>
+    <string name="whatsapp_category_audios">Áudio</string>
+    <string name="whatsapp_category_documents">Documentos</string>
+    <string name="whatsapp_category_databases">Bancos de dados</string>
+    <string name="device_progress_cpu_label">CPU:</string>
+    <string name="device_progress_ram_label">RAM:</string>
+    <string name="device_progress_storage_label">Armazenamento:</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="network_link_speed_fallback">Usando a velocidade do link como alternativa</string>
+    <string name="network_speed_testing">Testando...</string>
+    <string name="network_speed_testing_latency">Testando a latência...</string>
+    <string name="network_speed_testing_download">Testando o download...</string>
+    <string name="network_speed_testing_upload">Testando o upload...</string>
 </resources>

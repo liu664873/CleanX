@@ -150,7 +150,7 @@ class LockScreenOverlayService : Service() {
     private fun onDigit(digit: Char) {
         if (System.currentTimeMillis() < lockedUntilMillis) {
             val remaining = ((lockedUntilMillis - System.currentTimeMillis()) / 1000L).coerceAtLeast(1L)
-            Toast.makeText(this, "${getString(R.string.too_many_attempts)} ${remaining}s", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.too_many_attempts_retry_seconds, remaining), Toast.LENGTH_SHORT).show()
             return
         }
         if (currentPin.length >= AppLockRepositoryImpl.PIN_LENGTH) return

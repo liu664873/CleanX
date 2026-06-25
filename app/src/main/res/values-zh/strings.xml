@@ -392,6 +392,10 @@
     
     <string name="run_speed_test">开始测速</string>
     <string name="speed_test_complete">测速完成</string>
+    <string name="network_speed_testing">测速中...</string>
+    <string name="network_speed_testing_latency">正在测试延迟...</string>
+    <string name="network_speed_testing_download">正在测试下载...</string>
+    <string name="network_speed_testing_upload">正在测试上传...</string>
     <string name="download">下载</string>
     <string name="upload">上传</string>
     
@@ -546,5 +550,20 @@
     <string name="file_unselect">取消选择</string>
     <string name="file_music">音乐</string>
     <string name="app_usage_legend_other">其他</string>
+    <string name="running_in_background">后台运行中</string>
+    <string name="too_many_attempts">尝试次数过多，请稍后重试</string>
+    <string name="too_many_attempts_retry_seconds">尝试次数过多，请在 %1$d 秒后重试</string>
+    <string name="wait_seconds">失败次数过多，请等待 30 秒</string>
+    <string name="permission_overlay_desc">为了在受保护应用上方显示 PIN 屏幕，请允许 Quick Clean PRO 显示在其他应用上层。</string>
+    <string name="permission_hint_overlay">只会显示应用锁 PIN 界面。</string>
+    <string name="scan_virus_authorization_missing">此应用版本未配置病毒扫描授权。</string>
+    <string name="whatsapp_category_audios">音频</string>
+    <string name="whatsapp_category_documents">文档</string>
+    <string name="whatsapp_category_databases">数据库</string>
+    <string name="device_progress_cpu_label">CPU：</string>
+    <string name="device_progress_ram_label">RAM：</string>
+    <string name="device_progress_storage_label">存储：</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="network_link_speed_fallback">正在使用链路速度估算</string>
     <string name="device_info_source_hint">显示的设备信息基于系统提供的数据，可能与官方规格略有不同。例如，由于系统预留空间或硬件配置差异，存储容量或内存可能会略有差异。</string>
 </resources>

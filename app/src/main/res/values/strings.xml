@@ -461,6 +461,10 @@
     
     <string name="run_speed_test">Run Speed Test</string>
     <string name="speed_test_complete">Speed Test Complete</string>
+    <string name="network_speed_testing">Testing...</string>
+    <string name="network_speed_testing_latency">Testing latency...</string>
+    <string name="network_speed_testing_download">Testing download...</string>
+    <string name="network_speed_testing_upload">Testing upload...</string>
     <string name="download">Download</string>
     <string name="upload">Upload</string>
     
@@ -560,5 +564,11 @@
     <string name="notification_tool_network_usage_desc">View your data usage</string>
     <string name="notification_tool_cleaner_desc">Check if there are unwanted notifications</string>
 
-    <string name="device_info_source_hint">The device information displayed is based on system-provided data and may vary from the official specifications. For in stance, storage capacity or memory may differ slightly due to system reservations or hardware configuration variations.</string>>
+    <string name="device_info_source_hint">The device information displayed is based on system-provided data and may vary from the official specifications. For instance, storage capacity or memory may differ slightly due to system reservations or hardware configuration variations.</string>
+    <string name="too_many_attempts_retry_seconds">Too many attempts. Try again in %1$d s</string>
+    <string name="device_progress_cpu_label">CPU:</string>
+    <string name="device_progress_ram_label">RAM:</string>
+    <string name="device_progress_storage_label">Storage:</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="network_link_speed_fallback">Using link speed fallback</string>
 </resources>

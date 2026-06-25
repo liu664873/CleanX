@@ -228,4 +228,23 @@
     <string name="file_music">M?sica</string>
     <string name="app_usage_legend_other">Otros</string>
     <string name="device_info_source_hint">La informaci?n del dispositivo mostrada se basa en datos proporcionados por el sistema y puede variar respecto a las especificaciones oficiales. Por ejemplo, la capacidad de almacenamiento o memoria puede diferir ligeramente debido a reservas del sistema o a la configuraci?n del hardware.</string>
+    <string name="running_in_background">Ejecutándose en segundo plano</string>
+    <string name="too_many_attempts">Demasiados intentos. Vuelve a intentarlo más tarde</string>
+    <string name="too_many_attempts_retry_seconds">Demasiados intentos. Vuelve a intentarlo en %1$d s</string>
+    <string name="wait_seconds">Demasiados intentos fallidos. Espera 30 segundos</string>
+    <string name="permission_overlay_desc">Para mostrar la pantalla PIN sobre las apps protegidas, permite que Quick Clean PRO se muestre sobre otras apps.</string>
+    <string name="permission_hint_overlay">Solo se mostrará la pantalla PIN del bloqueo de apps.</string>
+    <string name="scan_virus_authorization_missing">Esta versión de la app no tiene configurada la autorización de análisis de virus.</string>
+    <string name="whatsapp_category_audios">Audio</string>
+    <string name="whatsapp_category_documents">Documentos</string>
+    <string name="whatsapp_category_databases">Bases de datos</string>
+    <string name="device_progress_cpu_label">CPU:</string>
+    <string name="device_progress_ram_label">RAM:</string>
+    <string name="device_progress_storage_label">Almacenamiento:</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="network_link_speed_fallback">Usando velocidad de enlace como respaldo</string>
+    <string name="network_speed_testing">Probando...</string>
+    <string name="network_speed_testing_latency">Probando la latencia...</string>
+    <string name="network_speed_testing_download">Probando la descarga...</string>
+    <string name="network_speed_testing_upload">Probando la subida...</string>
 </resources>

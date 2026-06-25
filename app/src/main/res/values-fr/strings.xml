@@ -135,4 +135,23 @@
     <string name="file_music">Musique</string>
     <string name="app_usage_legend_other">Autres</string>
     <string name="device_info_source_hint">Les informations affichees sur cet appareil sont basees sur les donnees fournies par le systeme et peuvent differer des specifications officielles. Par exemple, la capacite de stockage ou de memoire peut varier legerement selon les reservations systeme ou la configuration materielle.</string>
+    <string name="running_in_background">Exécution en arrière-plan</string>
+    <string name="too_many_attempts">Trop de tentatives. Réessayez plus tard</string>
+    <string name="too_many_attempts_retry_seconds">Trop de tentatives. Réessayez dans %1$d s</string>
+    <string name="wait_seconds">Trop de tentatives échouées. Attendez 30 secondes</string>
+    <string name="permission_overlay_desc">Pour afficher l’écran PIN au-dessus des apps protégées, autorisez Quick Clean PRO à s’afficher par-dessus les autres apps.</string>
+    <string name="permission_hint_overlay">Seul l’écran PIN du verrouillage d’apps sera affiché.</string>
+    <string name="scan_virus_authorization_missing">Cette version de l’application n’a pas la permission d’analyse antivirus configurée.</string>
+    <string name="whatsapp_category_audios">Audio</string>
+    <string name="whatsapp_category_documents">Documents</string>
+    <string name="whatsapp_category_databases">Bases de données</string>
+    <string name="device_progress_cpu_label">CPU:</string>
+    <string name="device_progress_ram_label">RAM:</string>
+    <string name="device_progress_storage_label">Stockage:</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="network_link_speed_fallback">Utilisation de la vitesse de liaison comme solution de secours</string>
+    <string name="network_speed_testing">Test en cours...</string>
+    <string name="network_speed_testing_latency">Test de latence...</string>
+    <string name="network_speed_testing_download">Test du téléchargement...</string>
+    <string name="network_speed_testing_upload">Test de l’envoi...</string>
 </resources>

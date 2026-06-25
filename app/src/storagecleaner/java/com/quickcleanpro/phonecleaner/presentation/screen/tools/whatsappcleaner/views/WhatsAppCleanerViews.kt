@@ -1,0 +1,634 @@
+package com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.views
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
+import com.quickcleanpro.phonecleaner.presentation.common.components.ToolFeatureBanners
+import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanCompleteBadge
+import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
+import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
+import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
+import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
+import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
+import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
+import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerNavy
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerCategory
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerGroup
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerGroupItem
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerPhase
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerSubItem
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerUiState
+import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerViewModel
+import com.quickcleanpro.phonecleaner.presentation.theme.LocalVariantTheme
+import androidx.compose.runtime.ReadOnlyComposable
+import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
+
+private val CardBg: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.virusBackgroundCard
+private val ResultCardBg: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.cardBackground
+private val Navy: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.navy
+private val NavyMuted: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.navyMuted
+private val Divider15: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.dividerSubtle
+private val CardRadius = 12.dp
+
+@Composable
+internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
+    val router = LocalRouter.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
+    var showStopDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(viewModel, permissionCoordinator) {
+        permissionCoordinator.guard(CleanXProtectedAction.WhatsAppStartScan) {
+            viewModel.startScanIfNeeded()
+        }
+    }
+
+    fun handleBack() {
+        when (uiState.phase) {
+            WhatsAppCleanerPhase.Scanning -> {
+                viewModel.cancelActiveOperation()
+                showStopDialog = true
+            }
+            WhatsAppCleanerPhase.Cleaning -> {
+                viewModel.cancelCleaningAndReturnToResult()
+                showStopDialog = true
+            }
+            else -> router.goBack()
+        }
+    }
+
+    BackHandler(
+        enabled = uiState.phase == WhatsAppCleanerPhase.Scanning ||
+            uiState.phase == WhatsAppCleanerPhase.Cleaning,
+        onBack = ::handleBack,
+    )
+
+    CleanXScaffoldPage(
+        title = stringResource(R.string.whatsapp_cleaner),
+        onBack = ::handleBack,
+        contentPadding =
+            if (uiState.phase == WhatsAppCleanerPhase.ScanResult) {
+                PaddingValues(0.dp)
+            } else {
+                PaddingValues(horizontal = 16.dp, vertical = 16.dp)
+            },
+        bottomBar = {
+            if (uiState.phase == WhatsAppCleanerPhase.ScanResult) {
+                WhatsAppScanResultBottomBar(
+                    selectedBytes = uiState.selectedBytes,
+                    onClean = {
+                        permissionCoordinator.guard(CleanXProtectedAction.WhatsAppCleanSelected) {
+                            viewModel.cleanSelectedFiles()
+                        }
+                    },
+                )
+            }
+        },
+    ) {
+        when (uiState.phase) {
+            WhatsAppCleanerPhase.Scanning -> WhatsAppLoadingContent(text = stringResource(R.string.scanning_whatsapp_files))
+            WhatsAppCleanerPhase.Cleaning -> WhatsAppLoadingContent(text = stringResource(R.string.cleaning_whatsapp_files))
+            WhatsAppCleanerPhase.ScanResult -> WhatsAppScanResultContent(
+                uiState = uiState,
+                onToggleGroup = viewModel::toggleGroup,
+                onToggleCategory = viewModel::toggleCategory,
+                onToggleExpanded = viewModel::toggleExpanded,
+            )
+            WhatsAppCleanerPhase.Result -> WhatsAppResultContent(uiState = uiState)
+            WhatsAppCleanerPhase.Error -> WhatsAppErrorContent(
+                message = uiState.errorMessage ?: stringResource(R.string.whatsapp_clean_unavailable),
+                onRetry = viewModel::retry,
+            )
+        }
+    }
+
+    if (showStopDialog) {
+        StopScanDialog(
+            onQuit = {
+                showStopDialog = false
+                viewModel.cancelActiveOperation()
+                router.goBack()
+            },
+            onResume = {
+                showStopDialog = false
+                if (uiState.phase == WhatsAppCleanerPhase.Scanning) {
+                    viewModel.retry()
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun WhatsAppLoadingContent(text: String) {
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 67.dp),
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CleanSpiralAnimation {
+                Image(
+                    painter = painterResource(R.drawable.ic_whatsapp_cleaner),
+                    contentDescription = text,
+                    modifier = Modifier.size(70.dp),
+                )
+            }
+            Spacer(modifier = Modifier.height(57.dp))
+            Text(
+                text = text,
+                color = Navy,
+                fontSize = 18.sp,
+                lineHeight = 24.sp,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
+private fun WhatsAppScanResultContent(
+    uiState: WhatsAppCleanerUiState,
+    onToggleGroup: (WhatsAppCleanerGroup) -> Unit,
+    onToggleCategory: (WhatsAppCleanerGroup, WhatsAppCleanerCategory) -> Unit,
+    onToggleExpanded: (WhatsAppCleanerGroup) -> Unit,
+) {
+    WhatsAppTopPlaceholder()
+    Spacer(modifier = Modifier.height(42.dp))
+    SummaryCard(totalBytes = uiState.scannedBytes)
+    Spacer(modifier = Modifier.height(44.dp))
+
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        uiState.groups.forEach { group ->
+            GroupCard(
+                groupItem = group,
+                onToggleGroup = { onToggleGroup(group.group) },
+                onToggleExpanded = { onToggleExpanded(group.group) },
+                onToggleCategory = { category -> onToggleCategory(group.group, category) },
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(20.dp))
+}
+
+@Composable
+private fun WhatsAppScanResultBottomBar(
+    selectedBytes: Long,
+    onClean: () -> Unit,
+) {
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        CleanXPrimaryButton(
+            text = stringResource(R.string.remove_size, compactSizeLabel(selectedBytes)),
+            onClick = onClean,
+            enabled = selectedBytes > 0L,
+        )
+    }
+}
+
+@Composable
+private fun WhatsAppTopPlaceholder() {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+                .background(
+                    Brush.linearGradient(
+                        colors =
+                            listOf(
+                                Color(0xFFF3F5FA),
+                                Color(0xFFE9EDF7),
+                                Color(0xFFF1F4FA),
+                            ),
+                    ),
+                ),
+    )
+}
+
+@Composable
+private fun SummaryCard(totalBytes: Long) {
+    val sizeLabel = splitSizeLabel(totalBytes)
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .size(82.dp)
+                    .clip(CircleShape)
+                    .background(LocalVariantTheme.current.colors.successBackground)
+                    .border(1.dp, LocalVariantTheme.current.colors.successBorder, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_whatsapp_cleaner),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(50.dp),
+            )
+        }
+        Spacer(modifier = Modifier.width(20.dp))
+        Column {
+            Text(
+                text = stringResource(R.string.occupying),
+                color = LocalVariantTheme.current.colors.navyText,
+                fontSize = 18.sp,
+                lineHeight = 24.sp,
+                fontWeight = FontWeight.Normal,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = sizeLabel.main,
+                    color = Color(0xFF2D2F38),
+                    fontSize = 42.sp,
+                    lineHeight = 42.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = sizeLabel.unit,
+                    color = Color(0xFF2D2F38),
+                    fontSize = 16.sp,
+                    lineHeight = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 5.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GroupCard(
+    groupItem: WhatsAppCleanerGroupItem,
+    onToggleGroup: () -> Unit,
+    onToggleExpanded: () -> Unit,
+    onToggleCategory: (WhatsAppCleanerCategory) -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = ResultCardBg,
+        shape = RoundedCornerShape(CardRadius),
+    ) {
+        Column {
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SelectionBadge(
+                    selected = groupItem.selected,
+                    enabled = groupItem.hasFiles,
+                    modifier = Modifier.clickable(enabled = groupItem.hasFiles, onClick = onToggleGroup),
+                )
+                Spacer(modifier = Modifier.size(10.dp))
+                Text(
+                    text = stringResource(groupItem.group.titleRes),
+                    color = LocalVariantTheme.current.colors.textPrimary,
+                    fontSize = 16.sp,
+                    lineHeight = 22.sp,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = compactSizeLabel(groupItem.totalBytes),
+                    color = LocalVariantTheme.current.colors.textPrimary,
+                    fontSize = 16.sp,
+                    lineHeight = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(modifier = Modifier.width(14.dp))
+                Icon(
+                    imageVector = if (groupItem.expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = LocalVariantTheme.current.colors.navyText,
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .clickable(onClick = onToggleExpanded),
+                )
+            }
+
+            if (groupItem.expanded) {
+                HorizontalDivider(color = Divider15)
+                Column(
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    groupItem.children.chunked(3).forEach { rowItems ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            rowItems.forEach { child ->
+                                CategoryTile(
+                                    item = child,
+                                    onToggle = { onToggleCategory(child.category) },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+                            repeat(3 - rowItems.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryTile(
+    item: WhatsAppCleanerSubItem,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier =
+            modifier
+                .clickable(enabled = item.hasFiles, onClick = onToggle),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(contentAlignment = Alignment.TopEnd) {
+            Box(
+                modifier =
+                    Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(item.category.iconBackground),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(item.category.iconRes),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+            if (item.hasFiles && item.selected) {
+                Box(
+                    modifier =
+                        Modifier
+                            .offset(x = 4.dp, y = (-4).dp)
+                            .size(14.dp)
+                            .clip(CircleShape)
+                            .background(CleanXBlue),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(10.dp),
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(7.dp))
+        Text(
+            text = stringResource(item.category.titleRes),
+            color = if (item.selected) CleanXBlue else LocalVariantTheme.current.colors.navyText,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = compactSizeLabel(item.totalBytes),
+            color = LocalVariantTheme.current.colors.navyText,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun SelectionBadge(
+    selected: Boolean,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier =
+            modifier
+                .size(24.dp)
+                .clip(CircleShape)
+                .then(
+                    if (!selected && enabled) {
+                        Modifier.border(1.5.dp, Color(0xFFC8D2DE), CircleShape)
+                    } else {
+                        Modifier
+                    },
+                )
+                .background(
+                    when {
+                        selected -> CleanXBlue
+                        enabled -> Color.Transparent
+                        else -> Color(0xFFE1E6EF)
+                    },
+                ),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (selected) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun WhatsAppResultContent(uiState: WhatsAppCleanerUiState) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(modifier = Modifier.height(42.dp))
+        CleanCompleteBadge()
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.all_junk_files_removed),
+            color = Navy,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.removed_files_size, uiState.deletedCount, FileSizeFormatter.format(uiState.deletedBytes)),
+            color = NavyMuted,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        ToolFeatureBanners(excludeRoutes = setOf(Screen.WhatsAppCleaner.route))
+        Spacer(modifier = Modifier.height(100.dp))
+    }
+}
+
+@Composable
+private fun WhatsAppErrorContent(
+    message: String,
+    onRetry: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = CardBg,
+        shape = RoundedCornerShape(CardRadius),
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.error),
+                color = Navy,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = message,
+                color = NavyMuted,
+                fontSize = 15.sp,
+                lineHeight = 20.sp,
+            )
+            CleanXPrimaryButton(
+                text = stringResource(R.string.retry),
+                onClick = onRetry,
+            )
+        }
+    }
+}
+
+private val WhatsAppCleanerGroup.titleRes: Int
+    get() =
+        when (this) {
+            WhatsAppCleanerGroup.Cache -> R.string.cache
+            WhatsAppCleanerGroup.File -> R.string.file
+        }
+
+private val WhatsAppCleanerCategory.titleRes: Int
+    get() =
+        when (this) {
+            WhatsAppCleanerCategory.Images -> R.string.images
+            WhatsAppCleanerCategory.Videos -> R.string.videos
+            WhatsAppCleanerCategory.Audios -> R.string.whatsapp_category_audios
+            WhatsAppCleanerCategory.Documents -> R.string.whatsapp_category_documents
+            WhatsAppCleanerCategory.Databases -> R.string.whatsapp_category_databases
+            WhatsAppCleanerCategory.Other -> R.string.other
+        }
+
+private val WhatsAppCleanerCategory.iconRes: Int
+    get() =
+        when (this) {
+            WhatsAppCleanerCategory.Images -> R.drawable.ic_photos
+            WhatsAppCleanerCategory.Videos -> R.drawable.ic_videos
+            WhatsAppCleanerCategory.Audios -> R.drawable.ic_audios
+            WhatsAppCleanerCategory.Documents -> R.drawable.ic_documents
+            WhatsAppCleanerCategory.Databases -> R.drawable.ic_documents
+            WhatsAppCleanerCategory.Other -> R.drawable.ic_file_manager
+        }
+
+private val WhatsAppCleanerCategory.iconBackground: Color
+    get() =
+        when (this) {
+            WhatsAppCleanerCategory.Images -> Color(0xFFF7ECFF)
+            WhatsAppCleanerCategory.Videos -> Color(0xFFFFECF5)
+            WhatsAppCleanerCategory.Audios -> Color(0xFFEAF4FF)
+            WhatsAppCleanerCategory.Documents -> Color(0xFFFFF6E5)
+            WhatsAppCleanerCategory.Databases -> Color(0xFFEFF3FF)
+            WhatsAppCleanerCategory.Other -> Color(0xFFE9FFF9)
+        }
+
+private data class SizeLabel(
+    val main: String,
+    val unit: String,
+)
+
+private fun splitSizeLabel(bytes: Long): SizeLabel {
+    val compact = compactSizeLabel(bytes)
+    val main = compact.takeWhile { it.isDigit() || it == '.' }.ifBlank { "0" }
+    val unit = compact.drop(main.length).ifBlank { "B" }
+    return SizeLabel(main = main, unit = unit)
+}
+
+private fun compactSizeLabel(bytes: Long): String = FileSizeFormatter.format(bytes).replace(" ", "")

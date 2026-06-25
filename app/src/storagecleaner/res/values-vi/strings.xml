@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main-path Vietnamese localization. Missing keys fall back to English. -->
+    <string name="back">Quay lại</string>
+    <string name="cancel">Hủy</string>
+    <string name="allow">Cho phép</string>
+    <string name="ok">OK</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="grant">Cấp quyền</string>
+    <string name="delete">Xóa</string>
+    <string name="remove">Gỡ bỏ</string>
+    <string name="retry">Thử lại</string>
+    <string name="settings">Cài đặt</string>
+    <string name="clean_now">Dọn ngay</string>
+    <string name="scan_now">Quét ngay</string>
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_settings">Cài đặt</string>
+    <string name="nav_photos">Ảnh</string>
+    <string name="nav_videos">Video</string>
+    <string name="nav_audios">Âm thanh</string>
+    <string name="nav_documents">Tài liệu</string>
+    <string name="nav_large_files">Tệp lớn</string>
+    <string name="nav_duplicate_files">Tệp trùng lặp</string>
+    <string name="home_tab_home">Trang chủ</string>
+    <string name="home_tab_file_manager">Tệp</string>
+    <string name="home_tab_toolbox">Công cụ</string>
+    <string name="home_storage_label">Bộ nhớ:</string>
+    <string name="home_remove_junk">Xóa rác</string>
+    <string name="home_virus_title">Virus</string>
+    <string name="home_virus_desc">Quét sâu virus,\nứng dụng độc hại và tệp rủi ro</string>
+    <string name="home_toolbox_title">Công cụ</string>
+    <string name="home_device_model">Mẫu thiết bị</string>
+    <string name="home_system_version">Phiên bản hệ thống</string>
+    <string name="home_battery_status">Trạng thái pin</string>
+    <string name="home_health">Sức khỏe</string>
+    <string name="junk_removal">Dọn rác</string>
+    
+    
+    
+    
+    
+    
+    <string name="clean_result_done">Dọn dẹp hoàn tất!</string>
+    
+    <string name="permission_is_required">Cần quyền</string>
+    <string name="permission_storage_desc">Để quét và xóa tệp rác, hãy cấp quyền truy cập tệp và phương tiện.</string>
+    <string name="permission_storage_files_desc">Để quét và quản lý tệp, hãy cấp quyền truy cập tệp và phương tiện.</string>
+    <string name="permission_hint_junk_deleted">Chỉ tệp rác sẽ bị xóa.</string>
+    <string name="permission_hint_files_safe">Chỉ tệp đã chọn sẽ được quản lý.</string>
+    <string name="permission_hint_no_personal">Không thu thập thông tin cá nhân.</string>
+    <string name="settings_manage_permissions">Quản lý quyền</string>
+    <string name="settings_temperature_unit">Đơn vị nhiệt độ</string>
+    <string name="settings_terms_of_service">Điều khoản dịch vụ</string>
+    <string name="settings_privacy_policy">Chính sách quyền riêng tư</string>
+    <string name="settings_rate_us">Đánh giá chúng tôi</string>
+    <string name="file_select_all">Chọn tất cả</string>
+    <string name="file_unselect_all">Bỏ chọn tất cả</string>
+    <string name="file_delete">Xóa</string>
+    <string name="file_items">Mục</string>
+    <string name="file_all">Tất cả</string>
+    <string name="file_photos">Ảnh</string>
+    <string name="file_pictures">Hình ảnh</string>
+    <string name="file_download">Tải xuống</string>
+    <string name="file_other">Khác</string>
+    <string name="file_auto_select">Tự động chọn</string>
+    <string name="file_got_it">Đã hiểu</string>
+    <string name="file_scanning_photos">Đang quét ảnh...</string>
+    <string name="file_scanning_videos">Đang quét video...</string>
+    <string name="file_scanning_large_files">Đang quét tệp lớn...</string>
+    <string name="file_scanning_documents">Đang quét tài liệu...</string>
+    <string name="file_deleting_files">Đang xóa tệp...</string>
+    <string name="anti_virus">Diệt virus</string>
+    <string name="virus">Virus</string>
+    <string name="privacy">Quyền riêng tư</string>
+    <string name="battery_info">Thông tin pin</string>
+    <string name="app_usage">Sử dụng ứng dụng</string>
+    <string name="network_usage">Sử dụng mạng</string>
+    <string name="network_speed">Tốc độ mạng</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="cellular_today">Di động hôm nay</string>
+    <string name="wifi_today">Wi-Fi hôm nay</string>
+    <string name="hours_spent">Giờ sử dụng</string>
+    <string name="times_opened">Số lần mở</string>
+    <string name="stop">Dừng</string>
+    <!-- App Lock -->
+    <string name="app_lock">Khóa ứng dụng</string>
+    <string name="nav_app_lock">Khóa ứng dụng</string>
+    <string name="setting">Cài đặt</string>
+    <string name="enable">Bật</string>
+    <string name="haptic_feedback">Phản hồi rung</string>
+    <string name="lock_selected_apps">Khóa ứng dụng đã chọn</string>
+    <string name="create_your_pin">Tạo PIN của bạn</string>
+    <string name="enter_pin_to_use">Nhập PIN để sử dụng</string>
+    <string name="re_enter_pin_to_proceed">Nhập lại PIN để tiếp tục</string>
+    <string name="pin_no_match">PIN không khớp. Vui lòng thử lại.</string>
+    <string name="change_pin">Đổi PIN</string>
+    <string name="enter_current_pin_to_verify">Nhập PIN hiện tại để xác minh</string>
+    <string name="enter_your_new_pin">Nhập PIN mới của bạn</string>
+    <string name="pin_updated_successfully">Đã cập nhật PIN</string>
+    <string name="app_lock_no_apps">Không có ứng dụng</string>
+    <string name="app_lock_no_search_results">Không có ứng dụng phù hợp</string>
+    <string name="lock_all_apps">Khóa tất cả ứng dụng</string>
+    <string name="locked_apps">Ứng dụng đã khóa</string>
+    <string name="my_apps">Ứng dụng của tôi</string>
+    <string name="search_app">Tìm ứng dụng</string>
+    <string name="please_enter_app_name">Vui lòng nhập tên ứng dụng</string>
+    <string name="turn_on_auto_lock">Bật khóa tự động</string>
+    <string name="turn_on_auto_lock_hint">Tự động khóa ứng dụng mới sau khi cài đặt.</string>
+    <string name="app_lock_usage_permission_title">Cần quyền dữ liệu sử dụng</string>
+    <string name="app_lock_usage_permission_desc">Tìm Quick Clean PRO và bật quyền.</string>
+    <string name="app_lock_usage_permission_grant">Cấp quyền truy cập dữ liệu sử dụng</string>
+    <string name="app_lock_overlay_permission_message">Vui lòng cấp các quyền cần thiết để dùng tính năng này.</string>
+    <string name="app_lock_overlay_permission_title">Cần quyền cửa sổ nổi</string>
+    <string name="app_lock_overlay_permission_desc">Tìm Quick Clean PRO và bật quyền.</string>
+    <string name="app_lock_overlay_permission_grant">Cho phép hiển thị trên ứng dụng khác</string>
+    <string name="manage_permission">Quản lý quyền</string>
+    <string name="allow_now">Cho phép ngay</string>
+    <string name="permission_app_lock_usage_desc">Để phát hiện khi ứng dụng được bảo vệ mở ra, hãy cho phép Quick Clean PRO trong Truy cập sử dụng.</string>
+    <!-- Home exit prompts -->
+    <string name="exit">Thoát</string>
+    <string name="close">Đóng</string>
+    <string name="enable_now">Bật ngay</string>
+    <string name="view_now">Xem ngay</string>
+    <string name="exit_prompt_device_info">Hiểu rõ thiết bị của bạn hơn.\nKhám phá toàn bộ thông số.</string>
+    <string name="exit_prompt_junk_removal">Giải phóng dung lượng bằng một lần quét nhanh.</string>
+    <string name="exit_prompt_battery_info">Kiểm tra sức khỏe pin và trạng thái nguồn.</string>
+    <string name="exit_prompt_network_scan">Xem mọi thiết bị trong mạng của bạn.</string>
+    <string name="exit_prompt_network_usage">Theo dõi dữ liệu di động và Wi-Fi.</string>
+    <string name="exit_prompt_notification_title">Tập trung hơn với bộ lọc\nthông báo thông minh</string>
+    <string name="exit_prompt_notification_tip_block">Chặn thông báo không mong muốn</string>
+    <string name="exit_prompt_notification_tip_matters">Chỉ xem những gì quan trọng</string>
+    <string name="exit_prompt_notification_tip_focus">Giữ tập trung. Giảm gián đoạn</string>
+    <string name="permission_title_required">Cần quyền</string>
+    <string name="permission_post_notifications_desc">Để luôn có sẵn công cụ dọn dẹp, hãy cho phép Quick Clean PRO gửi thông báo.</string>
+    <string name="permission_hint_app_notifications">Chỉ gửi trạng thái ứng dụng và thông báo dọn dẹp.</string>
+    <string name="notification_enable_title">Cách bật thông báo?</string>
+    <string name="notification_enable_step_find_prefix">1. Tìm\u0020</string>
+    <string name="notification_enable_step_find_suffix"></string>
+    <string name="notification_enable_step_allow">2. Nhấn “Cho phép”</string>
+    <!-- Recently added strings -->
+    <string name="continue_scan">Ti?p t?c</string>
+    <string name="home_app_lock_title">Kh?a ?ng d?ng</string>
+    <string name="home_app_lock_desc">Kh?a ?ng d?ng ?? b?o v? quy?n ri?ng t?</string>
+    <string name="no_data_available">Kh?ng c? d? li?u</string>
+    <string name="virus_scan_notice_title">Th?ng b?o</string>
+    <string name="virus_scan_notice_message">Quick Clean PRO s? ki?m tra th?ng tin ?ng d?ng tr?n thi?t b? n?y ?? qu?t r?i ro b?o m?t.</string>
+    <string name="settings_overlay_permission">C?a s? n?i</string>
+    <string name="settings_post_notifications_permission">Th?ng b?o ?ng d?ng</string>
+    <string name="file_unselect">B? ch?n</string>
+    <string name="file_music">Nh?c</string>
+    <string name="app_usage_legend_other">Kh?c</string>
+    <string name="device_info_source_hint">Th?ng tin thi?t b? ???c hi?n th? d?a tr?n d? li?u do h? th?ng cung c?p v? c? th? kh?c v?i th?ng s? ch?nh th?c. V? d?, dung l??ng l?u tr? ho?c b? nh? c? th? ch?nh l?ch nh? do ph?n h? th?ng d?nh ri?ng ho?c c?u h?nh ph?n c?ng.</string>
+</resources>

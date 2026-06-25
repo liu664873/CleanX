@@ -135,4 +135,23 @@
     <string name="file_music">音楽</string>
     <string name="app_usage_legend_other">その他</string>
     <string name="device_info_source_hint">表示されるデバイス情報は、システムから提供されるデータに基づいており、公式仕様と異なる場合があります。たとえば、ストレージ容量やメモリは、システム予約領域やハードウェア構成の違いにより、わずかに異なることがあります。</string>
+    <string name="running_in_background">バックグラウンドで実行中</string>
+    <string name="too_many_attempts">試行回数が多すぎます。後でもう一度お試しください</string>
+    <string name="too_many_attempts_retry_seconds">試行回数が多すぎます。%1$d 秒後にもう一度お試しください</string>
+    <string name="wait_seconds">失敗回数が多すぎます。30 秒お待ちください</string>
+    <string name="permission_overlay_desc">保護されたアプリの上に PIN 画面を表示するには、Quick Clean PRO の他のアプリ上への表示を許可してください。</string>
+    <string name="permission_hint_overlay">表示されるのはアプリロックの PIN 画面のみです。</string>
+    <string name="scan_virus_authorization_missing">このアプリ版にはウイルススキャンの認証が設定されていません。</string>
+    <string name="whatsapp_category_audios">音声</string>
+    <string name="whatsapp_category_documents">ドキュメント</string>
+    <string name="whatsapp_category_databases">データベース</string>
+    <string name="device_progress_cpu_label">CPU:</string>
+    <string name="device_progress_ram_label">RAM:</string>
+    <string name="device_progress_storage_label">ストレージ:</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="network_link_speed_fallback">リンク速度のフォールバックを使用中</string>
+    <string name="network_speed_testing">テスト中...</string>
+    <string name="network_speed_testing_latency">レイテンシを測定中...</string>
+    <string name="network_speed_testing_download">ダウンロードをテスト中...</string>
+    <string name="network_speed_testing_upload">アップロードをテスト中...</string>
 </resources>

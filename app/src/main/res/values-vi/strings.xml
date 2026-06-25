@@ -150,4 +150,23 @@
     <string name="file_music">Nh?c</string>
     <string name="app_usage_legend_other">Kh?c</string>
     <string name="device_info_source_hint">Th?ng tin thi?t b? ???c hi?n th? d?a tr?n d? li?u do h? th?ng cung c?p v? c? th? kh?c v?i th?ng s? ch?nh th?c. V? d?, dung l??ng l?u tr? ho?c b? nh? c? th? ch?nh l?ch nh? do ph?n h? th?ng d?nh ri?ng ho?c c?u h?nh ph?n c?ng.</string>
+    <string name="running_in_background">Đang chạy nền</string>
+    <string name="too_many_attempts">Quá nhiều lần thử. Hãy thử lại sau</string>
+    <string name="too_many_attempts_retry_seconds">Quá nhiều lần thử. Hãy thử lại sau %1$d giây</string>
+    <string name="wait_seconds">Quá nhiều lần thử thất bại. Vui lòng đợi 30 giây</string>
+    <string name="permission_overlay_desc">Để hiển thị màn hình PIN trên các ứng dụng được bảo vệ, hãy cho phép Quick Clean PRO hiển thị trên ứng dụng khác.</string>
+    <string name="permission_hint_overlay">Chỉ hiển thị màn hình PIN của khóa ứng dụng.</string>
+    <string name="scan_virus_authorization_missing">Phiên bản ứng dụng này chưa được cấu hình quyền quét virus.</string>
+    <string name="whatsapp_category_audios">Âm thanh</string>
+    <string name="whatsapp_category_documents">Tài liệu</string>
+    <string name="whatsapp_category_databases">Cơ sở dữ liệu</string>
+    <string name="device_progress_cpu_label">CPU:</string>
+    <string name="device_progress_ram_label">RAM:</string>
+    <string name="device_progress_storage_label">Bộ nhớ:</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="network_link_speed_fallback">Đang dùng tốc độ liên kết làm phương án dự phòng</string>
+    <string name="network_speed_testing">Đang kiểm tra...</string>
+    <string name="network_speed_testing_latency">Đang kiểm tra độ trễ...</string>
+    <string name="network_speed_testing_download">Đang kiểm tra tải xuống...</string>
+    <string name="network_speed_testing_upload">Đang kiểm tra tải lên...</string>
 </resources>

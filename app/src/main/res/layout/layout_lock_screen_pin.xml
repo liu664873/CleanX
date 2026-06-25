@@ -28,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="App Lock"
+            android:text="@string/app_lock"
             android:textColor="#333333"
             android:textSize="16sp" />
     </LinearLayout>

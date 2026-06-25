@@ -135,4 +135,23 @@
     <string name="file_music">Musik</string>
     <string name="app_usage_legend_other">Andere</string>
     <string name="device_info_source_hint">Die angezeigten Ger?teinformationen basieren auf vom System bereitgestellten Daten und k?nnen von den offiziellen Spezifikationen abweichen. Zum Beispiel k?nnen Speicher- oder Arbeitsspeicherkapazit?t aufgrund von Systemreservierungen oder Hardwarekonfiguration leicht abweichen.</string>
+    <string name="running_in_background">Im Hintergrund ausgeführt</string>
+    <string name="too_many_attempts">Zu viele Versuche. Bitte später erneut versuchen</string>
+    <string name="too_many_attempts_retry_seconds">Zu viele Versuche. Bitte in %1$d s erneut versuchen</string>
+    <string name="wait_seconds">Zu viele fehlgeschlagene Versuche. Bitte 30 Sekunden warten</string>
+    <string name="permission_overlay_desc">Damit der PIN-Bildschirm über geschützten Apps angezeigt werden kann, erlaube Quick Clean PRO das Anzeigen über anderen Apps.</string>
+    <string name="permission_hint_overlay">Es wird nur der App-Lock-PIN-Bildschirm angezeigt.</string>
+    <string name="scan_virus_authorization_missing">Für diese App-Version ist keine Berechtigung für den Virenscan konfiguriert.</string>
+    <string name="whatsapp_category_audios">Audio</string>
+    <string name="whatsapp_category_documents">Dokumente</string>
+    <string name="whatsapp_category_databases">Datenbanken</string>
+    <string name="device_progress_cpu_label">CPU:</string>
+    <string name="device_progress_ram_label">RAM:</string>
+    <string name="device_progress_storage_label">Speicher:</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="network_link_speed_fallback">Link-Geschwindigkeit als Fallback verwenden</string>
+    <string name="network_speed_testing">Wird getestet...</string>
+    <string name="network_speed_testing_latency">Latenz wird getestet...</string>
+    <string name="network_speed_testing_download">Download wird getestet...</string>
+    <string name="network_speed_testing_upload">Upload wird getestet...</string>
 </resources>
