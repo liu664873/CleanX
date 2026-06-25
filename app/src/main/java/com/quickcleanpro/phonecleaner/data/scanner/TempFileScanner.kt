@@ -1,4 +1,4 @@
-﻿package com.quickcleanpro.phonecleaner.data.scanner
+package com.quickcleanpro.phonecleaner.data.scanner
 
 import com.quickcleanpro.phonecleaner.domain.model.JunkCategory
 import java.io.File
@@ -9,8 +9,7 @@ class TempFileScanner : BaseFileScanner() {
     override fun getRootDirectories(): List<File> = ScanDirectoryHelper.commonPublicDirectories() + File("/data/local/tmp")
 
     override fun isJunkFile(file: File): Boolean {
-//        if (!file.isFile || file.length() < MIN_TEMP_BYTES) return false
-        if (!file.isFile) return false
+        if (!file.isFile || file.length() < MIN_TEMP_BYTES) return false
         val name = file.name.lowercase()
         val extension = file.extension.lowercase()
         return extension in TEMP_EXTENSIONS ||

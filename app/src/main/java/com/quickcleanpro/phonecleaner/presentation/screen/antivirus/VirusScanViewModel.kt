@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 
 class VirusScanViewModel constructor(application: Application) : AndroidViewModel(application) {
 
@@ -30,8 +30,8 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
     private var progressJob: Job? = null
     private var appDisplayJob: Job? = null
     private var pathDisplayJob: Job? = null
-    private var appDisplayChannel = Channel<String>(Channel.UNLIMITED)
-    private var pathDisplayChannel = Channel<String>(Channel.UNLIMITED)
+    private var appDisplayChannel = Channel<String>(Channel.CONFLATED)
+    private var pathDisplayChannel = Channel<String>(Channel.CONFLATED)
     private var scanStartedAt: Long = 0L
     private var scanGeneration = 0
     private var isAppDisplayStarted = false
@@ -39,7 +39,7 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
     private var isPathDisplayStarted = false
     private val processedPackageNames = mutableSetOf<String>()
     private val threatIds = mutableSetOf<String>()
-    private val pendingThreatJobs = Collections.synchronizedSet(mutableSetOf<Job>())
+    private val pendingThreatJobs = ConcurrentHashMap.newKeySet<Job>()
 
     fun startScan(mode: VirusScanMode) {
         resetScanState()
@@ -356,8 +356,10 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
 
     private fun resetDisplayQueues() {
         stopDisplayQueues()
-        appDisplayChannel = Channel(Channel.UNLIMITED)
-        pathDisplayChannel = Channel(Channel.UNLIMITED)
+        appDisplayChannel.cancel()
+        pathDisplayChannel.cancel()
+        appDisplayChannel = Channel(Channel.CONFLATED)
+        pathDisplayChannel = Channel(Channel.CONFLATED)
         isAppDisplayStarted = false
         isAppDisplayStopped = false
         isPathDisplayStarted = false

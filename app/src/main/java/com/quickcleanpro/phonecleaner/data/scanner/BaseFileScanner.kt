@@ -1,5 +1,6 @@
-﻿package com.quickcleanpro.phonecleaner.data.scanner
+package com.quickcleanpro.phonecleaner.data.scanner
 
+import android.util.Log
 import com.quickcleanpro.phonecleaner.domain.model.JunkFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
@@ -25,9 +26,9 @@ abstract class BaseFileScanner : JunkScanner {
             val junkFiles = mutableListOf<JunkFile>()
 
             val validDirs =
-                runCatching { getRootDirectories() }
+                runCatchingLogged("getRootDirectories(${this@BaseFileScanner.javaClass.simpleName})") { getRootDirectories() }
                     .getOrDefault(emptyList())
-                    .filter { file -> runCatching { file.exists() && file.isDirectory }.getOrDefault(false) }
+                    .filter { file -> runCatchingLogged("exists+dir:${file.absolutePath}") { file.exists() && file.isDirectory }.getOrDefault(false) }
             if (validDirs.isEmpty()) {
                 progress = 100f
                 return@withContext junkFiles
@@ -116,5 +117,16 @@ abstract class BaseFileScanner : JunkScanner {
                 .sumOf { it.length() }
         }.getOrDefault(0L)
 
-    private fun safeListFiles(directory: File): List<File> = runCatching { directory.listFiles()?.toList() }.getOrNull().orEmpty()
+    private fun safeListFiles(directory: File): List<File> =
+        runCatchingLogged("listFiles:${directory.absolutePath}") { directory.listFiles()?.toList() }
+            .getOrNull().orEmpty()
+
+    companion object {
+        private fun <T> runCatchingLogged(tag: String, block: () -> T): Result<T> =
+            runCatching(block).onFailure { e ->
+                if (e !is kotlinx.coroutines.CancellationException) {
+                    Log.w("BaseFileScanner", "$tag failed: ${e.message}")
+                }
+            }
+    }
 }

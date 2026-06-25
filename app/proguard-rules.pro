@@ -48,21 +48,17 @@
 }
 
 # Project bean/model/state classes.
+# Broad keep by package; name-suffix rules below are redundant and have been removed
+# to let R8 shrink unused data classes.
 -keep class com.quickcleanpro.phonecleaner.common.** { *; }
 -keep class com.quickcleanpro.phonecleaner.domain.model.** { *; }
 -keep class com.quickcleanpro.phonecleaner.domain.state.** { *; }
 -keep class com.quickcleanpro.phonecleaner.presentation.common.state.** { *; }
--keep class com.quickcleanpro.phonecleaner.**.*UiState { *; }
--keep class com.quickcleanpro.phonecleaner.**.*State { *; }
--keep class com.quickcleanpro.phonecleaner.**.*Item { *; }
--keep class com.quickcleanpro.phonecleaner.**.*Info { *; }
--keep class com.quickcleanpro.phonecleaner.**.*Result { *; }
--keep class com.quickcleanpro.phonecleaner.**.*Progress { *; }
--keep class com.quickcleanpro.phonecleaner.**.*Summary { *; }
--keep class com.quickcleanpro.phonecleaner.**.*Entry { *; }
--keep class com.quickcleanpro.phonecleaner.**.*Config { *; }
--keep class com.quickcleanpro.phonecleaner.**.*Spec { *; }
--keep class com.quickcleanpro.phonecleaner.**.*Snapshot { *; }
+# Only keep navigation Screen sealed classes (reflection-based routing).
+-keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen { *; }
+-keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen$* { *; }
+-keep class com.quickcleanpro.phonecleaner.presentation.common.route.Screen { *; }
+-keep class com.quickcleanpro.phonecleaner.presentation.common.route.Screen$* { *; }
 
 # App component classes that are resolved by manifest, Koin, or callbacks.
 -keep class com.quickcleanpro.phonecleaner.di.** { *; }
@@ -76,10 +72,6 @@
 -keep class com.quickcleanpro.phonecleaner.data.local.** { *; }
 -keep class com.quickcleanpro.phonecleaner.data.repository.** { *; }
 -keep class com.quickcleanpro.phonecleaner.data.source.** { *; }
--keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen { *; }
--keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen$* { *; }
--keep class com.quickcleanpro.phonecleaner.presentation.common.route.Screen { *; }
--keep class com.quickcleanpro.phonecleaner.presentation.common.route.Screen$* { *; }
 -keep class com.quickcleanpro.phonecleaner.presentation.screen.**.*ViewModel { *; }
 -keep class com.quickcleanpro.phonecleaner.util.** { *; }
 -keep class com.quickcleanpro.phonecleaner.utils.** { *; }

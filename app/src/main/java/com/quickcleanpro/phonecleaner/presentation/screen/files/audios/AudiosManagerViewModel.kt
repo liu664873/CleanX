@@ -1,13 +1,11 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.files.audios
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.repository.FileRepository
 import com.quickcleanpro.phonecleaner.presentation.common.fileRepositoryOrPreview
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.BaseFileManagerViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FILE_DELETE_ANIMATION_MIN_MILLIS
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileOperationPhase
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileOperationRunner
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.appString
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.deletionFailedMessage
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.fileScanFailedMessage
@@ -24,15 +22,15 @@ import kotlinx.coroutines.flow.update
 
 internal class AudiosManagerViewModel(
     private val repository: FileRepository = fileRepositoryOrPreview(),
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val testLoader: (((suspend () -> Unit)) -> Unit)? = null,
+    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    testLoader: (((suspend () -> Unit)) -> Unit)? = null,
     private val scanDelayMillis: Long = 900L,
     private val deleteDelayMillis: Long = FILE_DELETE_ANIMATION_MIN_MILLIS,
     private val completeDelayMillis: Long = 700L
-) : ViewModel() {
+) : BaseFileManagerViewModel(ioDispatcher, testLoader) {
+
     private val _uiState = MutableStateFlow(AudiosManagerUiState())
     val uiState: StateFlow<AudiosManagerUiState> = _uiState.asStateFlow()
-    private val operationRunner = FileOperationRunner(viewModelScope, ioDispatcher, testLoader)
 
     fun startIfNeeded() {
         if (_uiState.value.phase != FileOperationPhase.Scanning || _uiState.value.items.isNotEmpty()) return
@@ -94,12 +92,7 @@ internal class AudiosManagerViewModel(
         _uiState.update { it.copy(errorMessage = null) }
     }
 
-    fun cancelActiveOperation() {
-        operationRunner.cancelActiveOperation()
-    }
-
-    fun cancelDeletingAndReturnToBrowsing() {
-        operationRunner.cancelActiveOperation()
+    override fun onCancelDeletingPhase() {
         _uiState.update { current ->
             if (current.phase == FileOperationPhase.Deleting) {
                 current.copy(phase = FileOperationPhase.Browsing)

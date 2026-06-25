@@ -23,6 +23,7 @@ import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -191,7 +192,7 @@ open class DeviceInfoViewModel(
         super.onCleared()
     }
 
-    private fun buildState(
+    private suspend fun buildState(
         mode: DeviceInfoMode,
         previousState: DeviceInfoUiState,
         timestampMillis: Long,
@@ -466,16 +467,16 @@ private fun averageTemperature(
         ?.toFloat()
         ?: fallback
 
-private fun readCpuUsagePercent(previousPercent: Int? = null): Int? {
+private suspend fun readCpuUsagePercent(previousPercent: Int? = null): Int? {
     readCpuUsagePercentFromProcStat()?.let { return it }
     readCpuUsagePercentFromLoadAverage()?.let { return it }
     readCpuUsagePercentFromFrequencies()?.let { return it }
     return previousPercent?.coerceIn(0, 100)
 }
 
-private fun readCpuUsagePercentFromProcStat(): Int? {
+private suspend fun readCpuUsagePercentFromProcStat(): Int? {
     val first = readCpuStat() ?: return null
-    Thread.sleep(CPU_USAGE_SAMPLE_DELAY_MILLIS)
+    delay(CPU_USAGE_SAMPLE_DELAY_MILLIS)
     val second = readCpuStat() ?: return null
     val totalDiff = second.total - first.total
     val idleDiff = second.idle - first.idle

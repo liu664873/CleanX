@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -24,17 +25,19 @@ open class BatteryHistorySampler(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val nowMillis: () -> Long = System::currentTimeMillis,
     val sampleIntervalMillis: Long = BATTERY_HISTORY_SAMPLE_INTERVAL_MILLIS,
-    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + ioDispatcher),
 ) {
     private val lock = Any()
     private val owners = mutableSetOf<BatteryHistoryOwner>()
     private var samplingJob: Job? = null
+    private var samplingScope: CoroutineScope? = null
 
     open fun start(owner: BatteryHistoryOwner) {
         synchronized(lock) {
             owners += owner
             if (samplingJob?.isActive == true) return
             historyRepository.loadRecent(nowMillis())
+            val scope = CoroutineScope(SupervisorJob() + ioDispatcher)
+            samplingScope = scope
             samplingJob =
                 scope.launch(ioDispatcher) {
                     while (isActive) {
@@ -51,6 +54,8 @@ open class BatteryHistorySampler(
             if (owners.isNotEmpty()) return
             samplingJob?.cancel()
             samplingJob = null
+            samplingScope?.cancel()
+            samplingScope = null
         }
     }
 

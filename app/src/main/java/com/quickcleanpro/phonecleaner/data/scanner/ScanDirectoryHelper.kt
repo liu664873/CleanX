@@ -1,4 +1,4 @@
-﻿package com.quickcleanpro.phonecleaner.data.scanner
+package com.quickcleanpro.phonecleaner.data.scanner
 
 import android.content.Context
 import android.os.Build
@@ -106,6 +106,19 @@ object ScanDirectoryHelper {
         cache.clear()
     }
 
+    fun invalidateCacheIfPermissionChanged() {
+        val currentAccess = hasAllFilesAccess()
+        val keyWithAccess = "dirs_${Build.VERSION.SDK_INT}_$currentAccess"
+        val keyWithoutAccess = "dirs_${Build.VERSION.SDK_INT}_${!currentAccess}"
+        if (cache.containsKey(keyWithoutAccess)) {
+            cache.clear()
+        }
+    }
+
+    fun externalStorageDirectoryOrNull(): File? = runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
+
+    fun File.isReadableDirectory(): Boolean = runCatching { exists() && isDirectory && canRead() }.getOrDefault(false)
+
     private fun scanPriority(file: File): Int {
         val path = file.absolutePath.lowercase()
         val name = file.name.lowercase()
@@ -118,6 +131,4 @@ object ScanDirectoryHelper {
     private fun hasAllFilesAccess(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
             runCatching { Environment.isExternalStorageManager() }.getOrDefault(false)
-
-    private fun externalStorageDirectoryOrNull(): File? = runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
 }

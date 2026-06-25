@@ -1,15 +1,16 @@
-﻿package com.quickcleanpro.phonecleaner.data.source.clean
+package com.quickcleanpro.phonecleaner.data.source.clean
 
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Process
 import com.quickcleanpro.phonecleaner.domain.model.clean.MemoryCleanResult
+import kotlinx.coroutines.delay
 
 object MemoryCleaner {
     /**
      * Attempts a conservative background-process cleanup.
      */
-    fun clean(context: Context): MemoryCleanResult {
+    suspend fun clean(context: Context): MemoryCleanResult {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 
         val beforeMem = ActivityManager.MemoryInfo().also { activityManager.getMemoryInfo(it) }
@@ -35,10 +36,7 @@ object MemoryCleaner {
             }
         }
 
-        try {
-            Thread.sleep(300)
-        } catch (_: InterruptedException) {
-        }
+        delay(300L)
 
         val afterMem = ActivityManager.MemoryInfo().also { activityManager.getMemoryInfo(it) }
         val afterAvail = afterMem.availMem

@@ -1,17 +1,14 @@
 package com.quickcleanpro.phonecleaner.data.source.notification
 
-import android.Manifest
 import android.app.Notification
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import android.widget.RemoteViews
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.AppConfig
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.utils.NotificationChannelManager
 
@@ -22,9 +19,7 @@ object ToolNotificationDataSource {
 
     fun showToolNotifications(context: Context) {
         val appContext = context.applicationContext
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(appContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (!AppConfig.hasPostNotificationsPermission(appContext)) {
             return
         }
         NotificationChannelManager.createAllChannels(appContext)
@@ -38,9 +33,7 @@ object ToolNotificationDataSource {
 
     fun showPersistentNotification(context: Context) {
         val appContext = context.applicationContext
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(appContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (!AppConfig.hasPostNotificationsPermission(appContext)) {
             return
         }
         NotificationChannelManager.createAllChannels(appContext)

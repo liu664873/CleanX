@@ -23,99 +23,100 @@ object SharedPreferencesUtils {
         value: Boolean,
         commit: Boolean = false,
     ) {
-        edit(commit) { putBoolean(key, value) }
+        ifReady { edit(commit) { putBoolean(key, value) } }
     }
 
     fun getBoolean(
         key: String,
         defaultValue: Boolean = false,
-    ): Boolean = prefs.getBoolean(key, defaultValue)
+    ): Boolean = ifReady { prefs.getBoolean(key, defaultValue) } ?: defaultValue
 
     fun putString(
         key: String,
         value: String?,
         commit: Boolean = false,
     ) {
-        edit(commit) { putString(key, value) }
+        ifReady { edit(commit) { putString(key, value) } }
     }
 
     fun getString(
         key: String,
         defaultValue: String = "",
-    ): String = prefs.getString(key, defaultValue) ?: defaultValue
+    ): String = ifReady { prefs.getString(key, defaultValue) } ?: defaultValue
 
     fun putInt(
         key: String,
         value: Int,
         commit: Boolean = false,
     ) {
-        edit(commit) { putInt(key, value) }
+        ifReady { edit(commit) { putInt(key, value) } }
     }
 
     fun getInt(
         key: String,
         defaultValue: Int = 0,
-    ): Int = prefs.getInt(key, defaultValue)
+    ): Int = ifReady { prefs.getInt(key, defaultValue) } ?: defaultValue
 
     fun putLong(
         key: String,
         value: Long,
         commit: Boolean = false,
     ) {
-        edit(commit) { putLong(key, value) }
+        ifReady { edit(commit) { putLong(key, value) } }
     }
 
     fun getLong(
         key: String,
         defaultValue: Long = 0L,
-    ): Long = prefs.getLong(key, defaultValue)
+    ): Long = ifReady { prefs.getLong(key, defaultValue) } ?: defaultValue
 
     fun putFloat(
         key: String,
         value: Float,
         commit: Boolean = false,
     ) {
-        edit(commit) { putFloat(key, value) }
+        ifReady { edit(commit) { putFloat(key, value) } }
     }
 
     fun getFloat(
         key: String,
         defaultValue: Float = 0f,
-    ): Float = prefs.getFloat(key, defaultValue)
+    ): Float = ifReady { prefs.getFloat(key, defaultValue) } ?: defaultValue
 
     fun putStringSet(
         key: String,
         value: Set<String>,
         commit: Boolean = false,
     ) {
-        edit(commit) { putStringSet(key, value) }
+        ifReady { edit(commit) { putStringSet(key, value) } }
     }
 
     fun getStringSet(
         key: String,
         defaultValue: Set<String> = emptySet(),
-    ): Set<String> = prefs.getStringSet(key, defaultValue)?.toSet() ?: defaultValue
+    ): Set<String> = ifReady { prefs.getStringSet(key, defaultValue)?.toSet() } ?: defaultValue
 
-    fun contains(key: String): Boolean = prefs.contains(key)
+    fun contains(key: String): Boolean = ifReady { prefs.contains(key) } ?: false
 
     fun remove(
         key: String,
         commit: Boolean = false,
     ) {
-        edit(commit) { remove(key) }
+        ifReady { edit(commit) { remove(key) } }
     }
 
     fun clear(commit: Boolean = false) {
-        edit(commit) { clear() }
+        ifReady { edit(commit) { clear() } }
     }
 
+    private inline fun <T> ifReady(block: () -> T): T? =
+        runCatching {
+            check(::preferences.isInitialized) { "SharedPreferencesUtils not initialized" }
+            block()
+        }.getOrNull()
+
     private val prefs: SharedPreferences
-        get() {
-            check(::preferences.isInitialized) {
-                "SharedPreferencesUtils.init(context) must be called before use."
-            }
-            return preferences
-        }
+        get() = preferences
 
     private inline fun edit(
         commit: Boolean,

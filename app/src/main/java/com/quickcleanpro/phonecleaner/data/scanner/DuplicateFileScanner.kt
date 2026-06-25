@@ -1,6 +1,7 @@
 ﻿package com.quickcleanpro.phonecleaner.data.scanner
 
-import android.os.Environment
+import com.quickcleanpro.phonecleaner.data.scanner.ScanDirectoryHelper.externalStorageDirectoryOrNull
+import com.quickcleanpro.phonecleaner.data.scanner.ScanDirectoryHelper.isReadableDirectory
 import com.quickcleanpro.phonecleaner.domain.model.JunkCategory
 import com.quickcleanpro.phonecleaner.domain.model.JunkFile
 import kotlinx.coroutines.Dispatchers
@@ -134,6 +135,9 @@ class DuplicateFileScanner : JunkScanner {
         runCatching {
             val file = File(path)
             if (!file.isFile) return@runCatching null
+            val size = file.length()
+            // Skip hashing for files larger than 100 MB to avoid OOM/lag
+            if (size > MAX_HASH_FILE_SIZE_BYTES) return@runCatching null
             val digest = MessageDigest.getInstance("SHA-256")
             FileInputStream(file).use { input ->
                 val buffer = ByteArray(64 * 1024)
@@ -145,10 +149,6 @@ class DuplicateFileScanner : JunkScanner {
             }
             digest.digest().joinToString("") { "%02x".format(it) }
         }.getOrNull()
-
-    private fun externalStorageDirectoryOrNull(): File? = runCatching { Environment.getExternalStorageDirectory() }.getOrNull()
-
-    private fun File.isReadableDirectory(): Boolean = runCatching { exists() && isDirectory && canRead() }.getOrDefault(false)
 
     private fun shouldSkipPath(
         path: String?,
@@ -190,6 +190,7 @@ class DuplicateFileScanner : JunkScanner {
 
     private companion object {
         const val MAX_FILE_SYSTEM_RESULTS = 10_000
+        const val MAX_HASH_FILE_SIZE_BYTES = 100L * 1024 * 1024  // 100 MB
 
         val PUBLIC_SCAN_DIRECTORIES =
             listOf(

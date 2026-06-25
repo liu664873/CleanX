@@ -1,15 +1,13 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates
 
 import android.net.Uri
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.file.ManagedFileItem
 import com.quickcleanpro.phonecleaner.domain.repository.FileRepository
 import com.quickcleanpro.phonecleaner.presentation.common.fileRepositoryOrPreview
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.BaseFileManagerViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FILE_DELETE_ANIMATION_MIN_MILLIS
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileOperationPhase
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileOperationRunner
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.appString
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.deletionFailedMessage
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.duplicateScanFailedMessage
@@ -54,12 +52,12 @@ internal data class DuplicateFilesManagerUiState(
 
 internal class DuplicateFilesManagerViewModel(
     private val repository: FileRepository = fileRepositoryOrPreview(),
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val testLoader: (((suspend () -> Unit)) -> Unit)? = null,
+    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    testLoader: (((suspend () -> Unit)) -> Unit)? = null,
     private val scanDelayMillis: Long = 900L,
     private val deleteDelayMillis: Long = FILE_DELETE_ANIMATION_MIN_MILLIS,
     private val completeDelayMillis: Long = 700L
-) : ViewModel() {
+) : BaseFileManagerViewModel(ioDispatcher, testLoader) {
 
     constructor(
         repository: FileRepository,
@@ -75,7 +73,6 @@ internal class DuplicateFilesManagerViewModel(
 
     private val _uiState = MutableStateFlow(DuplicateFilesManagerUiState())
     val uiState: StateFlow<DuplicateFilesManagerUiState> = _uiState.asStateFlow()
-    private val operationRunner = FileOperationRunner(viewModelScope, ioDispatcher, testLoader)
 
     fun startIfNeeded() {
         if (hasStartedForCurrentState()) return
@@ -170,12 +167,7 @@ internal class DuplicateFilesManagerViewModel(
         _uiState.update { it.copy(errorMessage = null) }
     }
 
-    fun cancelActiveOperation() {
-        operationRunner.cancelActiveOperation()
-    }
-
-    fun cancelDeletingAndReturnToBrowsing() {
-        operationRunner.cancelActiveOperation()
+    override fun onCancelDeletingPhase() {
         _uiState.update { current ->
             if (current.phase == FileOperationPhase.Deleting) {
                 current.copy(phase = FileOperationPhase.Browsing)

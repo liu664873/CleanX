@@ -10,22 +10,15 @@ sealed interface InterceptResult {
     data class Redirect(val event: AppNavigationEvent) : InterceptResult
 }
 
-// ==================== Built-in Interceptors ====================
-
-class PermissionInterceptor(
-    private val requiredPermissions: Map<String, Set<String>> = emptyMap(),
-    private val onRequestPermission: (Set<String>) -> Unit = {},
-) : NavigationInterceptor {
-    override fun intercept(event: AppNavigationEvent): InterceptResult {
-        val route = (event as? AppNavigationEvent.Destination)?.route ?: return InterceptResult.Proceed
-        val perms = requiredPermissions[route] ?: return InterceptResult.Proceed
-        // TODO: integrate with real permission API
-        return InterceptResult.Proceed
-    }
-}
-
+/**
+ * Automatically inserts an ad before navigating to routes that have a
+ * configured [adPlacements] entry.
+ *
+ * @param adPlacements mapping from route (e.g. "scan") to ad placement ID.
+ *        Routes not in this map pass through without an ad.
+ */
 class AdInterceptor(
-    private val adPlacements: Map<String, String> = emptyMap(),
+    val adPlacements: Map<String, String>,
 ) : NavigationInterceptor {
     override fun intercept(event: AppNavigationEvent): InterceptResult {
         val route = (event as? AppNavigationEvent.Destination)?.route ?: return InterceptResult.Proceed

@@ -1,10 +1,9 @@
 package com.quickcleanpro.phonecleaner.data.source.notification
 
 import android.content.Intent
+import com.quickcleanpro.phonecleaner.config.AppConfig
 
 internal object NotificationServicePolicy {
-    const val GLOBAL_TRIGGER_INTERVAL_MS = 30L * 60L * 1000L
-    const val MAX_TRIGGERED_NOTIFICATIONS_PER_DAY = 8
     const val ACTION_PACKAGE_ADDED = Intent.ACTION_PACKAGE_ADDED
     const val ACTION_PACKAGE_REMOVED = Intent.ACTION_PACKAGE_REMOVED
 
@@ -15,9 +14,9 @@ internal object NotificationServicePolicy {
         lastGlobalMillis: Long,
         lastSceneMillis: Long,
         triggerIntervalMillis: Long,
-        pushWindowMillis: Long = 24L * 60L * 60L * 1000L,
-        maxPerWindow: Int = MAX_TRIGGERED_NOTIFICATIONS_PER_DAY,
-        globalIntervalMillis: Long = GLOBAL_TRIGGER_INTERVAL_MS,
+        pushWindowMillis: Long = AppConfig.PUSH_WINDOW_MS,
+        maxPerWindow: Int = AppConfig.MAX_TRIGGERED_NOTIFICATIONS_PER_DAY,
+        globalIntervalMillis: Long = AppConfig.GLOBAL_TRIGGER_INTERVAL_MS,
     ): Boolean {
         if (windowCount >= maxPerWindow && nowMillis - windowStartMillis < pushWindowMillis) return false
         if (nowMillis - lastGlobalMillis < globalIntervalMillis) return false
