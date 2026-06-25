@@ -49,9 +49,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.presentation.common.components.CelebratingView
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
-import com.quickcleanpro.phonecleaner.presentation.common.components.ToolFeatureBanners
-import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanCompleteBadge
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXMutedText
+import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXText
+import com.quickcleanpro.phonecleaner.presentation.common.components.CommonResultCheckIcon
+import com.quickcleanpro.phonecleaner.presentation.common.components.CommonResultContent
 import com.quickcleanpro.phonecleaner.presentation.common.components.animations.CleanSpiralAnimation
 import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
@@ -60,7 +63,6 @@ import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProte
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerNavy
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerCategory
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerGroup
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerGroupItem
@@ -71,6 +73,7 @@ import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.
 import com.quickcleanpro.phonecleaner.presentation.theme.LocalVariantTheme
 import androidx.compose.runtime.ReadOnlyComposable
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
+import kotlinx.coroutines.delay
 
 private val CardBg: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.virusBackgroundCard
 private val ResultCardBg: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.cardBackground
@@ -86,10 +89,21 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
     val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     var showStopDialog by remember { mutableStateOf(false) }
 
+    fun exitToHome() {
+        viewModel.clearResult()
+        router.goHome()
+    }
+
     LaunchedEffect(viewModel, permissionCoordinator) {
-        permissionCoordinator.guard(CleanXProtectedAction.WhatsAppStartScan) {
-            viewModel.startScanIfNeeded()
-        }
+        permissionCoordinator.guard(
+            action = CleanXProtectedAction.WhatsAppStartScan,
+            onGranted = {
+                viewModel.startScanIfNeeded()
+            },
+            onRejected = {
+                exitToHome()
+            },
+        )
     }
 
     fun handleBack() {
@@ -102,13 +116,15 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
                 viewModel.cancelCleaningAndReturnToResult()
                 showStopDialog = true
             }
+            WhatsAppCleanerPhase.Result -> exitToHome()
             else -> router.goBack()
         }
     }
 
     BackHandler(
         enabled = uiState.phase == WhatsAppCleanerPhase.Scanning ||
-            uiState.phase == WhatsAppCleanerPhase.Cleaning,
+            uiState.phase == WhatsAppCleanerPhase.Cleaning ||
+            uiState.phase == WhatsAppCleanerPhase.Result,
         onBack = ::handleBack,
     )
 
@@ -116,7 +132,7 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
         title = stringResource(R.string.whatsapp_cleaner),
         onBack = ::handleBack,
         contentPadding =
-            if (uiState.phase == WhatsAppCleanerPhase.ScanResult) {
+            if (uiState.phase == WhatsAppCleanerPhase.ScanResult || uiState.phase == WhatsAppCleanerPhase.Result) {
                 PaddingValues(0.dp)
             } else {
                 PaddingValues(horizontal = 16.dp, vertical = 16.dp)
@@ -136,7 +152,7 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
     ) {
         when (uiState.phase) {
             WhatsAppCleanerPhase.Scanning -> WhatsAppLoadingContent(text = stringResource(R.string.scanning_whatsapp_files))
-            WhatsAppCleanerPhase.Cleaning -> WhatsAppLoadingContent(text = stringResource(R.string.cleaning_whatsapp_files))
+            WhatsAppCleanerPhase.Cleaning -> WhatsAppCleaningContent()
             WhatsAppCleanerPhase.ScanResult -> WhatsAppScanResultContent(
                 uiState = uiState,
                 onToggleGroup = viewModel::toggleGroup,
@@ -194,6 +210,17 @@ private fun WhatsAppLoadingContent(text: String) {
                 textAlign = TextAlign.Center,
             )
         }
+    }
+}
+
+@Composable
+private fun WhatsAppCleaningContent() {
+    CleanSpiralAnimation {
+        Image(
+            painter = painterResource(R.drawable.ic_tran_can_blue),
+            contentDescription = null,
+            modifier = Modifier.size(100.dp),
+        )
     }
 }
 
@@ -518,30 +545,47 @@ private fun SelectionBadge(
 
 @Composable
 private fun WhatsAppResultContent(uiState: WhatsAppCleanerUiState) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Spacer(modifier = Modifier.height(42.dp))
-        CleanCompleteBadge()
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.all_junk_files_removed),
-            color = Navy,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.SemiBold,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = stringResource(R.string.removed_files_size, uiState.deletedCount, FileSizeFormatter.format(uiState.deletedBytes)),
-            color = NavyMuted,
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        ToolFeatureBanners(excludeRoutes = setOf(Screen.WhatsAppCleaner.route))
-        Spacer(modifier = Modifier.height(100.dp))
+    var showContent by remember { mutableStateOf(false) }
+    val sizeLabel = splitSizeLabel(uiState.deletedBytes)
+
+    LaunchedEffect(Unit) {
+        delay(800)
+        showContent = true
+    }
+
+    if (!showContent) {
+        CelebratingView()
+    } else {
+        CommonResultContent(
+            onNavigateTool = {},
+            modifier = Modifier.fillMaxWidth(),
+            excludedToolRoutes = setOf(Screen.WhatsAppCleaner.route),
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Row {
+                    CommonResultCheckIcon(size = 45.dp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(sizeLabel.main, color = CleanXText, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(sizeLabel.unit, color = CleanXText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.removed_files_size, uiState.deletedCount, FileSizeFormatter.format(uiState.deletedBytes)),
+                    color = CleanXMutedText,
+                    fontSize = 16.sp,
+                    lineHeight = 20.sp,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }
     }
 }
 

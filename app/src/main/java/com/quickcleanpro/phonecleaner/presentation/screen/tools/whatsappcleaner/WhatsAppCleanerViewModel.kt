@@ -225,6 +225,11 @@ class WhatsAppCleanerViewModel(
         hasStarted = false
     }
 
+    fun clearResult() {
+        cancelActiveOperation()
+        _uiState.value = WhatsAppCleanerUiState()
+    }
+
     fun cancelCleaningAndReturnToResult() {
         cleanJob?.cancel()
         cleanJob = null
