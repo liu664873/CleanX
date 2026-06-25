@@ -116,13 +116,13 @@ fun HomeTabContent(
                         Text(
                             text = usedStorageText,
                             color = Color.White,
-                            fontSize = 24.sp,
+                            fontSize = 22.sp,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             text = "/$totalStorageText",
                             color = Color.White,
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Normal,
                         )
                     }

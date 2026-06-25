@@ -18,8 +18,11 @@ val originalTrustlookApiKey =
         "TRUSTLOOK_ORIGINAL_API_KEY",
         "42ce0e3abcd20e2e9e28af8318c95dd5dde8b60223fa16721ed7b542",
     )
-val cleanmasterTrustlookApiKey = configValue("TRUSTLOOK_CLEANMASTER_API_KEY")
-val securityguardTrustlookApiKey = configValue("TRUSTLOOK_SECURITYGUARD_API_KEY")
+val storagecleanerTrustlookApiKey =
+    configValue(
+        "TRUSTLOOK_ORIGINAL_API_KEY",
+        "6ae4e8ff542e4d91d0d0332be544740a1aabaef54fd8ceae98c9aa76"
+    )
 
 val admobTestAppId = "ca-app-pub-3940256099942544~3347511713"
 val admobTestAppOpenUnitId = "ca-app-pub-3940256099942544/9257395921"
@@ -99,126 +102,58 @@ android {
                 configValue("PRIVACY_POLICY_ORIGINAL_URL", "https://sites.google.com/view/quick-clean-pro-privacy-policy/home").asBuildConfigString(),
             )
         }
-        create("cleanmaster") {
+
+        create("storagecleaner") {
             dimension = "variant"
-            applicationId = "com.quickcleanpro.cleanmaster"
-            manifestPlaceholders["launcherIcon"] = configValue("CLEANMASTER_LAUNCHER_ICON", "@mipmap/ic_launcher")
-            manifestPlaceholders["roundLauncherIcon"] = configValue("CLEANMASTER_ROUND_LAUNCHER_ICON", "@mipmap/ic_launcher_round")
-            manifestPlaceholders["appTheme"] = configValue("CLEANMASTER_APP_THEME", "@style/Theme.QuickCleanPRO")
-            manifestPlaceholders["trustlookApiKey"] = cleanmasterTrustlookApiKey
-            manifestPlaceholders["admobAppId"] = configValue("ADMOB_CLEANMASTER_APP_ID", admobTestAppId)
-            buildConfigField("String", "VARIANT_KEY", "cleanmaster".asBuildConfigString())
-            buildConfigField("String", "THEME_KEY", "clean_master".asBuildConfigString())
+            applicationId = "com.phonecleanup.storage.cleaner"
+
+            manifestPlaceholders["launcherIcon"] = configValue("STORAGECLEANER_LAUNCHER_ICON", "@mipmap/ic_launcher")
+            manifestPlaceholders["roundLauncherIcon"] = configValue("STORAGECLEANER_ROUND_LAUNCHER_ICON", "@mipmap/ic_launcher_round")
+            manifestPlaceholders["appTheme"] = configValue("STORAGECLEANER_APP_THEME", "@style/Theme.QuickCleanPRO")
+            manifestPlaceholders["trustlookApiKey"] = storagecleanerTrustlookApiKey
+            manifestPlaceholders["admobAppId"] = configValue("ADMOB_STORAGECLEANER_APP_ID", admobTestAppId)
+
+            buildConfigField("String", "VARIANT_KEY", "storagecleaner".asBuildConfigString())
+            buildConfigField("String", "THEME_KEY", "storage_cleaner".asBuildConfigString())
             buildConfigField("String", "PRIMARY_FEATURE", "JUNK_CLEAN".asBuildConfigString())
+
+            // 只保留清理和文件管理相关功能（按需调整）
             buildConfigField(
                 "String",
                 "ENABLED_FEATURES",
-                "JUNK_CLEAN,DEVICE_INFO,BATTERY_INFO,WHATSAPP_CLEANER,NETWORK_USAGE,NETWORK_SPEED,PHOTOS,SIMILAR_PHOTOS,SCREENSHOTS,VIDEOS,AUDIOS,LARGE_FILES,DUPLICATE_FILES,DOCUMENTS".asBuildConfigString(),
+                "JUNK_CLEAN,DEVICE_INFO,BATTERY_INFO,PHOTOS,VIDEOS,AUDIOS,LARGE_FILES,DUPLICATE_FILES,DOCUMENTS,WHATSAPP_CLEANER".asBuildConfigString()
             )
-            buildConfigField("String", "HOME_FEATURE_ORDER", "JUNK_CLEAN,DUPLICATE_FILES,WHATSAPP_CLEANER".asBuildConfigString())
+            buildConfigField("String", "HOME_FEATURE_ORDER", "JUNK_CLEAN,DUPLICATE_FILES,LARGE_FILES".asBuildConfigString())
             buildConfigField(
                 "String",
                 "FILE_FEATURE_ORDER",
-                "DUPLICATE_FILES,LARGE_FILES,PHOTOS,SIMILAR_PHOTOS,SCREENSHOTS,VIDEOS,AUDIOS,DOCUMENTS".asBuildConfigString(),
+                "PHOTOS,VIDEOS,AUDIOS,LARGE_FILES,DUPLICATE_FILES,DOCUMENTS".asBuildConfigString()
             )
             buildConfigField(
                 "String",
                 "TOOLBOX_FEATURE_ORDER",
-                "DEVICE_INFO,BATTERY_INFO,WHATSAPP_CLEANER,NETWORK_USAGE,NETWORK_SPEED".asBuildConfigString(),
+                "DEVICE_INFO,BATTERY_INFO,WHATSAPP_CLEANER".asBuildConfigString()
             )
-            buildConfigField("String", "TRUSTLOOK_API_KEY", cleanmasterTrustlookApiKey.asBuildConfigString())
-            buildConfigField("String", "ADMOB_APP_ID", configValue("ADMOB_CLEANMASTER_APP_ID", admobTestAppId).asBuildConfigString())
-            buildConfigField(
-                "String",
-                "ADMOB_APP_OPEN_UNIT_ID",
-                configValue("ADMOB_CLEANMASTER_APP_OPEN_UNIT_ID", admobTestAppOpenUnitId).asBuildConfigString(),
-            )
-            buildConfigField(
-                "String",
-                "ADMOB_INTERSTITIAL_UNIT_ID",
-                configValue("ADMOB_CLEANMASTER_INTERSTITIAL_UNIT_ID", admobTestInterstitialUnitId).asBuildConfigString(),
-            )
-            buildConfigField(
-                "String",
-                "ADMOB_BANNER_UNIT_ID",
-                configValue("ADMOB_CLEANMASTER_BANNER_UNIT_ID", admobTestBannerUnitId).asBuildConfigString(),
-            )
-            buildConfigField(
-                "String",
-                "ADMOB_NATIVE_UNIT_ID",
-                configValue("ADMOB_CLEANMASTER_NATIVE_UNIT_ID", admobTestNativeUnitId).asBuildConfigString(),
-            )
+
+            buildConfigField("String", "TRUSTLOOK_API_KEY", storagecleanerTrustlookApiKey.asBuildConfigString())
+            buildConfigField("String", "ADMOB_APP_ID", configValue("ADMOB_STORAGECLEANER_APP_ID", admobTestAppId).asBuildConfigString())
+            buildConfigField("String", "ADMOB_APP_OPEN_UNIT_ID", configValue("ADMOB_STORAGECLEANER_APP_OPEN_UNIT_ID", admobTestAppOpenUnitId).asBuildConfigString())
+            buildConfigField("String", "ADMOB_INTERSTITIAL_UNIT_ID", configValue("ADMOB_STORAGECLEANER_INTERSTITIAL_UNIT_ID", admobTestInterstitialUnitId).asBuildConfigString())
+            buildConfigField("String", "ADMOB_BANNER_UNIT_ID", configValue("ADMOB_STORAGECLEANER_BANNER_UNIT_ID", admobTestBannerUnitId).asBuildConfigString())
+            buildConfigField("String", "ADMOB_NATIVE_UNIT_ID", configValue("ADMOB_STORAGECLEANER_NATIVE_UNIT_ID", admobTestNativeUnitId).asBuildConfigString())
+
             buildConfigField(
                 "String",
                 "TERMS_OF_SERVICE_URL",
-                configValue("TERMS_OF_SERVICE_CLEANMASTER_URL", "https://sites.google.com/view/quickcleanpro-termsconditions/home").asBuildConfigString(),
+                configValue("TERMS_OF_SERVICE_STORAGECLEANER_URL", "https://sites.google.com/view/quickcleanpro-termsconditions/home").asBuildConfigString()
             )
             buildConfigField(
                 "String",
                 "PRIVACY_POLICY_URL",
-                configValue("PRIVACY_POLICY_CLEANMASTER_URL", "https://sites.google.com/view/quick-clean-pro-privacy-policy/home").asBuildConfigString(),
+                configValue("PRIVACY_POLICY_STORAGECLEANER_URL", "https://sites.google.com/view/quick-clean-pro-privacy-policy/home").asBuildConfigString()
             )
         }
-        create("securityguard") {
-            dimension = "variant"
-            applicationId = "com.quickcleanpro.securityguard"
-            manifestPlaceholders["launcherIcon"] = configValue("SECURITYGUARD_LAUNCHER_ICON", "@mipmap/ic_launcher")
-            manifestPlaceholders["roundLauncherIcon"] = configValue("SECURITYGUARD_ROUND_LAUNCHER_ICON", "@mipmap/ic_launcher_round")
-            manifestPlaceholders["appTheme"] = configValue("SECURITYGUARD_APP_THEME", "@style/Theme.QuickCleanPRO")
-            manifestPlaceholders["trustlookApiKey"] = securityguardTrustlookApiKey
-            manifestPlaceholders["admobAppId"] = configValue("ADMOB_SECURITYGUARD_APP_ID", admobTestAppId)
-            buildConfigField("String", "VARIANT_KEY", "securityguard".asBuildConfigString())
-            buildConfigField("String", "THEME_KEY", "security_guard".asBuildConfigString())
-            buildConfigField("String", "PRIMARY_FEATURE", "ANTI_VIRUS".asBuildConfigString())
-            buildConfigField(
-                "String",
-                "ENABLED_FEATURES",
-                "JUNK_CLEAN,ANTI_VIRUS,APP_LOCK,DEVICE_INFO,BATTERY_INFO,APP_USAGE,NOTIFICATION_BAR,NOTIFICATION_CLEANER,NETWORK_USAGE,NETWORK_SCAN,NETWORK_SPEED,PHOTOS,LARGE_FILES,DUPLICATE_FILES".asBuildConfigString(),
-            )
-            buildConfigField("String", "HOME_FEATURE_ORDER", "ANTI_VIRUS,APP_LOCK,NETWORK_SCAN".asBuildConfigString())
-            buildConfigField(
-                "String",
-                "FILE_FEATURE_ORDER",
-                "LARGE_FILES,DUPLICATE_FILES,PHOTOS".asBuildConfigString(),
-            )
-            buildConfigField(
-                "String",
-                "TOOLBOX_FEATURE_ORDER",
-                "DEVICE_INFO,BATTERY_INFO,NOTIFICATION_BAR,NOTIFICATION_CLEANER,NETWORK_SCAN,NETWORK_SPEED,NETWORK_USAGE,APP_USAGE".asBuildConfigString(),
-            )
-            buildConfigField("String", "TRUSTLOOK_API_KEY", securityguardTrustlookApiKey.asBuildConfigString())
-            buildConfigField("String", "ADMOB_APP_ID", configValue("ADMOB_SECURITYGUARD_APP_ID", admobTestAppId).asBuildConfigString())
-            buildConfigField(
-                "String",
-                "ADMOB_APP_OPEN_UNIT_ID",
-                configValue("ADMOB_SECURITYGUARD_APP_OPEN_UNIT_ID", admobTestAppOpenUnitId).asBuildConfigString(),
-            )
-            buildConfigField(
-                "String",
-                "ADMOB_INTERSTITIAL_UNIT_ID",
-                configValue("ADMOB_SECURITYGUARD_INTERSTITIAL_UNIT_ID", admobTestInterstitialUnitId).asBuildConfigString(),
-            )
-            buildConfigField(
-                "String",
-                "ADMOB_BANNER_UNIT_ID",
-                configValue("ADMOB_SECURITYGUARD_BANNER_UNIT_ID", admobTestBannerUnitId).asBuildConfigString(),
-            )
-            buildConfigField(
-                "String",
-                "ADMOB_NATIVE_UNIT_ID",
-                configValue("ADMOB_SECURITYGUARD_NATIVE_UNIT_ID", admobTestNativeUnitId).asBuildConfigString(),
-            )
-            buildConfigField(
-                "String",
-                "TERMS_OF_SERVICE_URL",
-                configValue("TERMS_OF_SERVICE_SECURITYGUARD_URL", "https://sites.google.com/view/quickcleanpro-termsconditions/home").asBuildConfigString(),
-            )
-            buildConfigField(
-                "String",
-                "PRIVACY_POLICY_URL",
-                configValue("PRIVACY_POLICY_SECURITYGUARD_URL", "https://sites.google.com/view/quick-clean-pro-privacy-policy/home").asBuildConfigString(),
-            )
-        }
+
     }
 
     defaultConfig {
