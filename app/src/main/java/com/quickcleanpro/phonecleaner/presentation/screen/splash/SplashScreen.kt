@@ -66,7 +66,7 @@ fun SplashScreen(
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val scaleAnim = remember { Animatable(0.3f) }
+//    val scaleAnim = remember { Animatable(0.4f) }
     val alphaAnim = remember { Animatable(0f) }
     val progressAnim = remember { Animatable(0f) }
     var progress by remember { mutableFloatStateOf(0f) }
@@ -85,24 +85,27 @@ fun SplashScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    LaunchedEffect(splashPaused) {
-        if (splashPaused) return@LaunchedEffect
-        if (scaleAnim.value < 1f) {
-            scaleAnim.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
-            )
-        }
+    LaunchedEffect(Unit) {
+//        if (scaleAnim.value < 1f) {
+//            scaleAnim.animateTo(
+//                targetValue = 1f,
+//                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+//            )
+//        }
         if (alphaAnim.value < 1f) {
             alphaAnim.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 600),
+                animationSpec = tween(durationMillis = 1000),
             )
         }
+    }
+
+    LaunchedEffect(splashPaused) {
+        if (splashPaused) return@LaunchedEffect
         if (progressAnim.value < 1f) {
             progressAnim.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 1500, easing = LinearEasing),
+                animationSpec = tween(durationMillis = 2000, easing = LinearEasing),
             ) {
                 progress = value
             }
@@ -144,8 +147,8 @@ fun SplashScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(top = 160.dp)
-                    .alpha(alphaAnim.value)
-                    .scale(scaleAnim.value),
+                    .alpha(alphaAnim.value),
+//                    .scale(scaleAnim.value),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(

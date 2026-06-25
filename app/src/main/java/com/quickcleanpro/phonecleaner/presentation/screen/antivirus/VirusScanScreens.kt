@@ -9,16 +9,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.CleanXDecisionDialog
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
-import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.views.VirusScanningView
-import com.quickcleanpro.phonecleaner.utils.SharedPreferencesUtils
 import kotlinx.coroutines.delay
 
 @Composable
@@ -49,29 +43,11 @@ private fun VirusScanContent(
     val router = LocalRouter.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     var scanStarted by remember(mode) { mutableStateOf(false) }
-    var showNotice by remember(mode) { mutableStateOf(false) }
 
-    fun startScanAfterNotice() {
-        if (mode == VirusScanMode.Deep) {
-            permissionCoordinator.guard(CleanXProtectedAction.VirusDeepScanStart) {
-                viewModel.startScan(mode)
-                scanStarted = true
-            }
-        } else {
-            viewModel.startScan(mode)
-            scanStarted = true
-        }
-    }
-
-    LaunchedEffect(mode, permissionCoordinator) {
-        scanStarted = false
-        if (SharedPreferencesUtils.getBoolean(SharedPreferencesUtils.KEY_VIRUS_SCAN_NOTICE_ACCEPTED)) {
-            startScanAfterNotice()
-        } else {
-            showNotice = true
-        }
+    LaunchedEffect(mode) {
+        scanStarted = true
+        viewModel.startScan(mode)
     }
 
     LaunchedEffect(scanStarted, uiState.scanCompleted, uiState.effectiveThreatCount) {
@@ -93,7 +69,7 @@ private fun VirusScanContent(
         }
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(mode) {
         onDispose { viewModel.cancelScan() }
     }
 
@@ -101,26 +77,4 @@ private fun VirusScanContent(
         mode = mode,
         uiState = uiState,
     )
-
-    if (showNotice) {
-        CleanXDecisionDialog(
-            title = stringResource(R.string.virus_scan_notice_title),
-            message = stringResource(R.string.virus_scan_notice_message),
-            onDismissRequest = {
-                showNotice = false
-                router.goBack()
-            },
-            dismissText = stringResource(R.string.cancel),
-            onDismissAction = {
-                showNotice = false
-                router.goBack()
-            },
-            confirmText = stringResource(R.string.continue_scan),
-            onConfirmAction = {
-                SharedPreferencesUtils.putBoolean(SharedPreferencesUtils.KEY_VIRUS_SCAN_NOTICE_ACCEPTED, true)
-                showNotice = false
-                startScanAfterNotice()
-            },
-        )
-    }
 }

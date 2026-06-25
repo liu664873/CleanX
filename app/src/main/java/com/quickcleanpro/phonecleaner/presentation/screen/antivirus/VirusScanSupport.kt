@@ -6,18 +6,36 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.util.Log
 import android.provider.Settings
 import com.quickcleanpro.phonecleaner.R
+import com.trustlook.sdk.data.Error as TrustlookError
 import com.trustlook.sdk.data.AppInfo
 import java.io.File
 
+internal class TrustlookConfigurationException : IllegalStateException("Trustlook API key is not configured")
+
 internal fun scanErrorMessage(context: Context, code: Int, message: String?): String {
-    return if (code == NETWORK_ERROR_CODE) {
+    return if (code in NETWORK_ERROR_CODES) {
         context.getString(R.string.scan_virus_network_failed)
     } else {
-        message?.takeIf { it.isNotBlank() } ?: context.getString(R.string.scan_virus_failed)
+        context.getString(R.string.scan_virus_failed)
     }
 }
+
+internal fun logScanError(code: Int, message: String?) {
+    Log.w(
+        "VirusScan",
+        "Trustlook scan error code=$code message=${message.orEmpty()}",
+    )
+}
+
+internal fun scanStartErrorMessage(context: Context, error: Throwable): String =
+    if (error is TrustlookConfigurationException) {
+        context.getString(R.string.scan_virus_authorization_missing)
+    } else {
+        scanErrorMessage(context, TrustlookError.UNKNOWN_ERROR, error.message)
+    }
 
 internal fun hasAdbRisk(context: Context): Boolean {
     val adbEnabled = try {
@@ -95,4 +113,9 @@ private fun AppInfo.threatDescription(context: Context): String {
         ?: context.getString(R.string.high_risk)
 }
 
-private const val NETWORK_ERROR_CODE = 6
+private val NETWORK_ERROR_CODES =
+    setOf(
+        TrustlookError.NO_NETWORK,
+        TrustlookError.SOCKET_TIMEOUT_EXCEPTION,
+        TrustlookError.UNSTABLE_NETWORK,
+    )

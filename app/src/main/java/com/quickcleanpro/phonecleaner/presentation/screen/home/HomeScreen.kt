@@ -119,7 +119,7 @@ fun HomeScreen(externalBlockingPromptActive: Boolean = false) {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Quick Clean PRO",
+                        text = stringResource(R.string.app_name),
                         modifier = Modifier.background(HomeBg),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.SemiBold,

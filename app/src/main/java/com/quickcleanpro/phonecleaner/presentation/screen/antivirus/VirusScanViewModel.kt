@@ -1,11 +1,14 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.antivirus
 
 import android.app.Application
+import android.content.ContentValues.TAG
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.quickcleanpro.phonecleaner.config.VariantConfigs
 import com.trustlook.sdk.cloudscan.CloudScanClient
 import com.trustlook.sdk.cloudscan.CloudScanListener
 import com.trustlook.sdk.data.AppInfo
+import com.trustlook.sdk.data.Error as TrustlookError
 import com.trustlook.sdk.data.Region
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,7 +21,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.util.Log
 import java.util.concurrent.ConcurrentHashMap
+
+private const val PROGRESS_CAP = 0.92f
+private const val PROGRESS_TICK_MILLIS = 40L
 
 class VirusScanViewModel constructor(application: Application) : AndroidViewModel(application) {
 
@@ -56,16 +63,25 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
 
         refreshAdbRisk()
 
-        cloudScanClient = CloudScanClient.Builder(getApplication<Application>())
-            .setRegion(Region.INTL)
-            .setConnectionTimeout(30_000)
-            .setSocketTimeout(30_000)
-            .build()
+        if (VariantConfigs.current.trustlookApiKey.isBlank()) {
+            handleStartFailure(TrustlookConfigurationException())
+            return
+        }
 
-        val listener = createScanListener(mode, generation)
-        when (mode) {
-            VirusScanMode.Quick -> cloudScanClient?.startQuickScan(listener)
-            VirusScanMode.Deep -> cloudScanClient?.startComprehensiveScan(listener)
+        runCatching {
+            cloudScanClient = CloudScanClient.Builder(getApplication<Application>())
+                .setRegion(Region.INTL)
+                .setConnectionTimeout(30_000)
+                .setSocketTimeout(30_000)
+                .build()
+
+            val listener = createScanListener(mode, generation)
+            when (mode) {
+                VirusScanMode.Quick -> cloudScanClient?.startQuickScan(listener)
+                VirusScanMode.Deep -> cloudScanClient?.startComprehensiveScan(listener)
+            }
+        }.onFailure { error ->
+            handleStartFailure(error)
         }
     }
 
@@ -81,6 +97,7 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
         threatIds.clear()
         runCatching { cloudScanClient?.cancelScan() }
         cloudScanClient = null
+        scanStartedAt = 0L
         _uiState.value = VirusScanUiState()
     }
 
@@ -103,6 +120,7 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
         stopDisplayQueues()
         runCatching { cloudScanClient?.cancelScan() }
         cloudScanClient = null
+        scanStartedAt = 0L
         _uiState.update { state ->
             if (state.isScanning) {
                 state.copy(isScanning = false)
@@ -141,14 +159,22 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
             override fun onScanStarted() = Unit
 
             override fun onScanProgress(progress: Int, total: Int, appInfo: AppInfo?) {
+                if (generation != scanGeneration) return
+                val totalCount = total.takeIf { it > 0 }
+                val sdkProgress =
+                    totalCount?.let {
+                        (progress.toFloat() / it.toFloat()).coerceIn(0f, 1f)
+                    }
+                updateDisplayedProgress(mode, generation, sdkProgress)
                 appInfo ?: return
-                if (generation == scanGeneration) handleScanProgress(mode, appInfo)
+                handleScanProgress(mode, appInfo)
             }
 
             override fun onScanError(code: Int, message: String?) {
                 if (generation != scanGeneration) return
                 stopTrackProgress()
                 stopDisplayQueues()
+                logScanError(code, message)
                 _uiState.update { state ->
                     state.copy(
                         isScanning = false,
@@ -240,16 +266,8 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
                 if (generation != scanGeneration) break
                 val elapsed = System.currentTimeMillis() - scanStartedAt
                 val fraction = (elapsed.toFloat() / mode.minDurationMillis).coerceIn(0f, 1f)
-                _uiState.update { state ->
-                    if (state.isScanning) {
-                        state.copy(progressFraction = maxOf(state.progressFraction, fraction))
-                    } else {
-                        state
-                    }
-                }
-                handleProgressStageTriggers(mode, fraction, generation)
-                if (fraction >= 1f) break
-                delay(40L)
+                updateDisplayedProgress(mode, generation, fraction)
+                delay(PROGRESS_TICK_MILLIS)
             }
         }
     }
@@ -270,6 +288,40 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
             stopAppDisplayConsumer()
             enterPathDisplayStage(generation)
             startPathDisplayConsumer(mode, generation)
+        }
+    }
+
+    private fun updateDisplayedProgress(
+        mode: VirusScanMode,
+        generation: Int,
+        fraction: Float?,
+    ) {
+        if (generation != scanGeneration) return
+        val visualFraction = fraction?.coerceIn(0f, PROGRESS_CAP) ?: return
+        _uiState.update { state ->
+            if (state.isScanning) {
+                state.copy(progressFraction = maxOf(state.progressFraction, visualFraction))
+            } else {
+                state
+            }
+        }
+        handleProgressStageTriggers(mode, visualFraction, generation)
+    }
+
+    private fun handleStartFailure(error: Throwable) {
+        if (scanGeneration < 0) return
+        stopTrackProgress()
+        stopDisplayQueues()
+        completionJob?.cancel()
+        completionJob = null
+        scanStartedAt = 0L
+        cloudScanClient = null
+        Log.w(TAG, "Trustlook scan start failed", error)
+        _uiState.update { state ->
+            state.copy(
+                isScanning = false,
+                errorMessage = scanStartErrorMessage(getApplication(), error)
+            )
         }
     }
 

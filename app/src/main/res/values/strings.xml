@@ -284,6 +284,7 @@
     <string name="quick_scan">Quick Scan</string>
     <string name="scan_virus_failed">Virus scan failed, please try again later.</string>
     <string name="scan_virus_network_failed">Network error, please check your network!</string>
+    <string name="scan_virus_authorization_missing">Virus scan authorization is not configured for this app version.</string>
     <string name="threat_file">Threat file</string>
     <string name="powered_by_trustlook">POWERED BY TRUSTLOOK</string>
     <string name="in_danger">IN DANGER</string>

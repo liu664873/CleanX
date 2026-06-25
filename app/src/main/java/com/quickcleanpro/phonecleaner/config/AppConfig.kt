@@ -5,10 +5,11 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
+import com.quickcleanpro.phonecleaner.BuildConfig
 
 object AppConfig {
-    const val TERMS_OF_SERVICE_URL = "https://sites.google.com/view/quickcleanpro-termsconditions/home"
-    const val PRIVACY_POLICY_URL = "https://sites.google.com/view/quick-clean-pro-privacy-policy/home"
+    val TERMS_OF_SERVICE_URL: String = BuildConfig.TERMS_OF_SERVICE_URL
+    val PRIVACY_POLICY_URL: String = BuildConfig.PRIVACY_POLICY_URL
 
     // ================ Notification Timing ================
     /** Triggered-notification push window duration (24 hours). */

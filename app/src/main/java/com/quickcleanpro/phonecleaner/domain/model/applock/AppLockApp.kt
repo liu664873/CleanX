@@ -5,4 +5,3 @@ data class AppLockApp(
     val appName: String,
     val isLocked: Boolean,
 )
-// 1: 鏉€姣掗〉闈㈠鏋

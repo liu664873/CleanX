@@ -55,7 +55,7 @@
 -keep class com.quickcleanpro.phonecleaner.domain.state.** { *; }
 -keep class com.quickcleanpro.phonecleaner.presentation.common.state.** { *; }
 # Only keep navigation Screen sealed classes (reflection-based routing).
--keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen { *; }
+#-keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen { *; }
 -keep class com.quickcleanpro.phonecleaner.presentation.navigation.Screen$* { *; }
 -keep class com.quickcleanpro.phonecleaner.presentation.common.route.Screen { *; }
 -keep class com.quickcleanpro.phonecleaner.presentation.common.route.Screen$* { *; }

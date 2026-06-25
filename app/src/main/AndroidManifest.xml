@@ -40,13 +40,13 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="${launcherIcon}"
         android:label="@string/app_name"
         android:localeConfig="@xml/locales_config"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="${roundLauncherIcon}"
         android:supportsRtl="true"
         android:name=".QuickCleanApplication"
-        android:theme="@style/Theme.QuickCleanPRO">
+        android:theme="${appTheme}">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
@@ -82,8 +82,11 @@
             android:enabled="true"
             android:exported="false" />
         <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+        <meta-data
             android:name="com.trustlook.ApiKey"
-            android:value="42ce0e3abcd20e2e9e28af8318c95dd5dde8b60223fa16721ed7b542" />
+            android:value="${trustlookApiKey}" />
     </application>
 
 </manifest>
