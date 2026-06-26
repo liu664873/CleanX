@@ -408,11 +408,6 @@ private fun SettingsContent(
         )
         Spacer(modifier = Modifier.height(12.dp))
     }
-
-    CleanXPrimaryButton(
-        text = stringResource(R.string.ok),
-        onClick = onDone,
-    )
 }
 
 @Composable

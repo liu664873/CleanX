@@ -199,14 +199,6 @@ private fun WhatsAppLoadingContent(text: String) {
                     modifier = Modifier.size(70.dp),
                 )
             }
-            Spacer(modifier = Modifier.height(57.dp))
-            Text(
-                text = text,
-                color = Navy,
-                fontSize = 18.sp,
-                lineHeight = 24.sp,
-                textAlign = TextAlign.Center,
-            )
         }
     }
 }

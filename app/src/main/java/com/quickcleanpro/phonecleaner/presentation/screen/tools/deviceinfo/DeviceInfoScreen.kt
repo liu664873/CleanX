@@ -159,14 +159,6 @@ private fun DeviceScanningContent(checkingText: String) {
                     contentScale = ContentScale.Fit,
                 )
             }
-            Spacer(modifier = Modifier.height(57.dp))
-            Text(
-                text = checkingText,
-                color = FileManagerNavy,
-                fontSize = 18.sp,
-                lineHeight = 24.sp,
-                textAlign = TextAlign.Center,
-            )
         }
     }
 }
