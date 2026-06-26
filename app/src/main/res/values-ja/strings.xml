@@ -154,4 +154,14 @@
     <string name="network_speed_testing_latency">レイテンシを測定中...</string>
     <string name="network_speed_testing_download">ダウンロードをテスト中...</string>
     <string name="network_speed_testing_upload">アップロードをテスト中...</string>
+    <string name="test_now">今すぐテスト</string>
+    <string name="common_tool_device_desc">スマートフォンの詳細な仕様を表示</string>
+    <string name="common_tool_battery_desc">バッテリーの状態と健康度を確認</string>
+    <string name="common_tool_app_usage_desc">スマートフォンのアプリ使用状況を確認</string>
+    <string name="common_tool_notification_bar_desc">通知バーのツールを管理</string>
+    <string name="common_tool_whatsapp_desc">WhatsApp のメディアファイルをクリーンアップ</string>
+    <string name="common_tool_network_usage_desc">モバイルデータと Wi-Fi の使用量を表示</string>
+    <string name="common_tool_network_scan_desc">ネットワーク上のデバイスをスキャン</string>
+    <string name="common_tool_network_speed_desc">ダウンロードとアップロード速度をテスト</string>
+    <string name="common_tool_notification_cleaner_desc">不要な通知を見つける</string>
 </resources>

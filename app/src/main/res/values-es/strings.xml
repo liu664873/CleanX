@@ -247,4 +247,13 @@
     <string name="network_speed_testing_latency">Probando la latencia...</string>
     <string name="network_speed_testing_download">Probando la descarga...</string>
     <string name="network_speed_testing_upload">Probando la subida...</string>
+    <string name="common_tool_device_desc">Ver especificaciones detalladas de tu teléfono</string>
+    <string name="common_tool_battery_desc">Comprobar estado y salud de la batería</string>
+    <string name="common_tool_app_usage_desc">Revisar la actividad de apps en tu teléfono</string>
+    <string name="common_tool_notification_bar_desc">Gestionar herramientas de la barra de notificaciones</string>
+    <string name="common_tool_whatsapp_desc">Limpiar archivos multimedia de WhatsApp</string>
+    <string name="common_tool_network_usage_desc">Ver uso de datos móviles y Wi-Fi</string>
+    <string name="common_tool_network_scan_desc">Escanear dispositivos en tu red</string>
+    <string name="common_tool_network_speed_desc">Probar velocidad de descarga y subida</string>
+    <string name="common_tool_notification_cleaner_desc">Encontrar notificaciones no deseadas</string>
 </resources>

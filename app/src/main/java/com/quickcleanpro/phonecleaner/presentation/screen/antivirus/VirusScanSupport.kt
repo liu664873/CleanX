@@ -37,6 +37,27 @@ internal fun scanStartErrorMessage(context: Context, error: Throwable): String =
         scanErrorMessage(context, TrustlookError.UNKNOWN_ERROR, error.message)
     }
 
+internal fun hasInstalledAppsAccess(context: Context): Boolean {
+    val packageManager = context.packageManager
+    val currentPackageName = context.packageName
+    val installedPackages = try {
+        @Suppress("DEPRECATION")
+        packageManager.getInstalledPackages(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                TRUSTLOOK_INSTALLED_PACKAGES_FLAGS_API_30_PLUS
+            } else {
+                TRUSTLOOK_INSTALLED_PACKAGES_FLAGS_LEGACY
+            },
+        )
+    } catch (error: Exception) {
+        return false
+    }
+
+    return installedPackages.any { packageInfo ->
+        packageInfo.packageName.isNotBlank() && packageInfo.packageName != currentPackageName
+    }
+}
+
 internal fun hasAdbRisk(context: Context): Boolean {
     val adbEnabled = try {
         Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) == 1
@@ -119,3 +140,6 @@ private val NETWORK_ERROR_CODES =
         TrustlookError.SOCKET_TIMEOUT_EXCEPTION,
         TrustlookError.UNSTABLE_NETWORK,
     )
+
+private const val TRUSTLOOK_INSTALLED_PACKAGES_FLAGS_API_30_PLUS = 131072
+private const val TRUSTLOOK_INSTALLED_PACKAGES_FLAGS_LEGACY = 64

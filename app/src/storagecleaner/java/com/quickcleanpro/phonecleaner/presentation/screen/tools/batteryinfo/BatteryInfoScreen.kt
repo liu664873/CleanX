@@ -514,6 +514,8 @@ private fun BatteryLineChart(
     valueLabelFormatter: (Float) -> String,
     maxPoints: Int? = null,
 ) {
+    val chartPrimary = CleanXBlue
+
     Canvas(
         modifier =
             Modifier
@@ -528,7 +530,7 @@ private fun BatteryLineChart(
         val chartBottom = size.height - 24.dp.toPx()
         val dash = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()), 0f)
         val textPaint = chartTextPaint(ChartGrid, 9.dp.toPx())
-        val valuePaint = chartTextPaint(CleanXBlue, 9.dp.toPx(), Typeface.DEFAULT_BOLD)
+        val valuePaint = chartTextPaint(chartPrimary, 9.dp.toPx(), Typeface.DEFAULT_BOLD)
 
         repeat(6) { index ->
             val fraction = index / 5f
@@ -595,7 +597,7 @@ private fun BatteryLineChart(
 
         if (offsets.size == 1) {
             drawCircle(
-                color = CleanXBlue,
+                color = chartPrimary,
                 radius = 3.dp.toPx(),
                 center = offsets.first(),
             )
@@ -610,7 +612,7 @@ private fun BatteryLineChart(
             drawPath(fillPath, color = ChartFill)
             offsets.zipWithNext().forEach { (start, end) ->
                 drawLine(
-                    color = CleanXBlue,
+                    color = chartPrimary,
                     start = start,
                     end = end,
                     strokeWidth = 2.dp.toPx(),

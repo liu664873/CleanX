@@ -154,4 +154,14 @@
     <string name="network_speed_testing_latency">กำลังทดสอบความหน่วง...</string>
     <string name="network_speed_testing_download">กำลังทดสอบการดาวน์โหลด...</string>
     <string name="network_speed_testing_upload">กำลังทดสอบการอัปโหลด...</string>
+    <string name="test_now">ทดสอบตอนนี้</string>
+    <string name="common_tool_device_desc">ดูข้อมูลจำเพาะโดยละเอียดของโทรศัพท์</string>
+    <string name="common_tool_battery_desc">ตรวจสอบสถานะและสุขภาพแบตเตอรี่</string>
+    <string name="common_tool_app_usage_desc">ตรวจสอบกิจกรรมแอปในโทรศัพท์</string>
+    <string name="common_tool_notification_bar_desc">จัดการเครื่องมือแถบการแจ้งเตือน</string>
+    <string name="common_tool_whatsapp_desc">ล้างไฟล์สื่อ WhatsApp</string>
+    <string name="common_tool_network_usage_desc">ดูการใช้ข้อมูลมือถือและ Wi-Fi</string>
+    <string name="common_tool_network_scan_desc">สแกนอุปกรณ์ในเครือข่ายของคุณ</string>
+    <string name="common_tool_network_speed_desc">ทดสอบความเร็วดาวน์โหลดและอัปโหลด</string>
+    <string name="common_tool_notification_cleaner_desc">ค้นหาการแจ้งเตือนที่ไม่ต้องการ</string>
 </resources>

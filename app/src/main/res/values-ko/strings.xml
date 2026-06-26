@@ -154,4 +154,14 @@
     <string name="network_speed_testing_latency">지연 시간 테스트 중...</string>
     <string name="network_speed_testing_download">다운로드 테스트 중...</string>
     <string name="network_speed_testing_upload">업로드 테스트 중...</string>
+    <string name="test_now">지금 테스트</string>
+    <string name="common_tool_device_desc">휴대폰의 자세한 사양 보기</string>
+    <string name="common_tool_battery_desc">배터리 상태와 건강 확인</string>
+    <string name="common_tool_app_usage_desc">휴대폰의 앱 활동 검토</string>
+    <string name="common_tool_notification_bar_desc">알림 표시줄 도구 관리</string>
+    <string name="common_tool_whatsapp_desc">WhatsApp 미디어 파일 정리</string>
+    <string name="common_tool_network_usage_desc">모바일 데이터 및 Wi-Fi 사용량 보기</string>
+    <string name="common_tool_network_scan_desc">네트워크의 기기 스캔</string>
+    <string name="common_tool_network_speed_desc">다운로드 및 업로드 속도 테스트</string>
+    <string name="common_tool_notification_cleaner_desc">원치 않는 알림 찾기</string>
 </resources>

@@ -5,31 +5,33 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import com.quickcleanpro.phonecleaner.BuildConfig
 
-private val LightColorScheme =
+private fun lightSchemeFor(colors: VariantColors) =
     lightColorScheme(
-        primary = Blue700,
-        onPrimary = Gray50,
-        primaryContainer = Blue200,
+        primary = colors.primary,
+        onPrimary = colors.textOnPrimary,
+        primaryContainer = colors.primarySoft,
         secondary = Teal700,
         onSecondary = Gray50,
         secondaryContainer = Teal200,
-        background = Color(0xFFE3ECFD),
-        onBackground = Color(0xFF2D3748),
-        surface = Color(0xFFF7FAFD),
-        onSurface = Color(0xFF2D3748),
-        surfaceVariant = Color(0xFFEEF4F9),
-        onSurfaceVariant = Color(0xFF8190A5),
+        background = colors.gradientBackgroundTop,
+        onBackground = colors.textPrimary,
+        surface = colors.surfaceBackground,
+        onSurface = colors.textPrimary,
+        surfaceVariant = colors.subtlePanelBackground,
+        onSurfaceVariant = colors.textMuted,
         error = Red500,
         onError = Gray50,
     )
 
-private val DarkColorScheme =
+private fun darkSchemeFor(colors: VariantColors) =
     darkColorScheme(
-        primary = Blue200,
+        primary = colors.primarySoft,
         onPrimary = Gray900,
-        primaryContainer = Blue700,
+        primaryContainer = colors.primary,
         secondary = Teal200,
         onSecondary = Gray900,
         secondaryContainer = Teal700,
@@ -43,16 +45,30 @@ private val DarkColorScheme =
         onError = Gray50,
     )
 
+private fun selectedVariantTheme(): VariantTheme =
+    when (BuildConfig.THEME_KEY) {
+        "storage_cleaner" -> StorageCleanerTheme
+        else -> DefaultVariantTheme
+    }
+
 @Composable
 fun CleanXTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val variantTheme = selectedVariantTheme()
+    val colorScheme =
+        if (darkTheme) {
+            darkSchemeFor(variantTheme.colors)
+        } else {
+            lightSchemeFor(variantTheme.colors)
+        }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = AppTypography,
-        content = content,
-    )
+    CompositionLocalProvider(LocalVariantTheme provides variantTheme) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = AppTypography,
+            content = content,
+        )
+    }
 }

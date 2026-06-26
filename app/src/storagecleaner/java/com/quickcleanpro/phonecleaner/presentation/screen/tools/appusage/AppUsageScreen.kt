@@ -578,6 +578,8 @@ private fun DonutChart(
     modifier: Modifier,
     items: List<DonutItem>,
 ) {
+    val emptyColor = NavyMuted.copy(alpha = 0.2f)
+
     Canvas(modifier = modifier) {
         val strokeWidth = 21.dp.toPx()
         val radius = (size.minDimension - strokeWidth) / 2
@@ -590,7 +592,7 @@ private fun DonutChart(
 
         if (items.isEmpty()) {
             drawArc(
-                color = NavyMuted.copy(alpha = 0.2f),
+                color = emptyColor,
                 startAngle = 0f,
                 sweepAngle = 360f,
                 useCenter = false,

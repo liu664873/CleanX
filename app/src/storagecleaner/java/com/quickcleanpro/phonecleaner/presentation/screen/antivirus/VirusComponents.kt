@@ -52,11 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
-
-private val VirusPageBrush =
-    Brush.verticalGradient(
-        colors = listOf(VirusBackgroundTop, VirusBackgroundBottom),
-    )
+import com.quickcleanpro.phonecleaner.presentation.common.components.CommonResultContent
 
 internal data class VirusFeatureItem(
     @DrawableRes val iconRes: Int,
@@ -69,10 +65,15 @@ internal fun VirusPageScaffold(
     bottomPadding: Dp = 0.dp,
     content: @Composable () -> Unit,
 ) {
+    val virusPageBrush =
+        Brush.verticalGradient(
+            colors = listOf(VirusBackgroundTop, VirusBackgroundBottom),
+        )
+
     CleanXScaffoldPage(
         title = stringResource(R.string.anti_virus),
         modifier = modifier,
-        backgroundBrush = VirusPageBrush,
+        backgroundBrush = virusPageBrush,
         scrollEnabled = false,
         contentPadding = PaddingValues(bottom = bottomPadding),
     ) {
@@ -148,9 +149,11 @@ internal fun VirusPrimaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
             .height(52.dp),
@@ -158,6 +161,8 @@ internal fun VirusPrimaryButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = VirusBlue,
             contentColor = Color.White,
+            disabledContainerColor = VirusBlue.copy(alpha = 0.45f),
+            disabledContentColor = Color.White.copy(alpha = 0.75f),
         ),
     ) {
         Text(
@@ -174,17 +179,21 @@ internal fun VirusSecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     OutlinedButton(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
             .height(52.dp),
         shape = VirusButtonShape,
-        border = BorderStroke(1.5.dp, VirusBlue),
+        border = BorderStroke(1.5.dp, VirusBlue.copy(alpha = if (enabled) 1f else 0.45f)),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = Color.Transparent,
             contentColor = VirusBlue,
+            disabledContainerColor = Color.Transparent,
+            disabledContentColor = VirusBlue.copy(alpha = 0.45f),
         ),
     ) {
         Text(
@@ -221,6 +230,8 @@ internal fun VirusProgressTrack(
     val iconSize = 30.dp
     val badgeSize = 15.dp
     val clampedProgress = progress.coerceIn(0f, 1f)
+    val trackInactiveLine = VirusTrackInactiveLine
+    val blueDeep = VirusBlueDeep
     val completedStepCount = remember(mode, clampedProgress) {
         val circleDiameterPx = 60f
         val connectorWidthPx = 30f
@@ -278,12 +289,12 @@ internal fun VirusProgressTrack(
 
             repeat(circleCount) { index ->
                 val circleLeft = startX + index * (circleDiameterPx + connectorWidthPx)
-                drawNode(circleLeft, VirusTrackInactiveLine)
+                drawNode(circleLeft, trackInactiveLine)
 
                 if (index < circleCount - 1) {
                     val connectorLeft = circleLeft + circleDiameterPx - connectorOverlapPx
                     val connectorRight = circleLeft + circleDiameterPx + connectorWidthPx + connectorOverlapPx
-                    drawConnector(connectorLeft, connectorRight, VirusTrackInactiveLine)
+                    drawConnector(connectorLeft, connectorRight, trackInactiveLine)
                 }
             }
 
@@ -292,10 +303,10 @@ internal fun VirusProgressTrack(
                 val circleRight = circleLeft + circleDiameterPx
 
                 when {
-                    fillEndX >= circleRight -> drawNode(circleLeft, VirusBlueDeep)
+                    fillEndX >= circleRight -> drawNode(circleLeft, blueDeep)
                     fillEndX > circleLeft -> {
                         clipRect(left = circleLeft, top = 0f, right = fillEndX, bottom = size.height) {
-                            drawNode(circleLeft, VirusBlueDeep)
+                            drawNode(circleLeft, blueDeep)
                         }
                     }
                 }
@@ -304,7 +315,7 @@ internal fun VirusProgressTrack(
                     val connectorLeft = circleRight - connectorOverlapPx
                     val connectorRight = circleRight + connectorWidthPx + connectorOverlapPx
                     if (fillEndX > connectorLeft) {
-                        drawConnector(connectorLeft, fillEndX.coerceAtMost(connectorRight), VirusBlueDeep)
+                        drawConnector(connectorLeft, fillEndX.coerceAtMost(connectorRight), blueDeep)
                     }
                 }
             }

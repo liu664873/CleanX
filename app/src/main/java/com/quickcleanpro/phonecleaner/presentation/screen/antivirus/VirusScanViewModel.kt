@@ -51,14 +51,12 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
         resetScanState()
         val generation = scanGeneration
         completionJob = null
-        scanStartedAt = System.currentTimeMillis()
 
         _uiState.value = VirusScanUiState(
             mode = mode,
-            isScanning = true,
+            isScanning = false,
             currentIcon = getApplication<Application>().getProtectionIcon()
         )
-        startTrackProgress(mode, generation)
 
         refreshAdbRisk()
 
@@ -151,15 +149,23 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
 
     private fun createScanListener(mode: VirusScanMode, generation: Int): CloudScanListener {
         return object : CloudScanListener() {
-            override fun onScanStarted() = Unit
+            override fun onScanStarted() {
+                handleScanStarted(mode, generation)
+            }
 
             override fun onScanProgress(progress: Int, total: Int, appInfo: AppInfo?) {
                 appInfo ?: return
-                if (generation == scanGeneration) handleScanProgress(mode, appInfo)
+                if (generation == scanGeneration && !_uiState.value.scanCompleted) {
+                    if (scanStartedAt == 0L || !_uiState.value.isScanning) {
+                        handleScanStarted(mode, generation)
+                    }
+                    handleScanProgress(mode, appInfo)
+                }
             }
 
             override fun onScanError(code: Int, message: String?) {
                 if (generation != scanGeneration) return
+                scanGeneration++
                 stopTrackProgress()
                 stopDisplayQueues()
                 logScanError(code, message)
@@ -173,6 +179,7 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
 
             override fun onScanCanceled() {
                 if (generation != scanGeneration) return
+                scanGeneration++
                 stopTrackProgress()
                 stopDisplayQueues()
                 _uiState.update { state -> state.copy(isScanning = false) }
@@ -180,15 +187,41 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
 
             override fun onScanInterrupt() {
                 if (generation != scanGeneration) return
+                scanGeneration++
                 stopTrackProgress()
                 stopDisplayQueues()
                 _uiState.update { state -> state.copy(isScanning = false) }
             }
 
             override fun onScanFinished(appList: List<AppInfo?>?) {
-                if (generation == scanGeneration) finishWhenUiIsReady(mode, generation)
+                if (generation == scanGeneration) {
+                    if (scanStartedAt == 0L) {
+                        handleScanStarted(mode, generation)
+                    }
+                    finishWhenUiIsReady(mode, generation)
+                }
             }
         }
+    }
+
+    private fun handleScanStarted(mode: VirusScanMode, generation: Int) {
+        if (generation != scanGeneration) return
+        if (_uiState.value.scanCompleted) return
+        if (scanStartedAt == 0L) {
+            scanStartedAt = System.currentTimeMillis()
+        }
+        _uiState.update { state ->
+            if (generation == scanGeneration && !state.scanCompleted) {
+                state.copy(
+                    mode = mode,
+                    isScanning = true,
+                    currentIcon = state.currentIcon ?: getApplication<Application>().getProtectionIcon()
+                )
+            } else {
+                state
+            }
+        }
+        startTrackProgress(mode, generation)
     }
 
     private fun handleScanProgress(mode: VirusScanMode, appInfo: AppInfo) {
@@ -229,7 +262,8 @@ class VirusScanViewModel constructor(application: Application) : AndroidViewMode
     private fun finishWhenUiIsReady(mode: VirusScanMode, generation: Int) {
         completionJob?.cancel()
         completionJob = viewModelScope.launch {
-            val elapsed = System.currentTimeMillis() - scanStartedAt
+            val startedAt = scanStartedAt.takeIf { it > 0L } ?: System.currentTimeMillis()
+            val elapsed = System.currentTimeMillis() - startedAt
             val remaining = (mode.minDurationMillis - elapsed).coerceAtLeast(0L)
             if (remaining > 0L) delay(remaining)
             pendingThreatJobs.toList().joinAll()

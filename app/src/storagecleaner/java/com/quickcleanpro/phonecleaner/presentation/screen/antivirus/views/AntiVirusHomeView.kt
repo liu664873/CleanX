@@ -34,6 +34,7 @@ import com.quickcleanpro.phonecleaner.presentation.screen.antivirus.VirusTitle
 internal fun AntiVirusHomeView(
     onDeepScan: () -> Unit,
     onQuickScan: () -> Unit,
+    enabled: Boolean = true,
 ) {
     VirusPageScaffold {
         val featureItems = listOf(
@@ -86,6 +87,7 @@ internal fun AntiVirusHomeView(
             VirusPrimaryButton(
                 text = stringResource(R.string.deep_scan),
                 onClick = onDeepScan,
+                enabled = enabled,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -93,6 +95,7 @@ internal fun AntiVirusHomeView(
             VirusSecondaryButton(
                 text = stringResource(R.string.quick_scan),
                 onClick = onQuickScan,
+                enabled = enabled,
             )
         }
     }

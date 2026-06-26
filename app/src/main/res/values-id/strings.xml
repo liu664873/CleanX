@@ -170,4 +170,14 @@
     <string name="network_speed_testing_latency">Menguji latensi...</string>
     <string name="network_speed_testing_download">Menguji unduhan...</string>
     <string name="network_speed_testing_upload">Menguji unggahan...</string>
+    <string name="test_now">Uji sekarang</string>
+    <string name="common_tool_device_desc">Lihat spesifikasi detail ponsel Anda</string>
+    <string name="common_tool_battery_desc">Periksa status dan kesehatan baterai</string>
+    <string name="common_tool_app_usage_desc">Tinjau aktivitas aplikasi di ponsel Anda</string>
+    <string name="common_tool_notification_bar_desc">Kelola alat bilah notifikasi</string>
+    <string name="common_tool_whatsapp_desc">Bersihkan file media WhatsApp</string>
+    <string name="common_tool_network_usage_desc">Lihat penggunaan data seluler dan Wi-Fi</string>
+    <string name="common_tool_network_scan_desc">Pindai perangkat di jaringan Anda</string>
+    <string name="common_tool_network_speed_desc">Uji kecepatan unduh dan unggah</string>
+    <string name="common_tool_notification_cleaner_desc">Temukan notifikasi yang tidak diinginkan</string>
 </resources>
