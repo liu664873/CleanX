@@ -146,4 +146,9 @@
     <string name="notification_enable_step_find">1. Storage Cleaner 찾기</string>
     <string name="notification_channel_tools">Storage Cleaner 도구</string>
     <string name="notification_channel_tools_desc">Storage Cleaner 도구 추천</string>
+    <string name="virus_installed_apps_access_title">바이러스 검사 데이터 사용</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner는 악성 코드와 위험 앱을 검사하기 위해 설치된 앱 정보(이름, 패키지 이름, 버전)를 Trustlook Security로 전송합니다.</string>
+    <string name="agree_and_continue">동의하고 계속</string>
+    <string name="not_now">나중에</string>
+    <string name="notification_intercepted_appear_here">차단된 알림이 여기에 표시됩니다</string>
 </resources>

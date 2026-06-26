@@ -196,4 +196,9 @@
     <string name="notification_enable_step_find">1. Encontre Storage Cleaner</string>
     <string name="notification_channel_tools">Ferramentas do Storage Cleaner</string>
     <string name="notification_channel_tools_desc">Sugestões de ferramentas do Storage Cleaner</string>
+    <string name="virus_installed_apps_access_title">Uso de dados da verificação de vírus</string>
+    <string name="virus_installed_apps_access_message">O Storage Cleaner envia informações dos apps instalados (nomes, nomes de pacote, versões) para a Trustlook Security para verificar malware e apps de risco.</string>
+    <string name="agree_and_continue">Concordar e continuar</string>
+    <string name="not_now">Agora não</string>
+    <string name="notification_intercepted_appear_here">As notificações interceptadas aparecerão aqui</string>
 </resources>

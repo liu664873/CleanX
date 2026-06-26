@@ -146,4 +146,9 @@
     <string name="notification_enable_step_find">1. Storage Cleanerを見つける</string>
     <string name="notification_channel_tools">Storage Cleanerツール</string>
     <string name="notification_channel_tools_desc">Storage Cleanerツールのおすすめ</string>
+    <string name="virus_installed_apps_access_title">ウイルススキャンのデータ使用</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner は、マルウェアや危険なアプリをスキャンするために、インストール済みアプリ情報（名前、パッケージ名、バージョン）を Trustlook Security に送信します。</string>
+    <string name="agree_and_continue">同意して続行</string>
+    <string name="not_now">後で</string>
+    <string name="notification_intercepted_appear_here">ブロックされた通知はここに表示されます</string>
 </resources>

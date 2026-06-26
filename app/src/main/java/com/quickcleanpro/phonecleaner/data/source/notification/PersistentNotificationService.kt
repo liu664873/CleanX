@@ -182,34 +182,12 @@ class PersistentNotificationService : Service() {
             .build()
 
     private fun buildStorageCleanerPersistentNotification(): Notification {
-        val layoutId = storageCleanerResourceId("layout", "notification_persistent_shortcuts")
-        if (layoutId == 0) return buildDefaultPersistentNotification()
+        val compactLayoutId = storageCleanerResourceId("layout", "notification_persistent_shortcuts_compact")
+        val expandedLayoutId = storageCleanerResourceId("layout", "notification_persistent_shortcuts")
+        if (compactLayoutId == 0 || expandedLayoutId == 0) return buildDefaultPersistentNotification()
 
-        val views =
-            RemoteViews(packageName, layoutId).apply {
-                setTextIfPresent("persistent_notification_title", getString(R.string.app_name))
-                setTextIfPresent("persistent_notification_desc", getString(R.string.running_in_background))
-                setShortcutIfPresent(
-                    idName = "persistent_shortcut_clean",
-                    route = Screen.Scan.route,
-                    requestCode = PERSISTENT_SHORTCUT_CLEAN_REQUEST_CODE,
-                )
-                setShortcutIfPresent(
-                    idName = "persistent_shortcut_file",
-                    route = ToolNotificationIntentFactory.ROUTE_HOME_FILE_MANAGER,
-                    requestCode = PERSISTENT_SHORTCUT_FILE_REQUEST_CODE,
-                )
-                setShortcutIfPresent(
-                    idName = "persistent_shortcut_tools",
-                    route = ToolNotificationIntentFactory.ROUTE_HOME_TOOLBOX,
-                    requestCode = PERSISTENT_SHORTCUT_TOOLS_REQUEST_CODE,
-                )
-                setShortcutIfPresent(
-                    idName = "persistent_shortcut_battery",
-                    route = Screen.BatteryInfo.route,
-                    requestCode = PERSISTENT_SHORTCUT_BATTERY_REQUEST_CODE,
-                )
-            }
+        val compactViews = buildPersistentShortcutViews(compactLayoutId)
+        val expandedViews = buildPersistentShortcutViews(expandedLayoutId)
 
         return persistentNotificationBuilder()
             .setContentIntent(
@@ -219,11 +197,37 @@ class PersistentNotificationService : Service() {
                     requestCode = PERSISTENT_NOTIFICATION_CONTENT_REQUEST_CODE,
                 ),
             )
-            .setCustomContentView(views)
-            .setCustomBigContentView(views)
+            .setCustomContentView(compactViews)
+            .setCustomBigContentView(expandedViews)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
             .build()
     }
+
+    private fun buildPersistentShortcutViews(layoutId: Int): RemoteViews =
+        RemoteViews(packageName, layoutId).apply {
+            setTextIfPresent("persistent_notification_title", getString(R.string.app_name))
+            setTextIfPresent("persistent_notification_desc", getString(R.string.running_in_background))
+            setShortcutIfPresent(
+                idName = "persistent_shortcut_clean",
+                route = Screen.Scan.route,
+                requestCode = PERSISTENT_SHORTCUT_CLEAN_REQUEST_CODE,
+            )
+            setShortcutIfPresent(
+                idName = "persistent_shortcut_file",
+                route = ToolNotificationIntentFactory.ROUTE_HOME_FILE_MANAGER,
+                requestCode = PERSISTENT_SHORTCUT_FILE_REQUEST_CODE,
+            )
+            setShortcutIfPresent(
+                idName = "persistent_shortcut_tools",
+                route = ToolNotificationIntentFactory.ROUTE_HOME_TOOLBOX,
+                requestCode = PERSISTENT_SHORTCUT_TOOLS_REQUEST_CODE,
+            )
+            setShortcutIfPresent(
+                idName = "persistent_shortcut_battery",
+                route = Screen.BatteryInfo.route,
+                requestCode = PERSISTENT_SHORTCUT_BATTERY_REQUEST_CODE,
+            )
+        }
 
     private fun persistentNotificationBuilder(): NotificationCompat.Builder =
         NotificationCompat.Builder(this, NotificationChannelManager.PERSISTENT_CHANNEL_ID)

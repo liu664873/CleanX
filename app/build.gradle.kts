@@ -86,12 +86,12 @@ android {
             buildConfigField(
                 "String",
                 "TERMS_OF_SERVICE_URL",
-                configValue("TERMS_OF_SERVICE_STORAGECLEANER_URL", "https://sites.google.com/view/quickcleanpro-termsconditions/home").asBuildConfigString()
+                configValue("TERMS_OF_SERVICE_STORAGECLEANER_URL", "https://sites.google.com/view/phonecleanupstoragecleaner/home").asBuildConfigString()
             )
             buildConfigField(
                 "String",
                 "PRIVACY_POLICY_URL",
-                configValue("PRIVACY_POLICY_STORAGECLEANER_URL", "https://sites.google.com/view/quick-clean-pro-privacy-policy/home").asBuildConfigString()
+                configValue("PRIVACY_POLICY_STORAGECLEANER_URL", "https://sites.google.com/view/phone-cleanup-storage-cleaner/home").asBuildConfigString()
             )
         }
 
@@ -163,8 +163,8 @@ android {
     defaultConfig {
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.0.5"
+        versionCode = 7
+        versionName = "1.0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

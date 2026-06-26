@@ -161,4 +161,9 @@
     <string name="notification_enable_step_find">1. Tìm Storage Cleaner</string>
     <string name="notification_channel_tools">Công cụ Storage Cleaner</string>
     <string name="notification_channel_tools_desc">Gợi ý công cụ Storage Cleaner</string>
+    <string name="virus_installed_apps_access_title">Cách dùng dữ liệu quét virus</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner gửi thông tin ứng dụng đã cài đặt của bạn (tên, tên gói, phiên bản) đến Trustlook Security để quét phần mềm độc hại và ứng dụng rủi ro.</string>
+    <string name="agree_and_continue">Đồng ý và tiếp tục</string>
+    <string name="not_now">Không phải bây giờ</string>
+    <string name="notification_intercepted_appear_here">Thông báo bị chặn sẽ xuất hiện ở đây</string>
 </resources>

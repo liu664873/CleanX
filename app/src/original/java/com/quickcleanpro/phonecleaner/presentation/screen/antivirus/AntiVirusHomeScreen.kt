@@ -17,7 +17,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.core.permission.appSettingsIntent
 import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.CleanXDecisionDialog
+import com.quickcleanpro.phonecleaner.presentation.common.components.popups.VirusInstalledAppsAccessDialog
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
@@ -40,7 +40,6 @@ fun AntiVirusScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
     val scope = rememberCoroutineScope()
-    val installedAppsPermissionMessage = stringResource(R.string.permission_installed_apps_desc)
     var pendingScanMode by remember { mutableStateOf<VirusScanMode?>(null) }
     var scanPermissionPending by remember { mutableStateOf(false) }
     var showNotice by remember { mutableStateOf(false) }
@@ -185,38 +184,38 @@ fun AntiVirusScreen(
     )
 
     if (showNotice) {
-        CleanXDecisionDialog(
-            title = stringResource(R.string.virus_scan_notice_title),
-            message = stringResource(R.string.virus_scan_notice_message),
-            onDismissRequest = { showNotice = false; router.goBack() },
-            dismissText = stringResource(R.string.cancel),
-            onDismissAction = { showNotice = false; router.goBack() },
-            confirmText = stringResource(R.string.continue_scan),
-            onConfirmAction = {
+        VirusInstalledAppsAccessDialog(
+            title = stringResource(R.string.virus_installed_apps_access_title),
+            message = stringResource(R.string.virus_installed_apps_access_message),
+            primaryText = stringResource(R.string.agree_and_continue),
+            onPrimaryAction = {
                 SharedPreferencesUtils.putBoolean(SharedPreferencesUtils.KEY_VIRUS_SCAN_NOTICE_ACCEPTED, true, commit = true)
                 showNotice = false
                 pendingScanMode?.let { launchScanAfterInstalledAppsAccess(it) }
             },
+            secondaryText = stringResource(R.string.not_now),
+            onSecondaryAction = { showNotice = false; router.goBack() },
+            onDismissRequest = { showNotice = false; router.goBack() },
         )
     }
 
     if (showInstalledAppsPermissionDialog) {
-        CleanXDecisionDialog(
+        VirusInstalledAppsAccessDialog(
             title = stringResource(R.string.permission_title_required),
-            message = installedAppsPermissionMessage,
+            message = stringResource(R.string.permission_installed_apps_desc),
+            primaryText = stringResource(R.string.manage_permission),
+            onPrimaryAction = {
+                showInstalledAppsPermissionDialog = false
+                openInstalledAppsPermissionSettings()
+            },
+            secondaryText = stringResource(R.string.not_now),
+            onSecondaryAction = {
+                showInstalledAppsPermissionDialog = false
+                scanPermissionPending = false
+            },
             onDismissRequest = {
                 showInstalledAppsPermissionDialog = false
                 scanPermissionPending = false
-            },
-            dismissText = stringResource(R.string.cancel),
-            onDismissAction = {
-                showInstalledAppsPermissionDialog = false
-                scanPermissionPending = false
-            },
-            confirmText = stringResource(R.string.manage_permission),
-            onConfirmAction = {
-                showInstalledAppsPermissionDialog = false
-                openInstalledAppsPermissionSettings()
             },
         )
     }

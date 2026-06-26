@@ -567,4 +567,8 @@
     <string name="wifi_ssid_label">SSID</string>
     <string name="network_link_speed_fallback">正在使用链路速度估算</string>
     <string name="device_info_source_hint">显示的设备信息基于系统提供的数据，可能与官方规格略有不同。例如，由于系统预留空间或硬件配置差异，存储容量或内存可能会略有差异。</string>
+    <string name="virus_installed_apps_access_title">病毒扫描数据使用</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner 会将你已安装应用的信息（名称、包名、版本）发送给 Trustlook Security，用于扫描恶意软件和风险应用。</string>
+    <string name="agree_and_continue">同意并继续</string>
+    <string name="not_now">暂不</string>
 </resources>

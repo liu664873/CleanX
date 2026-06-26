@@ -165,4 +165,8 @@
     <string name="common_tool_network_scan_desc">네트워크의 기기 스캔</string>
     <string name="common_tool_network_speed_desc">다운로드 및 업로드 속도 테스트</string>
     <string name="common_tool_notification_cleaner_desc">원치 않는 알림 찾기</string>
+    <string name="virus_installed_apps_access_title">바이러스 검사 데이터 사용</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner는 악성 코드와 위험 앱을 검사하기 위해 설치된 앱 정보(이름, 패키지 이름, 버전)를 Trustlook Security로 전송합니다.</string>
+    <string name="agree_and_continue">동의하고 계속</string>
+    <string name="not_now">나중에</string>
 </resources>

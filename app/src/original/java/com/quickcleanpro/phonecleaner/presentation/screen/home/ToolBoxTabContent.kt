@@ -40,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
@@ -112,7 +113,7 @@ fun ToolBoxTabContent(
             shape = RoundedCornerShape(12.dp),
         ) {
             Column(
-                modifier = Modifier.padding(20.dp),
+                modifier = Modifier.padding(16.dp),
             ) {
                 Text(
                     text = stringResource(R.string.home_toolbox_title),
@@ -123,17 +124,17 @@ fun ToolBoxTabContent(
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ToolItem(R.drawable.ic_app_usage, stringResource(R.string.app_usage)) {
+                    ToolItem(R.drawable.ic_app_usage, stringResource(R.string.app_usage), Modifier.weight(1f)) {
                         onFeatureClick()
                         router.navigate(Screen.AppUsage)
                     }
-                    ToolItem(R.drawable.ic_notification_bar, stringResource(R.string.notification_bar)) {
+                    ToolItem(R.drawable.ic_notification_bar, stringResource(R.string.notification_bar), Modifier.weight(1f)) {
                         onFeatureClick()
                         router.navigate(Screen.NotificationBar)
                     }
-                    ToolItem(R.drawable.ic_whatsapp_cleaner, stringResource(R.string.whatsapp_cleaner)) {
+                    ToolItem(R.drawable.ic_whatsapp_cleaner, stringResource(R.string.whatsapp_cleaner), Modifier.weight(1f)) {
                         onFeatureClick()
                         if (context.hasWhatsAppInstalled()) {
                             router.navigate(Screen.WhatsAppCleaner)
@@ -147,17 +148,17 @@ fun ToolBoxTabContent(
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ToolItem(R.drawable.ic_network_usage, stringResource(R.string.network_usage)) {
+                    ToolItem(R.drawable.ic_network_usage, stringResource(R.string.network_usage), Modifier.weight(1f)) {
                         onFeatureClick()
                         router.navigate(Screen.NetworkUsage)
                     }
-                    ToolItem(R.drawable.ic_network_scan, stringResource(R.string.network_scan)) {
+                    ToolItem(R.drawable.ic_network_scan, stringResource(R.string.network_scan), Modifier.weight(1f)) {
                         onFeatureClick()
                         router.navigate(Screen.NetworkScan)
                     }
-                    ToolItem(R.drawable.ic_network_speed, stringResource(R.string.network_speed)) {
+                    ToolItem(R.drawable.ic_network_speed, stringResource(R.string.network_speed), Modifier.weight(1f)) {
                         onFeatureClick()
                         router.navigate(Screen.NetworkSpeed)
                     }
@@ -296,12 +297,12 @@ private fun CheckNowButton(onClick: () -> Unit) {
 private fun ToolItem(
     iconRes: Int,
     label: String,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
     Column(
         modifier =
-            Modifier
-                .width(80.dp)
+            modifier
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -319,10 +320,12 @@ private fun ToolItem(
         Text(
             text = label,
             color = OnboardingNavy,
-            fontSize = 16.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            lineHeight = 20.sp,
+            lineHeight = 17.sp,
             textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

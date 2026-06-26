@@ -180,4 +180,8 @@
     <string name="common_tool_network_scan_desc">Quét thiết bị trên mạng của bạn</string>
     <string name="common_tool_network_speed_desc">Kiểm tra tốc độ tải xuống và tải lên</string>
     <string name="common_tool_notification_cleaner_desc">Tìm thông báo không mong muốn</string>
+    <string name="virus_installed_apps_access_title">Cách dùng dữ liệu quét virus</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner gửi thông tin ứng dụng đã cài đặt của bạn (tên, tên gói, phiên bản) đến Trustlook Security để quét phần mềm độc hại và ứng dụng rủi ro.</string>
+    <string name="agree_and_continue">Đồng ý và tiếp tục</string>
+    <string name="not_now">Không phải bây giờ</string>
 </resources>

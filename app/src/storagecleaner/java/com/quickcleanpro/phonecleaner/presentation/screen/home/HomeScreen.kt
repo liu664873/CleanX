@@ -15,13 +15,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -153,44 +156,52 @@ fun HomeScreen(
             )
         },
         bottomBar = {
-            Row(
+            Column(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .height(88.dp),
-                verticalAlignment = Alignment.Top,
+                        .background(CleanXBlue),
             ) {
-                tabs.forEachIndexed { index, tab ->
-                    val isSelected = pagerState.currentPage == index
-                    Column(
-                        modifier =
-                            Modifier
-                                .weight(1f)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = {
-                                        viewModel.onTabInteraction()
-                                        scope.launch { pagerState.animateScrollToPage(index) }
-                                    },
-                                ).padding(top = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Icon(
-                            painter = painterResource(id = tab.iconRes),
-                            contentDescription = tab.label,
-                            modifier = Modifier.size(30.dp),
-                            tint = if (isSelected) LocalVariantTheme.current.colors.tabActiveBackground else TabInactiveColor,
-                        )
-                        Spacer(modifier = Modifier.height(3.dp))
-                        Text(
-                            text = tab.label,
-                            color = if (isSelected) LocalVariantTheme.current.colors.tabActiveBackground else TabInactiveColor,
-                            fontSize = 16.sp,
-                            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-                        )
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(88.dp),
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    tabs.forEachIndexed { index, tab ->
+                        val isSelected = pagerState.currentPage == index
+                        Column(
+                            modifier =
+                                Modifier
+                                    .weight(1f)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                        onClick = {
+                                            viewModel.onTabInteraction()
+                                            scope.launch { pagerState.animateScrollToPage(index) }
+                                        },
+                                    ).padding(top = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Icon(
+                                painter = painterResource(id = tab.iconRes),
+                                contentDescription = tab.label,
+                                modifier = Modifier.size(30.dp),
+                                tint = if (isSelected) LocalVariantTheme.current.colors.tabActiveBackground else TabInactiveColor,
+                            )
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(
+                                text = tab.label,
+                                color = if (isSelected) LocalVariantTheme.current.colors.tabActiveBackground else TabInactiveColor,
+                                fontSize = 16.sp,
+                                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
+                            )
+                        }
                     }
                 }
+                Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
         },
     ) { paddingValues ->

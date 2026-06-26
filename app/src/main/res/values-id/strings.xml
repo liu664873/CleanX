@@ -181,4 +181,8 @@
     <string name="common_tool_network_scan_desc">Pindai perangkat di jaringan Anda</string>
     <string name="common_tool_network_speed_desc">Uji kecepatan unduh dan unggah</string>
     <string name="common_tool_notification_cleaner_desc">Temukan notifikasi yang tidak diinginkan</string>
+    <string name="virus_installed_apps_access_title">Penggunaan Data Pemindaian Virus</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner mengirim info aplikasi terpasang Anda (nama, nama paket, versi) ke Trustlook Security untuk memindai malware dan aplikasi berisiko.</string>
+    <string name="agree_and_continue">Setuju dan lanjutkan</string>
+    <string name="not_now">Nanti saja</string>
 </resources>

@@ -146,4 +146,9 @@
     <string name="notification_enable_step_find">1. ค้นหา Storage Cleaner</string>
     <string name="notification_channel_tools">เครื่องมือ Storage Cleaner</string>
     <string name="notification_channel_tools_desc">คำแนะนำเครื่องมือ Storage Cleaner</string>
+    <string name="virus_installed_apps_access_title">การใช้ข้อมูลสแกนไวรัส</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner จะส่งข้อมูลแอปที่ติดตั้งของคุณ (ชื่อ ชื่อแพ็กเกจ เวอร์ชัน) ไปยัง Trustlook Security เพื่อสแกนมัลแวร์และแอปที่มีความเสี่ยง</string>
+    <string name="agree_and_continue">ยอมรับและดำเนินการต่อ</string>
+    <string name="not_now">ไม่ใช่ตอนนี้</string>
+    <string name="notification_intercepted_appear_here">การแจ้งเตือนที่ถูกบล็อกจะแสดงที่นี่</string>
 </resources>

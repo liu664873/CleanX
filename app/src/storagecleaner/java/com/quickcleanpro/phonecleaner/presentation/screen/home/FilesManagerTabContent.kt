@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
@@ -43,6 +45,7 @@ private data class FileManagerItem(
 )
 
 private val OnboardingNavy: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.navy
+private val LabelWordSeparator = Regex("\\s+")
 
 @Composable
 fun FilesManagerTabContent(onFeatureClick: () -> Unit = {}) {
@@ -67,7 +70,7 @@ fun FilesManagerTabContent(onFeatureClick: () -> Unit = {}) {
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
                 .padding(top = 32.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(items) { item ->
@@ -91,6 +94,7 @@ private fun FileManagerCard(
         modifier =
             Modifier
                 .fillMaxWidth()
+                .height(118.dp)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -102,8 +106,8 @@ private fun FileManagerCard(
         Column(
             modifier =
                 Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
+                    .fillMaxSize()
+                    .padding(horizontal = 6.dp, vertical = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Image(
@@ -113,14 +117,44 @@ private fun FileManagerCard(
                 contentScale = ContentScale.Fit,
             )
             Spacer(modifier = Modifier.height(6.dp))
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(40.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                FileManagerCardLabel(label = stringResource(item.labelRes))
+            }
+        }
+    }
+}
+
+@Composable
+private fun FileManagerCardLabel(label: String) {
+    val lines =
+        remember(label) {
+            LabelWordSeparator
+                .split(label.trim(), limit = 2)
+                .filter { it.isNotEmpty() }
+        }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        lines.forEach { line ->
             Text(
-                text = stringResource(item.labelRes),
+                text = line,
                 color = OnboardingNavy,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
-                lineHeight = 20.sp,
+                lineHeight = 17.sp,
                 textAlign = TextAlign.Center,
-                maxLines = 2,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

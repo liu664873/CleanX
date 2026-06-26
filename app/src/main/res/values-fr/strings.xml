@@ -165,4 +165,8 @@
     <string name="common_tool_network_scan_desc">Scanner les appareils sur votre réseau</string>
     <string name="common_tool_network_speed_desc">Tester la vitesse de téléchargement et d’envoi</string>
     <string name="common_tool_notification_cleaner_desc">Trouver les notifications indésirables</string>
+    <string name="virus_installed_apps_access_title">Utilisation des données du scan antivirus</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner envoie les infos de vos apps installées (noms, noms de package, versions) à Trustlook Security pour rechercher les malwares et apps à risque.</string>
+    <string name="agree_and_continue">Accepter et continuer</string>
+    <string name="not_now">Pas maintenant</string>
 </resources>

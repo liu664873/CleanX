@@ -162,4 +162,9 @@
     <string name="notification_enable_step_find">1. Temukan Storage Cleaner</string>
     <string name="notification_channel_tools">Alat Storage Cleaner</string>
     <string name="notification_channel_tools_desc">Saran alat Storage Cleaner</string>
+    <string name="virus_installed_apps_access_title">Penggunaan Data Pemindaian Virus</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner mengirim info aplikasi terpasang Anda (nama, nama paket, versi) ke Trustlook Security untuk memindai malware dan aplikasi berisiko.</string>
+    <string name="agree_and_continue">Setuju dan lanjutkan</string>
+    <string name="not_now">Nanti saja</string>
+    <string name="notification_intercepted_appear_here">Notifikasi yang dicegat akan muncul di sini</string>
 </resources>

@@ -117,7 +117,6 @@ fun ScanVirusResultScreen(
                 )
             }
         },
-        onNavigateTool = { route -> router.navigateAndClearStack(route) },
     )
 }
 

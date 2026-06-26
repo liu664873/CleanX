@@ -135,6 +135,7 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
             } else {
                 PaddingValues(horizontal = 16.dp, vertical = 16.dp)
             },
+        scrollEnabled = uiState.phase != WhatsAppCleanerPhase.Result,
         bottomBar = {
             if (uiState.phase == WhatsAppCleanerPhase.ScanResult) {
                 WhatsAppScanResultBottomBar(

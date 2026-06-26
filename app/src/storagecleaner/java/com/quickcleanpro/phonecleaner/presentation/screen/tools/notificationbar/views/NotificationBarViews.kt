@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -40,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -80,14 +82,13 @@ private const val NotificationGuideSlideDelayMillis = 2_000L
 
 private data class NotificationGuideSlide(
     val imageRes: Int,
-    val aspectRatio: Float,
 )
 
 private val NotificationGuideSlides = listOf(
-    NotificationGuideSlide(R.drawable.notification_bar_guide_1, 500f / 570f),
-    NotificationGuideSlide(R.drawable.notification_bar_guide_2, 295f / 415f),
-    NotificationGuideSlide(R.drawable.notification_bar_guide_3, 315f / 430f),
-    NotificationGuideSlide(R.drawable.notification_bar_guide_4, 375f / 430f),
+    NotificationGuideSlide(R.drawable.notification_bar_guide_1),
+    NotificationGuideSlide(R.drawable.notification_bar_guide_2),
+    NotificationGuideSlide(R.drawable.notification_bar_guide_3),
+    NotificationGuideSlide(R.drawable.notification_bar_guide_4),
 )
 
 @Composable
@@ -218,6 +219,7 @@ private fun OnboardingContent(onEnableClick: () -> Unit) {
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .padding(top = 12.dp)
                     .height(360.dp),
         )
         Spacer(modifier = Modifier.height(150.dp))
@@ -251,21 +253,20 @@ private fun NotificationBarGuideCarousel(modifier: Modifier = Modifier) {
 
     HorizontalPager(
         state = pagerState,
-        modifier = modifier,
+        modifier = modifier.clipToBounds(),
         verticalAlignment = Alignment.CenterVertically,
     ) { page ->
-        val slide = NotificationGuideSlides[page]
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
             Image(
-                painter = painterResource(slide.imageRes),
+                painter = painterResource(NotificationGuideSlides[page].imageRes),
                 contentDescription = null,
                 modifier = Modifier
-                    .widthIn(max = 360.dp)
-                    .fillMaxWidth()
-                    .aspectRatio(slide.aspectRatio),
+                    .heightIn(max = 348.dp)
+                    .widthIn(max = 340.dp)
+                    .fillMaxSize(),
                 contentScale = ContentScale.Fit,
             )
         }
@@ -347,9 +348,15 @@ private fun StatusContent(uiState: NotificationBarUiState) {
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = pluralStringResource(R.plurals.notifications_blocked_count, uiState.blockedCount, uiState.blockedCount),
+                text =
+                    if (uiState.blockedCount == 0) {
+                        stringResource(R.string.notification_intercepted_appear_here)
+                    } else {
+                        pluralStringResource(R.plurals.notifications_blocked_count, uiState.blockedCount, uiState.blockedCount)
+                    },
                 color = Navy,
                 fontSize = 18.sp,
+                textAlign = TextAlign.Center,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -366,6 +373,18 @@ private fun StatusContent(uiState: NotificationBarUiState) {
             BlockedAppRow(app = app, count = count)
             Spacer(modifier = Modifier.height(12.dp))
         }
+    } else if (uiState.blockedCount == 0) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Image(
+            painter = painterResource(R.drawable.notification_cleaner_blank),
+            contentDescription = null,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 374.dp)
+                    .aspectRatio(1f),
+            contentScale = ContentScale.Fit,
+        )
     }
 }
 

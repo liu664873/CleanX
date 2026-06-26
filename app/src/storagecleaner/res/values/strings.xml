@@ -16,4 +16,9 @@
     <string name="notification_enable_step_find">1. Find Storage Cleaner</string>
     <string name="notification_channel_tools">Storage Cleaner Tools</string>
     <string name="notification_channel_tools_desc">Storage Cleaner tool suggestions</string>
+    <string name="virus_installed_apps_access_title">Virus Scan Data Usage</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner sends your installed app info (names, package names, versions) to Trustlook Security to scan for malware and risky apps.</string>
+    <string name="agree_and_continue">Agree and Continue</string>
+    <string name="not_now">Not Now</string>
+    <string name="notification_intercepted_appear_here">Intercepted notifications appear here</string>
 </resources>

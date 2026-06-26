@@ -572,4 +572,8 @@
     <string name="device_progress_storage_label">Storage:</string>
     <string name="wifi_ssid_label">SSID</string>
     <string name="network_link_speed_fallback">Using link speed fallback</string>
+    <string name="virus_installed_apps_access_title">Virus Scan Data Usage</string>
+    <string name="virus_installed_apps_access_message">Storage Cleaner sends your installed app info (names, package names, versions) to Trustlook Security to scan for malware and risky apps.</string>
+    <string name="agree_and_continue">Agree and Continue</string>
+    <string name="not_now">Not Now</string>
 </resources>
