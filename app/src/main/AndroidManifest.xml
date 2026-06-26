@@ -75,7 +75,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Keeps Quick Clean tools available in notifications, samples local battery history for Battery Info charts, and monitors user-selected protected apps for App Lock." />
+                android:value="${persistentNotificationSpecialUseSubtype}" />
         </service>
         <service
             android:name=".data.source.applock.LockScreenOverlayService"

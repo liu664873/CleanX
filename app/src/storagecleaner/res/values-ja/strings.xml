@@ -92,15 +92,15 @@
     <string name="turn_on_auto_lock">自動ロックをオン</string>
     <string name="turn_on_auto_lock_hint">インストール後の新しいアプリを自動的にロックします。</string>
     <string name="app_lock_usage_permission_title">使用状況データの権限が必要です</string>
-    <string name="app_lock_usage_permission_desc">Quick Clean PROを見つけて権限をオンにしてください。</string>
+    <string name="app_lock_usage_permission_desc">Storage Cleanerを見つけて権限をオンにしてください。</string>
     <string name="app_lock_usage_permission_grant">使用状況データへのアクセスを許可</string>
     <string name="app_lock_overlay_permission_message">この機能を使用するには必要な権限を許可してください。</string>
     <string name="app_lock_overlay_permission_title">フローティングウィンドウ権限が必要です</string>
-    <string name="app_lock_overlay_permission_desc">Quick Clean PROを見つけて権限をオンにしてください。</string>
+    <string name="app_lock_overlay_permission_desc">Storage Cleanerを見つけて権限をオンにしてください。</string>
     <string name="app_lock_overlay_permission_grant">他のアプリの上に表示を許可</string>
     <string name="manage_permission">権限を管理</string>
     <string name="allow_now">今すぐ許可</string>
-    <string name="permission_app_lock_usage_desc">保護されたアプリが開かれたことを検出するため、使用状況アクセスでQuick Clean PROを許可してください。</string>
+    <string name="permission_app_lock_usage_desc">保護されたアプリが開かれたことを検出するため、使用状況アクセスでStorage Cleanerを許可してください。</string>
     <!-- Home exit prompts -->
     <string name="exit">終了</string>
     <string name="close">閉じる</string>
@@ -116,7 +116,7 @@
     <string name="exit_prompt_notification_tip_matters">重要な通知だけを表示</string>
     <string name="exit_prompt_notification_tip_focus">集中を保ち、中断を減らします</string>
     <string name="permission_title_required">権限が必要です</string>
-    <string name="permission_post_notifications_desc">クリーンアップツールを利用できるように、Quick Clean PROからの通知を許可してください。</string>
+    <string name="permission_post_notifications_desc">クリーンアップツールを利用できるように、Storage Cleanerからの通知を許可してください。</string>
     <string name="permission_hint_app_notifications">アプリの状態とクリーンアップ通知のみ送信されます。</string>
     <string name="notification_enable_title">通知を有効にするには？</string>
     <string name="notification_enable_step_find_prefix">1.\u0020</string>
@@ -128,11 +128,22 @@
     <string name="home_app_lock_desc">プライバシー保護のためのアプリロック</string>
     <string name="no_data_available">データがありません</string>
     <string name="virus_scan_notice_title">お知らせ</string>
-    <string name="virus_scan_notice_message">Quick Clean PROは、セキュリティリスクをスキャンするために、このデバイス上のアプリ情報を確認します。</string>
+    <string name="virus_scan_notice_message">Storage Cleanerは、セキュリティリスクをスキャンするために、このデバイス上のアプリ情報を確認します。</string>
     <string name="settings_overlay_permission">フローティングウィンドウ</string>
     <string name="settings_post_notifications_permission">アプリ通知</string>
     <string name="file_unselect">選択解除</string>
     <string name="file_music">音楽</string>
     <string name="app_usage_legend_other">その他</string>
     <string name="device_info_source_hint">表示されるデバイス情報は、システムから提供されるデータに基づいており、公式仕様と異なる場合があります。たとえば、ストレージ容量やメモリは、システム予約領域やハードウェア構成の違いにより、わずかに異なることがあります。</string>
+
+    <string name="app_name">Storage Cleaner</string>
+    <string name="permission_usage_desc">アプリ使用状況の詳細を表示するため、使用状況アクセスでStorage Cleanerを許可してください。</string>
+    <string name="permission_network_usage_desc">ネットワーク使用状況の詳細を表示するため、使用状況アクセスでStorage Cleanerを許可してください。</string>
+    <string name="permission_notification_desc">通知を自動的に整理するため、通知アクセスでStorage Cleanerを許可してください。</string>
+    <string name="permission_overlay_desc">保護されたアプリの上に PIN 画面を表示するには、Storage Cleaner の他のアプリ上への表示を許可してください。</string>
+    <string name="rate_title">Storage Cleanerを気に入っていますか？</string>
+    <string name="rate_feedback_message">フィードバックありがとうございます。Storage Cleanerを引き続き改善します。</string>
+    <string name="notification_enable_step_find">1. Storage Cleanerを見つける</string>
+    <string name="notification_channel_tools">Storage Cleanerツール</string>
+    <string name="notification_channel_tools_desc">Storage Cleanerツールのおすすめ</string>
 </resources>

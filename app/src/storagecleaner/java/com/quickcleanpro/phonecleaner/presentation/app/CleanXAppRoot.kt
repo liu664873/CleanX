@@ -21,6 +21,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.quickcleanpro.phonecleaner.core.permission.appSettingsIntent
+import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationIntentFactory
 import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionCoordinatorProvider
 import com.quickcleanpro.phonecleaner.presentation.common.route.AppNavGraph
@@ -179,6 +180,13 @@ internal fun NavHostController.navigateToNotificationTarget(route: String) {
         // Clear the existing stack before rebuilding Home -> target.
     }
     val currentRoute = currentDestination?.route
+    if (route in ToolNotificationIntentFactory.homeTabRoutes) {
+        navigate(route) {
+            currentRoute?.let { popUpTo(it) { inclusive = true } }
+            launchSingleTop = true
+        }
+        return
+    }
     navigate(Screen.Home.route) {
         currentRoute?.let { popUpTo(it) { inclusive = true } }
         launchSingleTop = true

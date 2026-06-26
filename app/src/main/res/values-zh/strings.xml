@@ -166,6 +166,7 @@
     <string name="permission_storage_desc">为了扫描和清理垃圾文件，请授予手机文件和媒体访问权限。</string>
     <string name="permission_storage_files_desc">为了扫描和管理文件，请授予手机文件和媒体访问权限。</string>
     <string name="permission_virus_storage_desc">为了扫描文件风险，请授予手机文件和媒体访问权限。</string>
+    <string name="permission_installed_apps_desc">为了扫描已安装应用的安全风险，请在系统设置中允许访问已安装应用列表。</string>
     <string name="permission_whatsapp_storage_desc">为了扫描并清理 WhatsApp 文件，请授予手机文件和媒体访问权限。</string>
     <string name="permission_media_images_desc">为了扫描和管理照片，请授予图片和媒体访问权限。</string>
     <string name="permission_media_video_desc">为了扫描和管理视频，请授予视频媒体访问权限。</string>

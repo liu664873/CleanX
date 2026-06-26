@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Storage Cleaner</string>
+
+    <string name="app_lock_usage_permission_desc">Locate Storage Cleaner and toggle on permission.</string>
+    <string name="app_lock_overlay_permission_desc">Locate Storage Cleaner and toggle on permission.</string>
+    <string name="permission_usage_desc">To show app usage details, please allow Storage Cleaner in Usage Access settings.</string>
+    <string name="permission_network_usage_desc">To show network usage details, please allow Storage Cleaner in Usage Access settings.</string>
+    <string name="permission_app_lock_usage_desc">To detect when protected apps are opened, please allow Storage Cleaner in Usage Access settings.</string>
+    <string name="permission_post_notifications_desc">To keep cleanup tools available, please allow Storage Cleaner to send notifications.</string>
+    <string name="permission_notification_desc">To tidy notifications automatically, please allow Storage Cleaner in Notification Access settings.</string>
+    <string name="permission_overlay_desc">To show the PIN screen above protected apps, please allow Storage Cleaner to draw over other apps.</string>
+    <string name="virus_scan_notice_message">Storage Cleaner will check app information on this device to scan for security risks.</string>
+    <string name="rate_title">Enjoying Storage Cleaner?</string>
+    <string name="rate_feedback_message">Thanks for your feedback. We will keep improving Storage Cleaner.</string>
+    <string name="notification_enable_step_find">1. Find Storage Cleaner</string>
+    <string name="notification_channel_tools">Storage Cleaner Tools</string>
+    <string name="notification_channel_tools_desc">Storage Cleaner tool suggestions</string>
 </resources>

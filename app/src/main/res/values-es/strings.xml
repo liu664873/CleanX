@@ -93,6 +93,7 @@
     <string name="permission_title_required">Se requiere permiso</string>
     <string name="permission_storage_desc">Para escanear y eliminar basura, concede acceso a archivos y multimedia.</string>
     <string name="permission_storage_files_desc">Para escanear y gestionar archivos, concede acceso a archivos y multimedia.</string>
+    <string name="permission_installed_apps_desc">Para escanear las apps instaladas en busca de riesgos de seguridad, permite el acceso a la lista de apps instaladas en los ajustes del sistema.</string>
     <string name="permission_media_images_desc">Para escanear y gestionar fotos, concede acceso a imágenes y multimedia.</string>
     <string name="permission_media_video_desc">Para escanear y gestionar videos, concede acceso a videos.</string>
     <string name="permission_media_audio_desc">Para escanear y gestionar audio, concede acceso a audio.</string>

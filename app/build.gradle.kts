@@ -51,6 +51,8 @@ android {
             manifestPlaceholders["appTheme"] = configValue("STORAGECLEANER_APP_THEME", "@style/Theme.QuickCleanPRO")
             manifestPlaceholders["trustlookApiKey"] = storagecleanerTrustlookApiKey
             manifestPlaceholders["admobAppId"] = configValue("ADMOB_STORAGECLEANER_APP_ID", admobTestAppId)
+            manifestPlaceholders["persistentNotificationSpecialUseSubtype"] =
+                "Keeps Storage Cleaner tools available in notifications, samples local battery history for Battery Info charts, and monitors user-selected protected apps for App Lock."
 
             buildConfigField("String", "VARIANT_KEY", "storagecleaner".asBuildConfigString())
             buildConfigField("String", "THEME_KEY", "storage_cleaner".asBuildConfigString())
@@ -101,6 +103,8 @@ android {
             manifestPlaceholders["appTheme"] = configValue("ORIGINAL_APP_THEME", "@style/Theme.QuickCleanPRO")
             manifestPlaceholders["trustlookApiKey"] = originalTrustlookApiKey
             manifestPlaceholders["admobAppId"] = configValue("ADMOB_ORIGINAL_APP_ID", admobTestAppId)
+            manifestPlaceholders["persistentNotificationSpecialUseSubtype"] =
+                "Keeps Quick Clean tools available in notifications, samples local battery history for Battery Info charts, and monitors user-selected protected apps for App Lock."
             buildConfigField("String", "VARIANT_KEY", "original".asBuildConfigString())
             buildConfigField("String", "THEME_KEY", "quick_clean".asBuildConfigString())
             buildConfigField("String", "PRIMARY_FEATURE", "JUNK_CLEAN".asBuildConfigString())

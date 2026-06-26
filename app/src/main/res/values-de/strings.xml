@@ -42,6 +42,7 @@
     
     <string name="permission_is_required">Berechtigung erforderlich</string>
     <string name="permission_storage_desc">Zum Scannen und Entfernen von Datenmüll bitte Zugriff auf Dateien und Medien gewähren.</string>
+    <string name="permission_installed_apps_desc">Um installierte Apps auf Sicherheitsrisiken zu prüfen, erlaube in den Systemeinstellungen den Zugriff auf die Liste installierter Apps.</string>
     <string name="permission_hint_junk_deleted">Nur Junk-Dateien werden gelöscht.</string>
     <string name="permission_hint_no_personal">Es werden keine persönlichen Daten gesammelt.</string>
     <string name="file_select_all">Alle auswählen</string>

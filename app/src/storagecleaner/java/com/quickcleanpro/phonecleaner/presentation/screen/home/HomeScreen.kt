@@ -80,7 +80,10 @@ private data class HomeTab(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(externalBlockingPromptActive: Boolean = false) {
+fun HomeScreen(
+    externalBlockingPromptActive: Boolean = false,
+    initialTabIndex: Int = 0,
+) {
     val context = LocalContext.current
     val viewModel: HomeViewModel = koinViewModel()
     val summaryState by viewModel.summaryState.collectAsStateWithLifecycle()
@@ -94,7 +97,11 @@ fun HomeScreen(externalBlockingPromptActive: Boolean = false) {
             HomeTab(stringResource(R.string.home_tab_file_manager), R.drawable.ic_file_manager),
             HomeTab(stringResource(R.string.home_tab_toolbox), R.drawable.ic_toolbox),
         )
-    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val pagerState =
+        rememberPagerState(
+            initialPage = initialTabIndex.coerceIn(0, tabs.lastIndex),
+            pageCount = { tabs.size },
+        )
 
     BackHandler(enabled = exitPromptSpec == null && !externalBlockingPromptActive && !showAutoRateDialog) {
         viewModel.requestExitPrompt()

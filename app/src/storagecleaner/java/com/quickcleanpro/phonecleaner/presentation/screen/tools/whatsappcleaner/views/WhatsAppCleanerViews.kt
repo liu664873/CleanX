@@ -231,7 +231,6 @@ private fun WhatsAppScanResultContent(
     onToggleCategory: (WhatsAppCleanerGroup, WhatsAppCleanerCategory) -> Unit,
     onToggleExpanded: (WhatsAppCleanerGroup) -> Unit,
 ) {
-    WhatsAppTopPlaceholder()
     Spacer(modifier = Modifier.height(42.dp))
     SummaryCard(totalBytes = uiState.scannedBytes)
     Spacer(modifier = Modifier.height(44.dp))

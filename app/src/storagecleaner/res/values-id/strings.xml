@@ -108,15 +108,15 @@
     <string name="turn_on_auto_lock">Aktifkan kunci otomatis</string>
     <string name="turn_on_auto_lock_hint">Kunci otomatis aplikasi baru setelah dipasang.</string>
     <string name="app_lock_usage_permission_title">Izin data penggunaan diperlukan</string>
-    <string name="app_lock_usage_permission_desc">Temukan Quick Clean PRO lalu aktifkan izin.</string>
+    <string name="app_lock_usage_permission_desc">Temukan Storage Cleaner lalu aktifkan izin.</string>
     <string name="app_lock_usage_permission_grant">Berikan akses ke data penggunaan</string>
     <string name="app_lock_overlay_permission_message">Berikan izin yang diperlukan untuk menggunakan fitur ini.</string>
     <string name="app_lock_overlay_permission_title">Izin jendela mengambang diperlukan</string>
-    <string name="app_lock_overlay_permission_desc">Temukan Quick Clean PRO lalu aktifkan izin.</string>
+    <string name="app_lock_overlay_permission_desc">Temukan Storage Cleaner lalu aktifkan izin.</string>
     <string name="app_lock_overlay_permission_grant">Izinkan tampil di atas aplikasi lain</string>
     <string name="manage_permission">Kelola izin</string>
     <string name="allow_now">Izinkan sekarang</string>
-    <string name="permission_app_lock_usage_desc">Agar aplikasi terlindungi dapat terdeteksi saat dibuka, izinkan Quick Clean PRO di Akses penggunaan.</string>
+    <string name="permission_app_lock_usage_desc">Agar aplikasi terlindungi dapat terdeteksi saat dibuka, izinkan Storage Cleaner di Akses penggunaan.</string>
     <!-- Home exit prompts -->
     <string name="exit">Keluar</string>
     <string name="close">Tutup</string>
@@ -132,7 +132,7 @@
     <string name="exit_prompt_notification_tip_matters">Lihat hanya yang penting</string>
     <string name="exit_prompt_notification_tip_focus">Tetap fokus. Kurangi gangguan</string>
     <string name="permission_title_required">Izin diperlukan</string>
-    <string name="permission_post_notifications_desc">Agar alat pembersihan tetap tersedia, izinkan Quick Clean PRO mengirim notifikasi.</string>
+    <string name="permission_post_notifications_desc">Agar alat pembersihan tetap tersedia, izinkan Storage Cleaner mengirim notifikasi.</string>
     <string name="permission_hint_app_notifications">Hanya notifikasi status aplikasi dan pembersihan yang akan dikirim.</string>
     <string name="notification_enable_title">Bagaimana cara mengaktifkan notifikasi?</string>
     <string name="notification_enable_step_find_prefix">1. Temukan\u0020</string>
@@ -144,11 +144,22 @@
     <string name="home_app_lock_desc">Kunci app untuk perlindungan privasi</string>
     <string name="no_data_available">Tidak ada data tersedia</string>
     <string name="virus_scan_notice_title">Pemberitahuan</string>
-    <string name="virus_scan_notice_message">Quick Clean PRO akan memeriksa informasi app di perangkat ini untuk memindai risiko keamanan.</string>
+    <string name="virus_scan_notice_message">Storage Cleaner akan memeriksa informasi app di perangkat ini untuk memindai risiko keamanan.</string>
     <string name="settings_overlay_permission">Jendela mengambang</string>
     <string name="settings_post_notifications_permission">Notifikasi app</string>
     <string name="file_unselect">Batalkan pilihan</string>
     <string name="file_music">Musik</string>
     <string name="app_usage_legend_other">Lainnya</string>
     <string name="device_info_source_hint">Informasi perangkat yang ditampilkan didasarkan pada data yang disediakan sistem dan dapat berbeda dari spesifikasi resmi. Misalnya, kapasitas penyimpanan atau memori mungkin sedikit berbeda karena cadangan sistem atau konfigurasi perangkat keras.</string>
+
+    <string name="app_name">Storage Cleaner</string>
+    <string name="permission_usage_desc">Untuk menampilkan detail penggunaan app, izinkan Storage Cleaner di Akses penggunaan.</string>
+    <string name="permission_network_usage_desc">Untuk menampilkan detail penggunaan jaringan, izinkan Storage Cleaner di Akses penggunaan.</string>
+    <string name="permission_notification_desc">Untuk merapikan notifikasi secara otomatis, izinkan Storage Cleaner di Akses notifikasi.</string>
+    <string name="permission_overlay_desc">Untuk menampilkan layar PIN di atas aplikasi yang dilindungi, izinkan Storage Cleaner tampil di atas aplikasi lain.</string>
+    <string name="rate_title">Suka Storage Cleaner?</string>
+    <string name="rate_feedback_message">Terima kasih atas masukan Anda. Kami akan terus meningkatkan Storage Cleaner.</string>
+    <string name="notification_enable_step_find">1. Temukan Storage Cleaner</string>
+    <string name="notification_channel_tools">Alat Storage Cleaner</string>
+    <string name="notification_channel_tools_desc">Saran alat Storage Cleaner</string>
 </resources>

@@ -42,6 +42,7 @@
     
     <string name="permission_is_required">ต้องมีสิทธิ์</string>
     <string name="permission_storage_desc">เพื่อสแกนและลบไฟล์ขยะ โปรดให้สิทธิ์เข้าถึงไฟล์และสื่อ</string>
+    <string name="permission_installed_apps_desc">เพื่อสแกนความเสี่ยงด้านความปลอดภัยของแอปที่ติดตั้ง โปรดอนุญาตให้เข้าถึงรายการแอปที่ติดตั้งในการตั้งค่าระบบ</string>
     <string name="permission_hint_junk_deleted">จะลบเฉพาะไฟล์ขยะเท่านั้น</string>
     <string name="permission_hint_no_personal">จะไม่เก็บข้อมูลส่วนบุคคล</string>
     <string name="file_select_all">เลือกทั้งหมด</string>

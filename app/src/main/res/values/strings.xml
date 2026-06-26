@@ -224,6 +224,7 @@
     <string name="permission_storage_desc">To scan and remove junk files, please grant access to your phone files and media.</string>
     <string name="permission_storage_files_desc">To scan and manage files, please grant access to your phone files and media.</string>
     <string name="permission_virus_storage_desc">To scan files for threats, please grant access to your phone files and media.</string>
+    <string name="permission_installed_apps_desc">To scan installed apps for security risks, please allow access to your installed apps list in system settings.</string>
     <string name="permission_whatsapp_storage_desc">To scan and clean WhatsApp files, please grant access to your phone files and media.</string>
     <string name="permission_media_images_desc">To scan and manage photos, please grant access to your images and media.</string>
     <string name="permission_media_video_desc">To scan and manage videos, please grant access to your video media.</string>

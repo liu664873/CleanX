@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -49,11 +53,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.domain.model.notification.BlockableNotificationApp
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
@@ -77,6 +76,19 @@ private val Navy = Color(0xFF1D2959)
 private val NavyMuted = Color(0xA61D2959)
 private val Divider15 = Color(0x261D2959)
 private val CardRadius = 12.dp
+private const val NotificationGuideSlideDelayMillis = 2_000L
+
+private data class NotificationGuideSlide(
+    val imageRes: Int,
+    val aspectRatio: Float,
+)
+
+private val NotificationGuideSlides = listOf(
+    NotificationGuideSlide(R.drawable.notification_bar_guide_1, 500f / 570f),
+    NotificationGuideSlide(R.drawable.notification_bar_guide_2, 295f / 415f),
+    NotificationGuideSlide(R.drawable.notification_bar_guide_3, 315f / 430f),
+    NotificationGuideSlide(R.drawable.notification_bar_guide_4, 375f / 430f),
+)
 
 @Composable
 internal fun NotificationBarScreenState(viewModel: NotificationBarViewModel) {
@@ -202,13 +214,13 @@ private fun OnboardingContent(onEnableClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        LottieNotificationGuide(
+        NotificationBarGuideCarousel(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .height(420.dp),
+                    .height(360.dp),
         )
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(150.dp))
         Text(
             text = stringResource(R.string.notification_tidy_one_tap),
             color = Navy,
@@ -226,30 +238,34 @@ private fun OnboardingContent(onEnableClick: () -> Unit) {
 }
 
 @Composable
-private fun LottieNotificationGuide(modifier: Modifier = Modifier) {
-    val composition by rememberLottieComposition(
-        spec = LottieCompositionSpec.Asset("notification_animation/notification.json"),
-        imageAssetsFolder = "notification_animation/images/",
-    )
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-        isPlaying = true,
-        speed = 1f,
-    )
+private fun NotificationBarGuideCarousel(modifier: Modifier = Modifier) {
+    val pagerState = rememberPagerState(pageCount = { NotificationGuideSlides.size })
 
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        if (composition == null) {
-            Text(
-                text = stringResource(R.string.notification_loading_animation),
-                color = NavyMuted,
-                fontSize = 14.sp,
-            )
-        } else {
-            LottieAnimation(
-                composition = composition,
-                progress = { progress },
-                modifier = Modifier.fillMaxSize(),
+    LaunchedEffect(pagerState) {
+        while (true) {
+            delay(NotificationGuideSlideDelayMillis)
+            val nextPage = (pagerState.currentPage + 1) % NotificationGuideSlides.size
+            pagerState.animateScrollToPage(nextPage)
+        }
+    }
+
+    HorizontalPager(
+        state = pagerState,
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) { page ->
+        val slide = NotificationGuideSlides[page]
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(slide.imageRes),
+                contentDescription = null,
+                modifier = Modifier
+                    .widthIn(max = 360.dp)
+                    .fillMaxWidth()
+                    .aspectRatio(slide.aspectRatio),
                 contentScale = ContentScale.Fit,
             )
         }

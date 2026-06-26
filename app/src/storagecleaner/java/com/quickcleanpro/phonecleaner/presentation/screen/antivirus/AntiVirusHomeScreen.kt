@@ -1,6 +1,7 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.antivirus
 
-import android.widget.Toast
+import android.content.ActivityNotFoundException
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -10,7 +11,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.core.permission.appSettingsIntent
+import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.CleanXDecisionDialog
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
@@ -22,6 +28,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+private const val INSTALLED_APPS_DIALOG_INTERACTION_THRESHOLD_MS = 1_500L
+
 @Composable
 fun AntiVirusScreen(
     viewModel: VirusScanViewModel,
@@ -29,11 +37,26 @@ fun AntiVirusScreen(
     val router = LocalRouter.current
     val permissionCoordinator = LocalCleanXPermissionCoordinator.current
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val externalActivityLaunchHandler = LocalExternalActivityLaunchHandler.current
     val scope = rememberCoroutineScope()
-    val permissionRequiredText = stringResource(R.string.permission_title_required)
+    val installedAppsPermissionMessage = stringResource(R.string.permission_installed_apps_desc)
     var pendingScanMode by remember { mutableStateOf<VirusScanMode?>(null) }
     var scanPermissionPending by remember { mutableStateOf(false) }
     var showNotice by remember { mutableStateOf(false) }
+    var showInstalledAppsPermissionDialog by remember { mutableStateOf(false) }
+    var waitingForSettingsReturn by remember { mutableStateOf(false) }
+
+    fun rememberInstalledAppsAccessFailure() {
+        SharedPreferencesUtils.putBoolean(
+            SharedPreferencesUtils.KEY_VIRUS_INSTALLED_APPS_ACCESS_FAILED_ONCE,
+            true,
+        )
+    }
+
+    fun clearInstalledAppsAccessFailure() {
+        SharedPreferencesUtils.remove(SharedPreferencesUtils.KEY_VIRUS_INSTALLED_APPS_ACCESS_FAILED_ONCE)
+    }
 
     fun launchScan(mode: VirusScanMode) {
         fun navigateToScan() {
@@ -66,15 +89,62 @@ fun AntiVirusScreen(
         if (scanPermissionPending) return
         scanPermissionPending = true
         scope.launch {
+            val hadPreviousFailure = SharedPreferencesUtils.getBoolean(
+                SharedPreferencesUtils.KEY_VIRUS_INSTALLED_APPS_ACCESS_FAILED_ONCE,
+            )
+            val startedAt = System.currentTimeMillis()
             val hasAccess = withContext(Dispatchers.IO) {
                 hasInstalledAppsAccess(context.applicationContext)
             }
+            val elapsed = System.currentTimeMillis() - startedAt
             if (!hasAccess) {
+                rememberInstalledAppsAccessFailure()
                 scanPermissionPending = false
-                Toast.makeText(context, permissionRequiredText, Toast.LENGTH_LONG).show()
+                pendingScanMode = mode
+                showInstalledAppsPermissionDialog =
+                    hadPreviousFailure && elapsed < INSTALLED_APPS_DIALOG_INTERACTION_THRESHOLD_MS
                 return@launch
             }
+            clearInstalledAppsAccessFailure()
             launchScan(mode)
+        }
+    }
+
+    fun retryPendingScanAfterSettingsReturn() {
+        val mode = pendingScanMode ?: return
+        if (scanPermissionPending) return
+        scanPermissionPending = true
+        scope.launch {
+            val hasAccess = withContext(Dispatchers.IO) {
+                hasInstalledAppsAccess(context.applicationContext)
+            }
+            if (hasAccess) {
+                clearInstalledAppsAccessFailure()
+                showInstalledAppsPermissionDialog = false
+                launchScan(mode)
+            } else {
+                rememberInstalledAppsAccessFailure()
+                scanPermissionPending = false
+                showInstalledAppsPermissionDialog = false
+            }
+        }
+    }
+
+    fun openInstalledAppsPermissionSettings() {
+        externalActivityLaunchHandler.markLaunch()
+        try {
+            waitingForSettingsReturn = true
+            context.startActivity(appSettingsIntent(context))
+        } catch (_: ActivityNotFoundException) {
+            waitingForSettingsReturn = false
+            externalActivityLaunchHandler.cancelLaunch()
+            scanPermissionPending = false
+            showInstalledAppsPermissionDialog = true
+        } catch (_: Exception) {
+            waitingForSettingsReturn = false
+            externalActivityLaunchHandler.cancelLaunch()
+            scanPermissionPending = false
+            showInstalledAppsPermissionDialog = true
         }
     }
 
@@ -91,6 +161,17 @@ fun AntiVirusScreen(
         if (!SharedPreferencesUtils.getBoolean(SharedPreferencesUtils.KEY_VIRUS_SCAN_NOTICE_ACCEPTED)) {
             showNotice = true
         }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && waitingForSettingsReturn) {
+                waitingForSettingsReturn = false
+                retryPendingScanAfterSettingsReturn()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     AntiVirusHomeView(
@@ -115,6 +196,27 @@ fun AntiVirusScreen(
                 SharedPreferencesUtils.putBoolean(SharedPreferencesUtils.KEY_VIRUS_SCAN_NOTICE_ACCEPTED, true, commit = true)
                 showNotice = false
                 pendingScanMode?.let { launchScanAfterInstalledAppsAccess(it) }
+            },
+        )
+    }
+
+    if (showInstalledAppsPermissionDialog) {
+        CleanXDecisionDialog(
+            title = stringResource(R.string.permission_title_required),
+            message = installedAppsPermissionMessage,
+            onDismissRequest = {
+                showInstalledAppsPermissionDialog = false
+                scanPermissionPending = false
+            },
+            dismissText = stringResource(R.string.cancel),
+            onDismissAction = {
+                showInstalledAppsPermissionDialog = false
+                scanPermissionPending = false
+            },
+            confirmText = stringResource(R.string.manage_permission),
+            onConfirmAction = {
+                showInstalledAppsPermissionDialog = false
+                openInstalledAppsPermissionSettings()
             },
         )
     }

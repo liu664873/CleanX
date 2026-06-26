@@ -33,7 +33,7 @@ fun CleanSpiralAnimation(
     containerSize: Dp? = 400.dp,
     centerSize: Dp = 250.dp,
     @DrawableRes spiralResId: Int = R.drawable.scan_spiral,
-    animationDurationMillis: Int = 4000,
+    animationDurationMillis: Int = 2000,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "cleanSpiralRotation")

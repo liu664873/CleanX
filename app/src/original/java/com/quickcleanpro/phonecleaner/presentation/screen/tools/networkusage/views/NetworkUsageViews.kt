@@ -19,7 +19,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,10 +45,10 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXTabIt
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.PackageAppIcon
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
-import com.quickcleanpro.phonecleaner.presentation.common.components.buttons.CleanXPrimaryButton
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionItem
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
+import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkusage.NetworkUsageDisplayItem
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkusage.NetworkUsageUiState
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.networkusage.NetworkUsageViewModel
@@ -63,6 +67,8 @@ internal fun NetworkUsageScreenState(viewModel: NetworkUsageViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val permissionCoordinator = LocalCleanXPermissionCoordinator.current
+    val router = LocalRouter.current
+    var hasRequestedUsageAccess by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner, viewModel) {
         val observer = LifecycleEventObserver { _, event ->
@@ -74,19 +80,26 @@ internal fun NetworkUsageScreenState(viewModel: NetworkUsageViewModel) {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    LaunchedEffect(uiState.hasAccess) {
+        if (!uiState.hasAccess && !hasRequestedUsageAccess) {
+            hasRequestedUsageAccess = true
+            permissionCoordinator.request(
+                item = CleanXPermissionItem.UsageAccess,
+                onGranted = {
+                    viewModel.refreshAfterResume()
+                },
+                onRejected = {
+                    router.goBack()
+                },
+            )
+        }
+    }
+
     CleanXScaffoldPage(
         title = stringResource(R.string.network_usage),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
     ) {
-        if (!uiState.hasAccess) {
-            NetworkUsageAccessRequiredCard(
-                onGrantClick = {
-                    permissionCoordinator.request(CleanXPermissionItem.UsageAccess) {
-                        viewModel.refreshAfterResume()
-                    }
-                },
-            )
-        } else {
+        if (uiState.hasAccess) {
             NetworkUsageTabs(
                 uiState = uiState,
                 onSelected = viewModel::selectTab,
@@ -106,43 +119,6 @@ internal fun NetworkUsageScreenState(viewModel: NetworkUsageViewModel) {
         }
 
         Spacer(modifier = Modifier.height(100.dp))
-    }
-}
-
-@Composable
-private fun NetworkUsageAccessRequiredCard(onGrantClick: () -> Unit) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 32.dp),
-        color = CardBg,
-        shape = RoundedCornerShape(CardRadius),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(18.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.app_usage_permission_title),
-                color = Navy,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.SemiBold,
-                textAlign = TextAlign.Center,
-            )
-            Text(
-                text = stringResource(R.string.permission_network_usage_desc),
-                color = NavyMuted,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-            )
-            CleanXPrimaryButton(
-                text = stringResource(R.string.allow_now),
-                onClick = onGrantClick,
-            )
-        }
     }
 }
 

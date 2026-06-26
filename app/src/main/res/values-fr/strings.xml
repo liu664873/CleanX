@@ -42,6 +42,7 @@
     
     <string name="permission_is_required">Autorisation requise</string>
     <string name="permission_storage_desc">Pour analyser et supprimer les fichiers inutiles, autorisez l’accès aux fichiers et médias.</string>
+    <string name="permission_installed_apps_desc">Pour analyser les apps installées et détecter les risques de sécurité, autorisez l’accès à la liste des apps installées dans les paramètres système.</string>
     <string name="permission_hint_junk_deleted">Seuls les fichiers inutiles seront supprimés.</string>
     <string name="permission_hint_no_personal">Aucune information personnelle ne sera collectée.</string>
     <string name="file_select_all">Tout sélectionner</string>

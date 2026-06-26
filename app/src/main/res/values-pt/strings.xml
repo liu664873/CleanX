@@ -62,6 +62,7 @@
     <string name="permission_is_required">Permissão necessária</string>
     <string name="permission_storage_desc">Para escanear e remover lixo, conceda acesso aos arquivos e mídia.</string>
     <string name="permission_storage_files_desc">Para escanear e gerenciar arquivos, conceda acesso aos arquivos e mídia.</string>
+    <string name="permission_installed_apps_desc">Para escanear apps instalados em busca de riscos de segurança, permita o acesso à lista de apps instalados nas configurações do sistema.</string>
     <string name="permission_media_images_desc">Para gerenciar fotos, conceda acesso a imagens e mídia.</string>
     <string name="permission_media_video_desc">Para gerenciar vídeos, conceda acesso aos vídeos.</string>
     <string name="permission_media_audio_desc">Para gerenciar áudios, conceda acesso ao áudio.</string>

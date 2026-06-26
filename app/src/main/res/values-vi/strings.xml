@@ -45,6 +45,7 @@
     <string name="permission_is_required">Cần quyền</string>
     <string name="permission_storage_desc">Để quét và xóa tệp rác, hãy cấp quyền truy cập tệp và phương tiện.</string>
     <string name="permission_storage_files_desc">Để quét và quản lý tệp, hãy cấp quyền truy cập tệp và phương tiện.</string>
+    <string name="permission_installed_apps_desc">Để quét rủi ro bảo mật trong các ứng dụng đã cài đặt, hãy cho phép truy cập danh sách ứng dụng đã cài đặt trong cài đặt hệ thống.</string>
     <string name="permission_hint_junk_deleted">Chỉ tệp rác sẽ bị xóa.</string>
     <string name="permission_hint_files_safe">Chỉ tệp đã chọn sẽ được quản lý.</string>
     <string name="permission_hint_no_personal">Không thu thập thông tin cá nhân.</string>

@@ -46,6 +46,7 @@
     <string name="permission_is_required">Izin diperlukan</string>
     <string name="permission_storage_desc">Untuk memindai dan menghapus sampah, izinkan akses file dan media.</string>
     <string name="permission_storage_files_desc">Untuk memindai dan mengelola file, izinkan akses file dan media.</string>
+    <string name="permission_installed_apps_desc">Untuk memindai risiko keamanan pada aplikasi terpasang, izinkan akses ke daftar aplikasi terpasang di pengaturan sistem.</string>
     <string name="permission_hint_junk_deleted">Hanya file sampah yang akan dihapus.</string>
     <string name="permission_hint_files_safe">Hanya file yang dipilih yang akan dikelola.</string>
     <string name="permission_hint_no_personal">Tidak ada informasi pribadi yang dikumpulkan.</string>

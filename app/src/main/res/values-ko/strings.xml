@@ -42,6 +42,7 @@
     
     <string name="permission_is_required">권한 필요</string>
     <string name="permission_storage_desc">정크 파일을 검사하고 삭제하려면 파일 및 미디어 접근을 허용하세요.</string>
+    <string name="permission_installed_apps_desc">설치된 앱의 보안 위험을 검사하려면 시스템 설정에서 설치된 앱 목록 접근을 허용하세요.</string>
     <string name="permission_hint_junk_deleted">정크 파일만 삭제됩니다.</string>
     <string name="permission_hint_no_personal">개인정보는 수집되지 않습니다.</string>
     <string name="file_select_all">전체 선택</string>

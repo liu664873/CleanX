@@ -100,6 +100,7 @@ object VariantConfigs {
 
     private fun appNameFor(variantKey: String): String =
         when (variantKey) {
+            "storagecleaner" -> "Storage Cleaner"
             "cleanmaster" -> "Clean Master"
             "securityguard" -> "Security Guard"
             else -> "Quick Clean PRO"

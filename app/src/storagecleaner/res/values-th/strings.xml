@@ -92,15 +92,15 @@
     <string name="turn_on_auto_lock">เปิดล็อกอัตโนมัติ</string>
     <string name="turn_on_auto_lock_hint">ล็อกแอปใหม่โดยอัตโนมัติหลังติดตั้ง</string>
     <string name="app_lock_usage_permission_title">ต้องได้รับสิทธิ์ข้อมูลการใช้งาน</string>
-    <string name="app_lock_usage_permission_desc">ค้นหา Quick Clean PRO แล้วเปิดสิทธิ์</string>
+    <string name="app_lock_usage_permission_desc">ค้นหา Storage Cleaner แล้วเปิดสิทธิ์</string>
     <string name="app_lock_usage_permission_grant">ให้สิทธิ์เข้าถึงข้อมูลการใช้งาน</string>
     <string name="app_lock_overlay_permission_message">โปรดให้สิทธิ์ที่จำเป็นเพื่อใช้ฟีเจอร์นี้</string>
     <string name="app_lock_overlay_permission_title">ต้องได้รับสิทธิ์หน้าต่างลอย</string>
-    <string name="app_lock_overlay_permission_desc">ค้นหา Quick Clean PRO แล้วเปิดสิทธิ์</string>
+    <string name="app_lock_overlay_permission_desc">ค้นหา Storage Cleaner แล้วเปิดสิทธิ์</string>
     <string name="app_lock_overlay_permission_grant">อนุญาตให้แสดงทับแอปอื่น</string>
     <string name="manage_permission">จัดการสิทธิ์</string>
     <string name="allow_now">อนุญาตตอนนี้</string>
-    <string name="permission_app_lock_usage_desc">หากต้องการตรวจจับเมื่อเปิดแอปที่ป้องกันไว้ โปรดอนุญาต Quick Clean PRO ในการเข้าถึงการใช้งาน</string>
+    <string name="permission_app_lock_usage_desc">หากต้องการตรวจจับเมื่อเปิดแอปที่ป้องกันไว้ โปรดอนุญาต Storage Cleaner ในการเข้าถึงการใช้งาน</string>
     <!-- Home exit prompts -->
     <string name="exit">ออก</string>
     <string name="close">ปิด</string>
@@ -116,7 +116,7 @@
     <string name="exit_prompt_notification_tip_matters">ดูเฉพาะสิ่งที่สำคัญ</string>
     <string name="exit_prompt_notification_tip_focus">มีสมาธิมากขึ้น ลดการรบกวน</string>
     <string name="permission_title_required">ต้องมีสิทธิ์</string>
-    <string name="permission_post_notifications_desc">เพื่อให้เครื่องมือล้างข้อมูลพร้อมใช้งาน โปรดอนุญาตให้ Quick Clean PRO ส่งการแจ้งเตือน</string>
+    <string name="permission_post_notifications_desc">เพื่อให้เครื่องมือล้างข้อมูลพร้อมใช้งาน โปรดอนุญาตให้ Storage Cleaner ส่งการแจ้งเตือน</string>
     <string name="permission_hint_app_notifications">จะส่งเฉพาะการแจ้งเตือนสถานะแอปและการล้างข้อมูลเท่านั้น</string>
     <string name="notification_enable_title">จะเปิดการแจ้งเตือนได้อย่างไร?</string>
     <string name="notification_enable_step_find_prefix">1. ค้นหา\u0020</string>
@@ -128,11 +128,22 @@
     <string name="home_app_lock_desc">ล็อกแอปเพื่อปกป้องความเป็นส่วนตัว</string>
     <string name="no_data_available">ไม่มีข้อมูล</string>
     <string name="virus_scan_notice_title">ประกาศ</string>
-    <string name="virus_scan_notice_message">Quick Clean PRO จะตรวจสอบข้อมูลแอปในอุปกรณ์นี้เพื่อสแกนหาความเสี่ยงด้านความปลอดภัย</string>
+    <string name="virus_scan_notice_message">Storage Cleaner จะตรวจสอบข้อมูลแอปในอุปกรณ์นี้เพื่อสแกนหาความเสี่ยงด้านความปลอดภัย</string>
     <string name="settings_overlay_permission">หน้าต่างลอย</string>
     <string name="settings_post_notifications_permission">การแจ้งเตือนแอป</string>
     <string name="file_unselect">ยกเลิกการเลือก</string>
     <string name="file_music">เพลง</string>
     <string name="app_usage_legend_other">อื่นๆ</string>
     <string name="device_info_source_hint">ข้อมูลอุปกรณ์ที่แสดงอ้างอิงจากข้อมูลที่ระบบให้มา และอาจแตกต่างจากข้อมูลจำเพาะอย่างเป็นทางการ เช่น ความจุพื้นที่เก็บข้อมูลหรือหน่วยความจำอาจต่างกันเล็กน้อยเนื่องจากพื้นที่ที่ระบบสำรองไว้หรือความแตกต่างของการกำหนดค่าฮาร์ดแวร์</string>
+
+    <string name="app_name">Storage Cleaner</string>
+    <string name="permission_usage_desc">หากต้องการแสดงรายละเอียดการใช้งานแอป โปรดอนุญาต Storage Cleaner ในการเข้าถึงการใช้งาน</string>
+    <string name="permission_network_usage_desc">หากต้องการแสดงรายละเอียดการใช้งานเครือข่าย โปรดอนุญาต Storage Cleaner ในการเข้าถึงการใช้งาน</string>
+    <string name="permission_notification_desc">หากต้องการจัดระเบียบการแจ้งเตือนอัตโนมัติ โปรดอนุญาต Storage Cleaner ในการเข้าถึงการแจ้งเตือน</string>
+    <string name="permission_overlay_desc">หากต้องการแสดงหน้าจอ PIN เหนือแอปที่ป้องกันไว้ โปรดอนุญาตให้ Storage Cleaner แสดงทับแอปอื่นได้</string>
+    <string name="rate_title">ชอบ Storage Cleaner ไหม</string>
+    <string name="rate_feedback_message">ขอบคุณสำหรับความคิดเห็น เราจะปรับปรุง Storage Cleaner ต่อไป</string>
+    <string name="notification_enable_step_find">1. ค้นหา Storage Cleaner</string>
+    <string name="notification_channel_tools">เครื่องมือ Storage Cleaner</string>
+    <string name="notification_channel_tools_desc">คำแนะนำเครื่องมือ Storage Cleaner</string>
 </resources>

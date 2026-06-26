@@ -107,15 +107,15 @@
     <string name="turn_on_auto_lock">Bật khóa tự động</string>
     <string name="turn_on_auto_lock_hint">Tự động khóa ứng dụng mới sau khi cài đặt.</string>
     <string name="app_lock_usage_permission_title">Cần quyền dữ liệu sử dụng</string>
-    <string name="app_lock_usage_permission_desc">Tìm Quick Clean PRO và bật quyền.</string>
+    <string name="app_lock_usage_permission_desc">Tìm Storage Cleaner và bật quyền.</string>
     <string name="app_lock_usage_permission_grant">Cấp quyền truy cập dữ liệu sử dụng</string>
     <string name="app_lock_overlay_permission_message">Vui lòng cấp các quyền cần thiết để dùng tính năng này.</string>
     <string name="app_lock_overlay_permission_title">Cần quyền cửa sổ nổi</string>
-    <string name="app_lock_overlay_permission_desc">Tìm Quick Clean PRO và bật quyền.</string>
+    <string name="app_lock_overlay_permission_desc">Tìm Storage Cleaner và bật quyền.</string>
     <string name="app_lock_overlay_permission_grant">Cho phép hiển thị trên ứng dụng khác</string>
     <string name="manage_permission">Quản lý quyền</string>
     <string name="allow_now">Cho phép ngay</string>
-    <string name="permission_app_lock_usage_desc">Để phát hiện khi ứng dụng được bảo vệ mở ra, hãy cho phép Quick Clean PRO trong Truy cập sử dụng.</string>
+    <string name="permission_app_lock_usage_desc">Để phát hiện khi ứng dụng được bảo vệ mở ra, hãy cho phép Storage Cleaner trong Truy cập sử dụng.</string>
     <!-- Home exit prompts -->
     <string name="exit">Thoát</string>
     <string name="close">Đóng</string>
@@ -131,7 +131,7 @@
     <string name="exit_prompt_notification_tip_matters">Chỉ xem những gì quan trọng</string>
     <string name="exit_prompt_notification_tip_focus">Giữ tập trung. Giảm gián đoạn</string>
     <string name="permission_title_required">Cần quyền</string>
-    <string name="permission_post_notifications_desc">Để luôn có sẵn công cụ dọn dẹp, hãy cho phép Quick Clean PRO gửi thông báo.</string>
+    <string name="permission_post_notifications_desc">Để luôn có sẵn công cụ dọn dẹp, hãy cho phép Storage Cleaner gửi thông báo.</string>
     <string name="permission_hint_app_notifications">Chỉ gửi trạng thái ứng dụng và thông báo dọn dẹp.</string>
     <string name="notification_enable_title">Cách bật thông báo?</string>
     <string name="notification_enable_step_find_prefix">1. Tìm\u0020</string>
@@ -143,11 +143,22 @@
     <string name="home_app_lock_desc">Kh?a ?ng d?ng ?? b?o v? quy?n ri?ng t?</string>
     <string name="no_data_available">Kh?ng c? d? li?u</string>
     <string name="virus_scan_notice_title">Th?ng b?o</string>
-    <string name="virus_scan_notice_message">Quick Clean PRO s? ki?m tra th?ng tin ?ng d?ng tr?n thi?t b? n?y ?? qu?t r?i ro b?o m?t.</string>
+    <string name="virus_scan_notice_message">Storage Cleaner sẽ kiểm tra thông tin ứng dụng trên thiết bị này để quét rủi ro bảo mật.</string>
     <string name="settings_overlay_permission">C?a s? n?i</string>
     <string name="settings_post_notifications_permission">Th?ng b?o ?ng d?ng</string>
     <string name="file_unselect">B? ch?n</string>
     <string name="file_music">Nh?c</string>
     <string name="app_usage_legend_other">Kh?c</string>
     <string name="device_info_source_hint">Th?ng tin thi?t b? ???c hi?n th? d?a tr?n d? li?u do h? th?ng cung c?p v? c? th? kh?c v?i th?ng s? ch?nh th?c. V? d?, dung l??ng l?u tr? ho?c b? nh? c? th? ch?nh l?ch nh? do ph?n h? th?ng d?nh ri?ng ho?c c?u h?nh ph?n c?ng.</string>
+
+    <string name="app_name">Storage Cleaner</string>
+    <string name="permission_usage_desc">Để hiển thị chi tiết sử dụng ứng dụng, hãy cho phép Storage Cleaner trong Truy cập sử dụng.</string>
+    <string name="permission_network_usage_desc">Để hiển thị chi tiết sử dụng mạng, hãy cho phép Storage Cleaner trong Truy cập sử dụng.</string>
+    <string name="permission_notification_desc">Để tự động sắp xếp thông báo, hãy cho phép Storage Cleaner trong Truy cập thông báo.</string>
+    <string name="permission_overlay_desc">Để hiển thị màn hình PIN trên các ứng dụng được bảo vệ, hãy cho phép Storage Cleaner hiển thị trên ứng dụng khác.</string>
+    <string name="rate_title">Bạn thích Storage Cleaner chứ?</string>
+    <string name="rate_feedback_message">Cảm ơn phản hồi của bạn. Chúng tôi sẽ tiếp tục cải thiện Storage Cleaner.</string>
+    <string name="notification_enable_step_find">1. Tìm Storage Cleaner</string>
+    <string name="notification_channel_tools">Công cụ Storage Cleaner</string>
+    <string name="notification_channel_tools_desc">Gợi ý công cụ Storage Cleaner</string>
 </resources>

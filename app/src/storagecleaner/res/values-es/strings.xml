@@ -97,9 +97,9 @@
     <string name="permission_media_video_desc">Para escanear y gestionar videos, concede acceso a videos.</string>
     <string name="permission_media_audio_desc">Para escanear y gestionar audio, concede acceso a audio.</string>
     <string name="permission_location_desc">Para escanear dispositivos en tu red Wi-Fi, concede permiso de ubicación.</string>
-    <string name="permission_usage_desc">Para mostrar el uso de apps, permite Quick Clean PRO en Acceso de uso.</string>
-    <string name="permission_network_usage_desc">Para mostrar el uso de red, permite Quick Clean PRO en Acceso de uso.</string>
-    <string name="permission_notification_desc">Para ordenar notificaciones automáticamente, permite Quick Clean PRO en Acceso a notificaciones.</string>
+    <string name="permission_usage_desc">Para mostrar el uso de apps, permite Storage Cleaner en Acceso de uso.</string>
+    <string name="permission_network_usage_desc">Para mostrar el uso de red, permite Storage Cleaner en Acceso de uso.</string>
+    <string name="permission_notification_desc">Para ordenar notificaciones automáticamente, permite Storage Cleaner en Acceso a notificaciones.</string>
     <string name="permission_hint_junk_deleted">Solo se eliminarán archivos basura.</string>
     <string name="permission_hint_files_safe">Solo se gestionarán los archivos seleccionados.</string>
     <string name="permission_hint_no_personal">No se recopilará información personal.</string>
@@ -187,15 +187,15 @@
     <string name="turn_on_auto_lock">Activar bloqueo automático</string>
     <string name="turn_on_auto_lock_hint">Bloquea automáticamente las apps nuevas después de instalarlas.</string>
     <string name="app_lock_usage_permission_title">Permiso de datos de uso requerido</string>
-    <string name="app_lock_usage_permission_desc">Busca Quick Clean PRO y activa el permiso.</string>
+    <string name="app_lock_usage_permission_desc">Busca Storage Cleaner y activa el permiso.</string>
     <string name="app_lock_usage_permission_grant">Conceder acceso a datos de uso</string>
     <string name="app_lock_overlay_permission_message">Concede los permisos necesarios para usar esta función.</string>
     <string name="app_lock_overlay_permission_title">Permiso de ventana flotante requerido</string>
-    <string name="app_lock_overlay_permission_desc">Busca Quick Clean PRO y activa el permiso.</string>
+    <string name="app_lock_overlay_permission_desc">Busca Storage Cleaner y activa el permiso.</string>
     <string name="app_lock_overlay_permission_grant">Permitir mostrar sobre otras apps</string>
     <string name="manage_permission">Gestionar permiso</string>
     <string name="allow_now">Permitir ahora</string>
-    <string name="permission_app_lock_usage_desc">Para detectar cuándo se abren apps protegidas, permite Quick Clean PRO en Acceso de uso.</string>
+    <string name="permission_app_lock_usage_desc">Para detectar cuándo se abren apps protegidas, permite Storage Cleaner en Acceso de uso.</string>
     <!-- Home exit prompts -->
     <string name="exit">Salir</string>
     <string name="close">Cerrar</string>
@@ -209,7 +209,7 @@
     <string name="exit_prompt_notification_tip_block">Bloquea notificaciones no deseadas</string>
     <string name="exit_prompt_notification_tip_matters">Ve solo lo importante</string>
     <string name="exit_prompt_notification_tip_focus">Mantén el foco. Reduce interrupciones</string>
-    <string name="permission_post_notifications_desc">Para mantener disponibles las herramientas de limpieza, permite que Quick Clean PRO envíe notificaciones.</string>
+    <string name="permission_post_notifications_desc">Para mantener disponibles las herramientas de limpieza, permite que Storage Cleaner envíe notificaciones.</string>
     <string name="permission_hint_app_notifications">Solo se enviarán notificaciones de estado de la app y de limpieza.</string>
     <string name="notification_enable_title">¿Cómo activar las notificaciones?</string>
     <string name="notification_enable_step_find_prefix">1. Busca\u0020</string>
@@ -221,11 +221,19 @@
     <string name="home_app_lock_desc">Bloqueo de apps para proteger la privacidad</string>
     <string name="no_data_available">No hay datos disponibles</string>
     <string name="virus_scan_notice_title">Aviso</string>
-    <string name="virus_scan_notice_message">Quick Clean PRO comprobar? la informaci?n de las apps de este dispositivo para analizar riesgos de seguridad.</string>
+    <string name="virus_scan_notice_message">Storage Cleaner comprobará la información de las apps de este dispositivo para analizar riesgos de seguridad.</string>
     <string name="settings_overlay_permission">Ventana flotante</string>
     <string name="settings_post_notifications_permission">Notificaciones de la app</string>
     <string name="file_unselect">Deseleccionar</string>
     <string name="file_music">M?sica</string>
     <string name="app_usage_legend_other">Otros</string>
     <string name="device_info_source_hint">La informaci?n del dispositivo mostrada se basa en datos proporcionados por el sistema y puede variar respecto a las especificaciones oficiales. Por ejemplo, la capacidad de almacenamiento o memoria puede diferir ligeramente debido a reservas del sistema o a la configuraci?n del hardware.</string>
+
+    <string name="app_name">Storage Cleaner</string>
+    <string name="permission_overlay_desc">Para mostrar la pantalla PIN sobre las apps protegidas, permite que Storage Cleaner se muestre sobre otras apps.</string>
+    <string name="rate_title">¿Te gusta Storage Cleaner?</string>
+    <string name="rate_feedback_message">Gracias por tus comentarios. Seguiremos mejorando Storage Cleaner.</string>
+    <string name="notification_enable_step_find">1. Busca Storage Cleaner</string>
+    <string name="notification_channel_tools">Herramientas de Storage Cleaner</string>
+    <string name="notification_channel_tools_desc">Sugerencias de herramientas de Storage Cleaner</string>
 </resources>

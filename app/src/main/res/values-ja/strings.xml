@@ -42,6 +42,7 @@
     
     <string name="permission_is_required">権限が必要です</string>
     <string name="permission_storage_desc">不要ファイルをスキャンして削除するには、ファイルとメディアへのアクセスを許可してください。</string>
+    <string name="permission_installed_apps_desc">インストール済みアプリのセキュリティリスクをスキャンするには、システム設定でインストール済みアプリ一覧へのアクセスを許可してください。</string>
     <string name="permission_hint_junk_deleted">不要ファイルのみ削除されます。</string>
     <string name="permission_hint_no_personal">個人情報は収集されません。</string>
     <string name="file_select_all">すべて選択</string>
