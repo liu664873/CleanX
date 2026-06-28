@@ -9,7 +9,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.config.AppConfig
-import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
+import com.quickcleanpro.phonecleaner.config.VariantConfigs
+import com.quickcleanpro.phonecleaner.navigation.AppRoute
 import com.quickcleanpro.phonecleaner.utils.NotificationChannelManager
 
 object ToolNotificationDataSource {
@@ -24,7 +25,12 @@ object ToolNotificationDataSource {
         }
         NotificationChannelManager.createAllChannels(appContext)
         val manager = NotificationManagerCompat.from(appContext)
-        ToolNotificationSpecs.forEachIndexed { index, item ->
+        val profile = VariantConfigs.current
+        ToolNotificationSpecs
+            .filter { item ->
+                item.route in profile.notificationProfile.enabledToolRoutes &&
+                    profile.isRouteEnabled(item.route)
+            }.forEachIndexed { index, item ->
             runCatching { manager.cancel(TOOL_NOTIFICATION_BASE_ID + index) }
             val notification = buildToolNotification(appContext, item, index)
             runCatching { manager.notify(TOOL_NOTIFICATION_BASE_ID + index, notification) }
@@ -125,42 +131,42 @@ val ToolNotificationSpecs: List<ToolNotificationSpec> =
         ToolNotificationSpec(
             titleRes = R.string.device_info,
             descriptionRes = R.string.common_tool_device_desc,
-            route = Screen.DeviceInfo.route,
+            route = AppRoute.DeviceInfo.value,
             iconRes = R.drawable.ic_n_device_info,
             actionRes = R.string.view_now,
         ),
         ToolNotificationSpec(
             titleRes = R.string.junk_removal,
             descriptionRes = R.string.notification_tool_junk_desc,
-            route = Screen.Scan.route,
+            route = AppRoute.JunkClean.value,
             iconRes = R.drawable.ic_n_junk_removal,
             actionRes = R.string.scan_now,
         ),
         ToolNotificationSpec(
             titleRes = R.string.battery_info,
             descriptionRes = R.string.common_tool_battery_desc,
-            route = Screen.BatteryInfo.route,
+            route = AppRoute.BatteryInfo.value,
             iconRes = R.drawable.ic_n_battery_info,
             actionRes = R.string.view_now,
         ),
         ToolNotificationSpec(
             titleRes = R.string.network_scan,
             descriptionRes = R.string.notification_tool_network_scan_desc,
-            route = Screen.NetworkScan.route,
+            route = AppRoute.NetworkScan.value,
             iconRes = R.drawable.ic_n_network_scan,
             actionRes = R.string.scan_now,
         ),
         ToolNotificationSpec(
             titleRes = R.string.network_usage,
             descriptionRes = R.string.notification_tool_network_usage_desc,
-            route = Screen.NetworkUsage.route,
+            route = AppRoute.NetworkUsage.value,
             iconRes = R.drawable.ic_n_network_usage,
             actionRes = R.string.view_now,
         ),
         ToolNotificationSpec(
             titleRes = R.string.notification_bar,
             descriptionRes = R.string.common_tool_notification_bar_desc,
-            route = Screen.NotificationBar.route,
+            route = AppRoute.NotificationBar.value,
             iconRes = R.drawable.ic_notification_bar,
             actionRes = R.string.check_now,
         ),

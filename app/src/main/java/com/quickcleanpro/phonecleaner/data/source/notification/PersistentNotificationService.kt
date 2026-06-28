@@ -17,13 +17,15 @@ import android.os.PowerManager
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.quickcleanpro.phonecleaner.BuildConfig
 import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.config.AppConfig
+import com.quickcleanpro.phonecleaner.config.NotificationProfile
+import com.quickcleanpro.phonecleaner.config.NotificationShortcutProfile
+import com.quickcleanpro.phonecleaner.config.VariantConfigs
 import com.quickcleanpro.phonecleaner.data.repository.AppLockRepositoryImpl
 import com.quickcleanpro.phonecleaner.data.source.battery.BatteryHistoryOwner
 import com.quickcleanpro.phonecleaner.data.source.battery.BatteryHistorySampler
-import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
+import com.quickcleanpro.phonecleaner.navigation.AppRoute
 import com.quickcleanpro.phonecleaner.utils.NotificationChannelManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -170,30 +172,32 @@ class PersistentNotificationService : Service() {
         stopSelf()
     }
 
-    private fun buildPersistentNotification(): Notification =
-        if (BuildConfig.VARIANT_KEY == VARIANT_STORAGE_CLEANER) {
-            buildStorageCleanerPersistentNotification()
+    private fun buildPersistentNotification(): Notification {
+        val profile = VariantConfigs.current.notificationProfile
+        return if (profile.hasPersistentShortcutLayouts()) {
+            buildProfiledPersistentNotification(profile)
         } else {
             buildDefaultPersistentNotification()
         }
+    }
 
     private fun buildDefaultPersistentNotification(): Notification =
         persistentNotificationBuilder()
             .build()
 
-    private fun buildStorageCleanerPersistentNotification(): Notification {
-        val compactLayoutId = storageCleanerResourceId("layout", "notification_persistent_shortcuts_compact")
-        val expandedLayoutId = storageCleanerResourceId("layout", "notification_persistent_shortcuts")
+    private fun buildProfiledPersistentNotification(profile: NotificationProfile): Notification {
+        val compactLayoutId = profiledResourceId("layout", profile.persistentShortcutCompactLayoutName.orEmpty())
+        val expandedLayoutId = profiledResourceId("layout", profile.persistentShortcutExpandedLayoutName.orEmpty())
         if (compactLayoutId == 0 || expandedLayoutId == 0) return buildDefaultPersistentNotification()
 
-        val compactViews = buildPersistentShortcutViews(compactLayoutId)
-        val expandedViews = buildPersistentShortcutViews(expandedLayoutId)
+        val compactViews = buildPersistentShortcutViews(compactLayoutId, profile.persistentShortcuts)
+        val expandedViews = buildPersistentShortcutViews(expandedLayoutId, profile.persistentShortcuts)
 
         return persistentNotificationBuilder()
             .setContentIntent(
                 ToolNotificationIntentFactory.pendingIntent(
                     context = this,
-                    route = Screen.Home.route,
+                    route = AppRoute.Home.value,
                     requestCode = PERSISTENT_NOTIFICATION_CONTENT_REQUEST_CODE,
                 ),
             )
@@ -203,30 +207,14 @@ class PersistentNotificationService : Service() {
             .build()
     }
 
-    private fun buildPersistentShortcutViews(layoutId: Int): RemoteViews =
+    private fun buildPersistentShortcutViews(
+        layoutId: Int,
+        shortcuts: List<NotificationShortcutProfile>,
+    ): RemoteViews =
         RemoteViews(packageName, layoutId).apply {
             setTextIfPresent("persistent_notification_title", getString(R.string.app_name))
             setTextIfPresent("persistent_notification_desc", getString(R.string.running_in_background))
-            setShortcutIfPresent(
-                idName = "persistent_shortcut_clean",
-                route = Screen.Scan.route,
-                requestCode = PERSISTENT_SHORTCUT_CLEAN_REQUEST_CODE,
-            )
-            setShortcutIfPresent(
-                idName = "persistent_shortcut_file",
-                route = ToolNotificationIntentFactory.ROUTE_HOME_FILE_MANAGER,
-                requestCode = PERSISTENT_SHORTCUT_FILE_REQUEST_CODE,
-            )
-            setShortcutIfPresent(
-                idName = "persistent_shortcut_tools",
-                route = ToolNotificationIntentFactory.ROUTE_HOME_TOOLBOX,
-                requestCode = PERSISTENT_SHORTCUT_TOOLS_REQUEST_CODE,
-            )
-            setShortcutIfPresent(
-                idName = "persistent_shortcut_battery",
-                route = Screen.BatteryInfo.route,
-                requestCode = PERSISTENT_SHORTCUT_BATTERY_REQUEST_CODE,
-            )
+            shortcuts.forEach { shortcut -> setShortcutIfPresent(shortcut) }
         }
 
     private fun persistentNotificationBuilder(): NotificationCompat.Builder =
@@ -244,28 +232,25 @@ class PersistentNotificationService : Service() {
         idName: String,
         text: CharSequence,
     ) {
-        val viewId = storageCleanerResourceId("id", idName)
+        val viewId = profiledResourceId("id", idName)
         if (viewId != 0) setTextViewText(viewId, text)
     }
 
-    private fun RemoteViews.setShortcutIfPresent(
-        idName: String,
-        route: String,
-        requestCode: Int,
-    ) {
-        val viewId = storageCleanerResourceId("id", idName)
+    private fun RemoteViews.setShortcutIfPresent(shortcut: NotificationShortcutProfile) {
+        if (!ToolNotificationIntentFactory.isValidRoute(shortcut.route)) return
+        val viewId = profiledResourceId("id", shortcut.viewIdName)
         if (viewId == 0) return
         setOnClickPendingIntent(
             viewId,
             ToolNotificationIntentFactory.pendingIntent(
                 context = this@PersistentNotificationService,
-                route = route,
-                requestCode = requestCode,
+                route = shortcut.route,
+                requestCode = shortcut.requestCode,
             ),
         )
     }
 
-    private fun storageCleanerResourceId(
+    private fun profiledResourceId(
         type: String,
         name: String,
     ): Int =
@@ -396,15 +381,10 @@ class PersistentNotificationService : Service() {
         const val PERSISTENT_NOTIFICATION_ID = 17
         private const val PERSISTENT_NOTIFICATION_DELETE_REQUEST_CODE = 17
         private const val PERSISTENT_NOTIFICATION_CONTENT_REQUEST_CODE = 1710
-        private const val PERSISTENT_SHORTCUT_CLEAN_REQUEST_CODE = 1711
-        private const val PERSISTENT_SHORTCUT_FILE_REQUEST_CODE = 1712
-        private const val PERSISTENT_SHORTCUT_TOOLS_REQUEST_CODE = 1713
-        private const val PERSISTENT_SHORTCUT_BATTERY_REQUEST_CODE = 1714
         private const val WAKE_LOCK_TIMEOUT_MS = 10L * 60L * 1000L
         private const val START_IN_FLIGHT_RESET_MS = 8_000L
         private const val PERSISTENT_NOTIFICATION_RESTORE_DELAY_MS = 1_000L
         private const val PERSISTENT_NOTIFICATION_CHECK_INTERVAL_MS = 60_000L
-        private const val VARIANT_STORAGE_CLEANER = "storagecleaner"
 
         fun start(context: Context) {
             val appContext = context.applicationContext
@@ -474,3 +454,7 @@ class PersistentNotificationService : Service() {
         }
     }
 }
+
+private fun NotificationProfile.hasPersistentShortcutLayouts(): Boolean =
+    !persistentShortcutCompactLayoutName.isNullOrBlank() &&
+        !persistentShortcutExpandedLayoutName.isNullOrBlank()

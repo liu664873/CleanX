@@ -1,0 +1,30 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 边框 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#00000000"/> <!-- 透明填充 -->
+            <stroke
+                android:width="2dp"
+                android:color="#DE350B"/> <!-- 黑色边框 -->
+            <corners android:radius="6dp"/>
+        </shape>
+    </item>
+
+    <!-- 进度条背景 -->
+    <item android:id="@android:id/background" android:left="2dp" android:right="2dp" android:top="2dp" android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#EAEAEA"/>
+            <corners android:radius="4dp"/>
+        </shape>
+    </item>
+
+    <!-- 进度条进度 -->
+    <item android:id="@android:id/progress" android:left="2dp" android:right="2dp" android:top="2dp" android:bottom="2dp">
+        <clip>
+            <shape android:shape="rectangle">
+                <solid android:color="#DE350B"/>
+                <corners android:radius="4dp"/>
+            </shape>
+        </clip>
+    </item>
+</layer-list>

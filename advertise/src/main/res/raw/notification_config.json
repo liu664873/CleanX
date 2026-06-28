@@ -1,0 +1,102 @@
+{
+  "24HMax": 50,
+  "each_trigger_sent": 3,
+  "NMax": 5,
+  "has_sound_alert": true,
+  "has_vibration": true,
+  "is_foreground_send": false,
+  "content": "random",
+  "triggers": [
+    {
+      "id": "1",
+      "name": "screen_unlock",
+      "delay": 0,
+      "offset_second": 900,
+      "interval_second": 300
+    },
+    {
+      "id": "2",
+      "name": "press_key_home",
+      "delay": 0,
+      "offset_second": 900,
+      "interval_second": 300
+    },
+    {
+      "id": "3",
+      "name": "battery_change",
+      "delay": 0,
+      "offset_second": 900,
+      "interval_second": 300
+    },
+    {
+      "id": "4",
+      "name": "install_app",
+      "delay": 0,
+      "offset_second": 600,
+      "interval_second": 300
+    },
+    {
+      "id": "5",
+      "name": "uninstall_app",
+      "delay": 0,
+      "offset_second": 600,
+      "interval_second": 300
+    },
+    {
+      "id": "6",
+      "name": "screen_on",
+      "delay": 0,
+      "offset_second": 0,
+      "interval_second": 0,
+      "configs": [
+        {
+          "id": "a",
+          "name": "6-a",
+          "delay": 5,
+          "offset_second": 300,
+          "interval_second": 900
+        },
+        {
+          "id": "b",
+          "name": "6-b",
+          "delay": 65,
+          "offset_second": 360,
+          "interval_second": 300
+        },
+        {
+          "id": "c",
+          "name": "6-c",
+          "delay": 10,
+          "offset_second": 120,
+          "interval_second": 600
+        }
+      ]
+    }
+  ],
+  "timer": [
+    {
+      "id": "timer-a",
+      "name": "timer-a",
+      "HH": 6,
+      "MM": 0
+    },
+    {
+      "id": "timer-b",
+      "name": "timer-b",
+      "HH": 9,
+      "MM": 0
+    },
+    {
+      "id": "timer-b",
+      "name": "timer-b",
+      "HH": 14,
+      "MM": 0
+    },
+    {
+      "id": "timer-b",
+      "name": "timer-b",
+      "HH": 20,
+      "MM": 0
+    }
+  ]
+}

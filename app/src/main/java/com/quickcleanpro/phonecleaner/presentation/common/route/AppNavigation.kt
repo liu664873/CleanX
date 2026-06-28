@@ -7,12 +7,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.quickcleanpro.phonecleaner.config.VariantConfigs
+import com.quickcleanpro.phonecleaner.navigation.AppRoute
+import com.quickcleanpro.phonecleaner.navigation.RouteAdPolicy
 import com.quickcleanpro.phonecleaner.presentation.app.AppLaunchCoordinator
+import com.quickcleanpro.phonecleaner.variant.currentVariantUiRegistry
 
 @Composable
 fun AppNavGraph(
     navController: NavHostController,
-    startDestination: String = Screen.Splash.route,
+    startDestination: String = AppRoute.Splash.value,
     launchCoordinator: AppLaunchCoordinator? = null,
     splashPaused: Boolean = false,
     externalBlockingPromptActive: Boolean = false,
@@ -21,9 +25,13 @@ fun AppNavGraph(
     interceptors: List<NavigationInterceptor> = emptyList(),
     adManager: AdManager = NoOpAdManager,
 ) {
+    val profile = remember { VariantConfigs.current }
+    val routeAdPolicy = remember(profile) { RouteAdPolicy(profile) }
+    val variantUiRegistry = remember { currentVariantUiRegistry() }
     val routeManager =
         remember {
             RouteManager(navController, adManager = adManager).apply {
+                addInterceptor(AdInterceptor(routeAdPolicy.featureEntryAdPlacements))
                 interceptors.forEach { addInterceptor(it) }
             }
         }
@@ -36,21 +44,19 @@ fun AppNavGraph(
             startDestination = startDestination,
             modifier = Modifier.fillMaxSize(),
         ) {
-            registerStartupRoutes(
+            variantUiRegistry.registerStartupRoutes(
+                builder = this,
                 splashPaused = splashPaused,
                 launchCoordinator = launchCoordinator,
                 splashNotificationPermissionPrompt = splashNotificationPermissionPrompt,
             )
-            registerHomeRoutes(
+            variantUiRegistry.registerHomeRoutes(
+                builder = this,
                 externalBlockingPromptActive = externalBlockingPromptActive,
                 homeNotificationPermissionPrompt = homeNotificationPermissionPrompt,
             )
-            registerCleanRoutes()
-            registerAntiVirusRoutes()
-            registerAppLockRoutes()
-            registerToolboxRoutes()
-            registerFileManagerRoutes()
-            registerSettingsRoutes()
+            variantUiRegistry.registerFeatureRoutes(this, profile)
+            variantUiRegistry.registerSettingsRoutes(this)
         }
     }
 }

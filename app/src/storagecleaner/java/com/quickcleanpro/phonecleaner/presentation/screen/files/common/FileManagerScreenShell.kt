@@ -16,6 +16,10 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.quickcleanpro.phonecleaner.config.FeatureKey
+import com.quickcleanpro.phonecleaner.operation.FeatureOperationEvent
+import com.quickcleanpro.phonecleaner.operation.FeatureOperationTracker
+import com.quickcleanpro.phonecleaner.operation.LocalFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.DeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.NoResultsDialog
@@ -25,16 +29,19 @@ import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProte
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
 import com.quickcleanpro.phonecleaner.presentation.common.permission.rememberPermissionGranted
 import com.quickcleanpro.phonecleaner.presentation.common.route.RouteManager
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.BaseFileManagerViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.components.FileManagerPageBrush
 
-internal enum class FileOperationPhase {
-    Scanning,
-    Browsing,
-    ConfirmDelete,
-    Deleting,
-    CompleteAnimation,
-    Result,
-    NoResults
+@Composable
+internal fun FileManagerOperationEventsEffect(
+    viewModel: BaseFileManagerViewModel,
+    tracker: FeatureOperationTracker = LocalFeatureOperationTracker.current,
+) {
+    LaunchedEffect(viewModel, tracker) {
+        viewModel.operationEvents.collect { event ->
+            tracker.track(event)
+        }
+    }
 }
 
 @Composable
@@ -75,6 +82,17 @@ internal fun FileManagerPermissionState.leaveHome(router: RouteManager) {
     router.goHome()
 }
 
+internal fun FileManagerPermissionState.leaveHomeAfterComplete(
+    router: RouteManager,
+    tracker: FeatureOperationTracker,
+    feature: FeatureKey,
+) {
+    markLeaving()
+    tracker.trackWithAd(FeatureOperationEvent.ReturnHome(feature)) {
+        router.goHome()
+    }
+}
+
 @Composable
 internal fun FileManagerScaffold(
     title: String,
@@ -111,6 +129,7 @@ internal fun FileManagerErrorToastEffect(
 
 @Composable
 internal fun FileManagerStartEffect(
+    feature: FeatureKey,
     permissionState: FileManagerPermissionState,
     onStartIfNeeded: () -> Unit,
     onPermissionRejected: () -> Unit,
@@ -118,6 +137,7 @@ internal fun FileManagerStartEffect(
     val latestStartIfNeeded by rememberUpdatedState(onStartIfNeeded)
     val latestPermissionRejected by rememberUpdatedState(onPermissionRejected)
     val permissionCoordinator = LocalCleanXPermissionCoordinator.current
+    val tracker = LocalFeatureOperationTracker.current
     LaunchedEffect(permissionState.granted, permissionState.leavingPage) {
         if (permissionState.leavingPage) return@LaunchedEffect
         if (permissionState.granted) {
@@ -130,7 +150,11 @@ internal fun FileManagerStartEffect(
                 permissionState.onPermissionChanged(true)
                 latestStartIfNeeded()
             },
-            onRejected = latestPermissionRejected,
+            onRejected = {
+                tracker.trackWithAd(FeatureOperationEvent.PermissionRejected(feature)) {
+                    latestPermissionRejected()
+                }
+            },
         )
     }
 }

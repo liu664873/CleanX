@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="text_color_282E39">#282E39</color>
+    <color name="v_page_bg">#E9EBF2</color>
+
+    <color name="tab_color_pdf">#FFF92D2D</color>
+    <color name="teal_200_ad">#FF03DAC5</color>
+
+    <color name="btn_nor">#337EFF</color>
+
+    <color name="notification_text_color">#FFFFFFFF</color>
+
+
+</resources>

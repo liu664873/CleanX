@@ -12,7 +12,7 @@ import com.quickcleanpro.phonecleaner.domain.model.device.StorageInfo
 import com.quickcleanpro.phonecleaner.domain.repository.AppLockRepository
 import com.quickcleanpro.phonecleaner.domain.repository.DeviceInfoRepository
 import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
-import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
+import com.quickcleanpro.phonecleaner.navigation.AppRoute
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -126,12 +126,12 @@ class HomeViewModel(
     }
 
     private fun nextExitPromptSpec(): ToolNotificationSpec {
-        val notificationBarSpec = ToolNotificationSpecs.first { it.route == Screen.NotificationBar.route }
+        val notificationBarSpec = ToolNotificationSpecs.first { it.route == AppRoute.NotificationBar.value }
         if (!settingsRepository.hasShownNotificationBarExitPrompt()) {
             settingsRepository.saveNotificationBarExitPromptShown()
             return notificationBarSpec
         }
-        val suggestions = ToolNotificationSpecs.filterNot { it.route == Screen.NotificationBar.route }
+        val suggestions = ToolNotificationSpecs.filterNot { it.route == AppRoute.NotificationBar.value }
         return suggestions.randomOrNull() ?: notificationBarSpec
     }
 

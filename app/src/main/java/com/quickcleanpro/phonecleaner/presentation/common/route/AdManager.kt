@@ -12,6 +12,11 @@ object AdPlacements {
     const val SCAN_COMPLETE = "scan_complete"
     const val CLEAN_COMPLETE = "clean_complete"
     const val RESULT_INLINE = "result_inline"
+    const val RETURN_HOME = "return_home"
+    const val JUNK_CLEAN_FINISH = "junk_clean_finish"
+    const val FILE_MANAGE_FINISH = "file_manage_finish"
+    const val BATTERY_INFO_FINISH = "battery_info_finish"
+    const val WHATSAPP_CLEAN_FINISH = "whatsapp_clean_finish"
 }
 
 interface AdManager {

@@ -20,9 +20,13 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.quickcleanpro.phonecleaner.advertise.AdvertisePageMediator
+import com.quickcleanpro.phonecleaner.advertise.AdvertiseRouteAdManager
 import com.quickcleanpro.phonecleaner.core.permission.appSettingsIntent
 import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationIntentFactory
 import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
+import com.quickcleanpro.phonecleaner.operation.DefaultFeatureOperationTracker
+import com.quickcleanpro.phonecleaner.operation.LocalFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionCoordinatorProvider
 import com.quickcleanpro.phonecleaner.presentation.common.route.AppNavGraph
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
@@ -39,6 +43,12 @@ fun CleanXAppRoot(
     val settingsRepository: SettingsRepository = koinInject()
     val notificationPermissionSessionViewModel: NotificationPermissionSessionViewModel = koinViewModel()
     val navController = rememberNavController()
+    val activity = context.findActivity()
+    val adManager = remember(activity) { AdvertiseRouteAdManager(activity) }
+    val operationTracker =
+        remember(activity) {
+            DefaultFeatureOperationTracker(activityProvider = { activity })
+        }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
     val pendingRequest = launchCoordinator.pendingRequest
@@ -46,7 +56,10 @@ fun CleanXAppRoot(
     var notificationPermissionUiActive by remember { mutableStateOf(false) }
     val externalActivityLaunchHandler =
         ExternalActivityLaunchHandler(
-            markLaunch = launchCoordinator::markExternalActivityLaunch,
+            markLaunch = {
+                launchCoordinator.markExternalActivityLaunch()
+                AdvertisePageMediator.suppressNextAppOpenAd()
+            },
             cancelLaunch = launchCoordinator::cancelExternalActivityLaunch,
         )
 
@@ -84,6 +97,7 @@ fun CleanXAppRoot(
 
     CompositionLocalProvider(
         LocalExternalActivityLaunchHandler provides externalActivityLaunchHandler,
+        LocalFeatureOperationTracker provides operationTracker,
     ) {
         CleanXPermissionCoordinatorProvider {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -146,6 +160,7 @@ fun CleanXAppRoot(
                             },
                         )
                     },
+                    adManager = adManager,
                 )
 
                 if (pendingRequest is AppLaunchRequest.ForegroundReturn &&

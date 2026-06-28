@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionCopy
 
 private val PermissionDialogNavy = Color(0xFF1D2959)
 private val PermissionDialogBlue = Color(0xFF4179FC)

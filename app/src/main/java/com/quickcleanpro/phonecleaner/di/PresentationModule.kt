@@ -14,7 +14,6 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.videos.VideosMan
 import com.quickcleanpro.phonecleaner.presentation.screen.home.HomeViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.onboarding.OnboardingScanViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.JunkClean.JunkCleanViewModel
-import com.quickcleanpro.phonecleaner.presentation.screen.settings.ManagePermissionsViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.splash.SplashViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.appusage.AppUsageViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.common.device.BatteryInfoViewModel
@@ -50,7 +49,6 @@ val presentationModule =
         viewModel { NotificationCleanerViewModel(get()) }
         viewModel { OnboardingScanViewModel(get()) }
         viewModel { JunkCleanViewModel(get(), get(), get(), Dispatchers.IO) }
-        viewModel { ManagePermissionsViewModel(Dispatchers.IO) }
         viewModel { SplashViewModel() }
         viewModel { PhotosManagerViewModel(get(), Dispatchers.IO) }
         viewModel { ScreenshotsManagerViewModel(get(), Dispatchers.IO) }

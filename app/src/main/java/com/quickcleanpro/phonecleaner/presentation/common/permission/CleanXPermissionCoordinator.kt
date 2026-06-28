@@ -3,7 +3,6 @@ package com.quickcleanpro.phonecleaner.presentation.common.permission
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -22,15 +21,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quickcleanpro.phonecleaner.core.permission.AppPermission
-import com.quickcleanpro.phonecleaner.core.permission.CommonPermission
 import com.quickcleanpro.phonecleaner.core.permission.PermissionManager
 import com.quickcleanpro.phonecleaner.core.permission.PermissionRequestPlan
 import com.quickcleanpro.phonecleaner.core.permission.PermissionStatus
 import com.quickcleanpro.phonecleaner.presentation.app.LocalExternalActivityLaunchHandler
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.AppLockOverlayPermissionDialog
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.AppLockUsageAccessPermissionDialog
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.CleanXPermissionRequiredDialog
-import com.quickcleanpro.phonecleaner.presentation.common.components.popups.InlinePermissionOverlay
+import com.quickcleanpro.phonecleaner.variant.PermissionPromptRequest
+import com.quickcleanpro.phonecleaner.variant.currentVariantUiRegistry
 import kotlinx.coroutines.delay
 
 val LocalCleanXPermissionCoordinator =
@@ -554,36 +550,15 @@ private fun CleanXPermissionPromptHost(state: CleanXPermissionCoordinatorState) 
 
     val session = state.session
     if (session?.showDialog == true) {
-        when (session.missingPermission?.key) {
-            CommonPermission.UsageAccess.key -> {
-                AppLockUsageAccessPermissionDialog(
-                    onManagePermission = state::onDialogSubmit,
-                    onDismissToHome = state::dismiss,
-                )
-            }
-            CommonPermission.Overlay.key -> {
-                AppLockOverlayPermissionDialog(
-                    onAllowNow = state::onDialogSubmit,
-                    onCancel = state::dismiss,
-                )
-            }
-            else -> {
-                BackHandler { state.dismiss() }
-                InlinePermissionOverlay(onDismiss = state::dismiss) {
-                    CleanXPermissionRequiredDialog(
-                        copy =
-                            when (val target = session.target) {
-                                is PermissionRequestTarget.Action ->
-                                    CleanXPermissionRegistry.copyFor(target.action, session.missingPermission)
-                                is PermissionRequestTarget.Item ->
-                                    CleanXPermissionRegistry.copyFor(target.item, session.missingPermission)
-                            },
-                        onSubmit = state::onDialogSubmit,
-                        onCancel = state::dismiss,
-                    )
-                }
-            }
-        }
+        currentVariantUiRegistry().permissionUi.PermissionPrompt(
+            request =
+                PermissionPromptRequest(
+                    target = session.target,
+                    missingPermission = session.missingPermission,
+                ),
+            onSubmit = state::onDialogSubmit,
+            onDismiss = state::dismiss,
+        )
     }
 }
 

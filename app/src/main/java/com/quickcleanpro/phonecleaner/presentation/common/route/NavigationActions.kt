@@ -2,6 +2,7 @@ package com.quickcleanpro.phonecleaner.presentation.common.route
 
 import androidx.navigation.NavHostController
 import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationIntentFactory
+import com.quickcleanpro.phonecleaner.navigation.AppRoute
 
 internal fun NavHostController.safePopBackStack(): Boolean =
     runCatching {
@@ -12,7 +13,7 @@ internal fun NavHostController.safePopBackStack(): Boolean =
         if (popBackStack()) {
             return@runCatching true
         }
-        navigate(Screen.Home.route) {
+        navigate(AppRoute.Home.value) {
             currentRoute?.let { route ->
                 popUpTo(route) { inclusive = true }
             }
@@ -34,7 +35,7 @@ internal fun NavHostController.navigateToHomeClearingStack() {
         if (existingHomeRoute != null && popBackStack(existingHomeRoute, inclusive = false)) {
             return@runCatching
         }
-        navigate(Screen.Home.route) {
+        navigate(AppRoute.Home.value) {
             launchSingleTop = true
         }
     }
@@ -43,7 +44,7 @@ internal fun NavHostController.navigateToHomeClearingStack() {
 internal fun NavHostController.navigateReplaceStack(route: String) {
     runCatching {
         navigateToHomeClearingStack()
-        if (route != Screen.Home.route) {
+        if (route != AppRoute.Home.value) {
             navigate(route) { launchSingleTop = true }
         }
     }
@@ -60,10 +61,10 @@ internal fun NavHostController.navigateReplacingCurrent(route: String) {
 }
 
 private val homeRoutes =
-    setOf(Screen.Home.route) + ToolNotificationIntentFactory.homeTabRoutes
+    setOf(AppRoute.Home.value) + ToolNotificationIntentFactory.homeTabRoutes
 
 private val rootRoutes =
     setOf(
-        Screen.Splash.route,
-        Screen.OnboardingScan.route,
+        AppRoute.Splash.value,
+        AppRoute.OnboardingScan.value,
     ) + homeRoutes

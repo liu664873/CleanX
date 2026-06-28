@@ -61,6 +61,7 @@ import com.quickcleanpro.phonecleaner.presentation.common.components.popups.Stop
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
 import com.quickcleanpro.phonecleaner.presentation.common.permission.LocalCleanXPermissionCoordinator
+import com.quickcleanpro.phonecleaner.presentation.common.route.AdPlacements
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.screen.tools.whatsappcleaner.WhatsAppCleanerCategory
@@ -94,6 +95,13 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
         router.goHome()
     }
 
+    fun exitToHomeAfterComplete() {
+        viewModel.clearResult()
+        router.showAd(AdPlacements.WHATSAPP_CLEAN_FINISH) {
+            router.goHome()
+        }
+    }
+
     LaunchedEffect(viewModel, permissionCoordinator) {
         permissionCoordinator.guard(
             action = CleanXProtectedAction.WhatsAppStartScan,
@@ -116,7 +124,7 @@ internal fun WhatsAppCleanerScreenState(viewModel: WhatsAppCleanerViewModel) {
                 viewModel.cancelCleaningAndReturnToResult()
                 showStopDialog = true
             }
-            WhatsAppCleanerPhase.Result -> exitToHome()
+            WhatsAppCleanerPhase.Result -> exitToHomeAfterComplete()
             else -> router.goBack()
         }
     }

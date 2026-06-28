@@ -3,15 +3,14 @@ package com.quickcleanpro.phonecleaner.data.source.notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.quickcleanpro.phonecleaner.BuildConfig
 import com.quickcleanpro.phonecleaner.MainActivity
-import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
+import com.quickcleanpro.phonecleaner.config.VariantConfigs
+import com.quickcleanpro.phonecleaner.navigation.AppRoute
 
 object ToolNotificationIntentFactory {
     const val EXTRA_TARGET_ROUTE = "quickclean_target_route"
     const val ROUTE_HOME_FILE_MANAGER = "home_file_manager"
     const val ROUTE_HOME_TOOLBOX = "home_toolbox"
-    private const val VARIANT_STORAGE_CLEANER = "storagecleaner"
     val homeTabRoutes: Set<String> =
         setOf(
             ROUTE_HOME_FILE_MANAGER,
@@ -52,11 +51,24 @@ object ToolNotificationIntentFactory {
 
     private val validRoutes: Set<String> =
         buildSet {
-            addAll(ToolNotificationSpecs.map { it.route })
-            add(Screen.NotificationCleaner.route)
-            add(Screen.NotificationBar.route)
-            if (BuildConfig.VARIANT_KEY == VARIANT_STORAGE_CLEANER) {
-                addAll(homeTabRoutes)
+            val profile = VariantConfigs.current
+            add(AppRoute.Home.value)
+            ToolNotificationSpecs
+                .map { spec -> spec.route }
+                .filter { route -> route in profile.notificationProfile.enabledToolRoutes }
+                .filter(profile::isRouteEnabled)
+                .forEach(::add)
+            if (profile.isRouteEnabled(AppRoute.NotificationCleaner.value)) {
+                add(AppRoute.NotificationCleaner.value)
+            }
+            if (profile.isRouteEnabled(AppRoute.NotificationBar.value)) {
+                add(AppRoute.NotificationBar.value)
+            }
+            if (profile.hasAnyEnabledFileFeature()) {
+                add(ROUTE_HOME_FILE_MANAGER)
+            }
+            if (profile.hasAnyEnabledToolboxFeature()) {
+                add(ROUTE_HOME_TOOLBOX)
             }
         }
 }

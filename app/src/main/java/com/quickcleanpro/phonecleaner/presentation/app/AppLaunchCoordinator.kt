@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationIntentFactory
-import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
+import com.quickcleanpro.phonecleaner.navigation.AppRoute
 
 sealed interface AppLaunchRequest {
     data object Normal : AppLaunchRequest
@@ -119,8 +119,8 @@ class AppLaunchCoordinator(
 
         val startupRoutes =
             setOf(
-                Screen.Splash.route,
-                Screen.OnboardingScan.route,
+                AppRoute.Splash.value,
+                AppRoute.OnboardingScan.value,
             )
     }
 }

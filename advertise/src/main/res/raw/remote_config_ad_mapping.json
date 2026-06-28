@@ -1,0 +1,31 @@
+{
+  "config": {
+    "ad": "ad_policy",
+    "notification": "notification_config",
+    "fcm_topic": "all",
+    "preload": "adload_config"
+  },
+  "nature_config": {
+    "ad": "ad_policy_audit",
+    "notification": "notification_config_audit",
+    "fcm_topic": "all_audit",
+    "preload": "adload_config_audit"
+  },
+  "configs": [
+    {
+      "countrys": [
+        "JP",
+        "KR"
+      ],
+      "brands": [
+        "samsung"
+      ],
+      "config": {
+        "ad": "ad_policy",
+        "notification": "notification_config",
+        "fcm_topic": "all",
+        "preload": "adload_config"
+      }
+    }
+  ]
+}

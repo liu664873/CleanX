@@ -50,6 +50,11 @@ import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.theme.LocalVariantTheme
 import androidx.compose.runtime.ReadOnlyComposable
+import com.quickcleanpro.phonecleaner.config.VariantConfigs
+import com.quickcleanpro.phonecleaner.config.VariantFeature
+import com.quickcleanpro.phonecleaner.config.iconRes
+import com.quickcleanpro.phonecleaner.config.screenOrNull
+import com.quickcleanpro.phonecleaner.config.titleRes
 
 private val OnboardingNavy: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.navy
 private val DividerColor: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.dividerSubtle
@@ -71,6 +76,7 @@ fun ToolBoxTabContent(
 ) {
     val router = LocalRouter.current
     val context = LocalContext.current
+    val profile = VariantConfigs.current
     var showWhatsAppNotFoundDialog by remember { mutableStateOf(false) }
     val batteryCapacity =
         summaryState.batteryInfo.levelPercent
@@ -87,82 +93,82 @@ fun ToolBoxTabContent(
                 .padding(horizontal = 16.dp)
                 .padding(top = 32.dp),
     ) {
-        DeviceInfoCard(
-            model = summaryState.deviceModel,
-            androidVersion = summaryState.androidVersion,
-            onClick = {
-                onFeatureClick()
-                router.navigate(Screen.DeviceInfo)
-            },
-        )
+        if (profile.isEnabled(VariantFeature.DEVICE_INFO)) {
+            DeviceInfoCard(
+                model = summaryState.deviceModel,
+                androidVersion = summaryState.androidVersion,
+                onClick = {
+                    onFeatureClick()
+                    router.navigate(Screen.DeviceInfo)
+                },
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
-        BatteryInfoCard(
-            status = batteryStatus,
-            capacity = batteryCapacity,
-            onClick = {
-                onFeatureClick()
-                router.navigate(Screen.BatteryInfo)
-            },
-        )
+        if (profile.isEnabled(VariantFeature.BATTERY_INFO)) {
+            BatteryInfoCard(
+                status = batteryStatus,
+                capacity = batteryCapacity,
+                onClick = {
+                    onFeatureClick()
+                    router.navigate(Screen.BatteryInfo)
+                },
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
-            shape = RoundedCornerShape(12.dp),
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
+        val gridFeatures =
+            profile.orderedToolboxFeatures()
+                .filterNot { feature -> feature == VariantFeature.DEVICE_INFO || feature == VariantFeature.BATTERY_INFO }
+
+        if (gridFeatures.isNotEmpty()) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.White,
+                shape = RoundedCornerShape(12.dp),
             ) {
-                Text(
-                    text = stringResource(R.string.home_toolbox_title),
-                    color = OnboardingNavy,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 12.dp),
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                Column(
+                    modifier = Modifier.padding(16.dp),
                 ) {
-                    ToolItem(R.drawable.ic_app_usage, stringResource(R.string.app_usage), Modifier.weight(1f)) {
-                        onFeatureClick()
-                        router.navigate(Screen.AppUsage)
-                    }
-                    ToolItem(R.drawable.ic_notification_bar, stringResource(R.string.notification_bar), Modifier.weight(1f)) {
-                        onFeatureClick()
-                        router.navigate(Screen.NotificationBar)
-                    }
-                    ToolItem(R.drawable.ic_whatsapp_cleaner, stringResource(R.string.whatsapp_cleaner), Modifier.weight(1f)) {
-                        onFeatureClick()
-                        if (context.hasWhatsAppInstalled()) {
-                            router.navigate(Screen.WhatsAppCleaner)
-                        } else {
-                            showWhatsAppNotFoundDialog = true
+                    Text(
+                        text = stringResource(R.string.home_toolbox_title),
+                        color = OnboardingNavy,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 12.dp),
+                    )
+
+                    gridFeatures.chunked(3).forEachIndexed { index, rowFeatures ->
+                        if (index > 0) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            HorizontalDivider(color = DividerColor, thickness = 1.dp)
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider(color = DividerColor, thickness = 1.dp)
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    ToolItem(R.drawable.ic_network_usage, stringResource(R.string.network_usage), Modifier.weight(1f)) {
-                        onFeatureClick()
-                        router.navigate(Screen.NetworkUsage)
-                    }
-                    ToolItem(R.drawable.ic_network_scan, stringResource(R.string.network_scan), Modifier.weight(1f)) {
-                        onFeatureClick()
-                        router.navigate(Screen.NetworkScan)
-                    }
-                    ToolItem(R.drawable.ic_network_speed, stringResource(R.string.network_speed), Modifier.weight(1f)) {
-                        onFeatureClick()
-                        router.navigate(Screen.NetworkSpeed)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            rowFeatures.forEach { feature ->
+                                val screen = feature.screenOrNull()
+                                ToolItem(
+                                    iconRes = feature.iconRes(),
+                                    label = stringResource(feature.titleRes()),
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    onFeatureClick()
+                                    if (feature == VariantFeature.WHATSAPP_CLEANER && !context.hasWhatsAppInstalled()) {
+                                        showWhatsAppNotFoundDialog = true
+                                    } else if (screen != null) {
+                                        router.navigate(screen)
+                                    }
+                                }
+                            }
+                            repeat(3 - rowFeatures.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
                     }
                 }
             }

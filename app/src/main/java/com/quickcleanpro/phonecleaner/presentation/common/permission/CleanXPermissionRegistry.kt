@@ -3,7 +3,6 @@ package com.quickcleanpro.phonecleaner.presentation.common.permission
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import com.quickcleanpro.phonecleaner.R
 import com.quickcleanpro.phonecleaner.core.permission.AppPermission
 import com.quickcleanpro.phonecleaner.core.permission.CommonPermission
 import com.quickcleanpro.phonecleaner.core.permission.PermissionFeature
@@ -50,11 +49,6 @@ enum class CleanXPermissionItem(
     PostNotifications("post_notifications"),
 }
 
-data class CleanXPermissionManageItem(
-    val item: CleanXPermissionItem,
-    val labelRes: Int,
-)
-
 object CleanXPermissionRegistry {
     val actionSpecs: List<PermissionSpec<CleanXProtectedAction>> =
         listOf(
@@ -95,22 +89,6 @@ object CleanXPermissionRegistry {
             ),
         )
 
-    val manageItems: List<CleanXPermissionManageItem> =
-        listOf(
-            CleanXPermissionManageItem(CleanXPermissionItem.StorageFiles, R.string.settings_storage_permission),
-            CleanXPermissionManageItem(CleanXPermissionItem.UsageAccess, R.string.settings_usage_data_permission),
-            CleanXPermissionManageItem(CleanXPermissionItem.Location, R.string.settings_location_permission),
-            CleanXPermissionManageItem(
-                CleanXPermissionItem.NotificationListener,
-                R.string.settings_notification_permission,
-            ),
-            CleanXPermissionManageItem(CleanXPermissionItem.Overlay, R.string.settings_overlay_permission),
-            CleanXPermissionManageItem(
-                CleanXPermissionItem.PostNotifications,
-                R.string.settings_post_notifications_permission,
-            ),
-        )
-
     fun protectedActionPermissionManager(context: Context): PermissionManager<CleanXProtectedAction> =
         PermissionManager(
             specs = actionSpecs,
@@ -124,101 +102,6 @@ object CleanXPermissionRegistry {
             handlers = commonPermissionHandlers(),
             denialStore = CleanXRuntimePermissionDenialStore(context.applicationContext),
         )
-
-    fun copyFor(
-        item: CleanXPermissionItem,
-        missingPermission: AppPermission? = null,
-    ): CleanXPermissionCopy {
-        if (missingPermission?.key == CommonPermission.Overlay.key) {
-            return overlayCopy()
-        }
-        if (missingPermission?.key == CommonPermission.PostNotifications.key) {
-            return postNotificationsCopy()
-        }
-        val titleRes = R.string.permission_title_required
-        val noPersonalRes = R.string.permission_hint_no_personal
-        return when (item) {
-            CleanXPermissionItem.StorageFiles -> CleanXPermissionCopy(
-                titleRes = titleRes,
-                descriptionRes = R.string.permission_storage_files_desc,
-                hint1Res = R.string.permission_hint_files_safe,
-                hint2Res = noPersonalRes,
-            )
-            CleanXPermissionItem.Location -> CleanXPermissionCopy(
-                titleRes = titleRes,
-                descriptionRes = R.string.permission_location_desc,
-                hint1Res = R.string.permission_hint_network_scan,
-                hint2Res = noPersonalRes,
-            )
-            CleanXPermissionItem.UsageAccess -> CleanXPermissionCopy(
-                titleRes = titleRes,
-                descriptionRes = R.string.permission_usage_desc,
-                hint1Res = R.string.permission_hint_usage_read,
-                hint2Res = noPersonalRes,
-            )
-            CleanXPermissionItem.NotificationListener -> CleanXPermissionCopy(
-                titleRes = titleRes,
-                descriptionRes = R.string.permission_notification_desc,
-                hint1Res = R.string.permission_hint_notifications,
-                hint2Res = noPersonalRes,
-            )
-            CleanXPermissionItem.Overlay -> overlayCopy()
-            CleanXPermissionItem.PostNotifications -> postNotificationsCopy()
-        }
-    }
-
-    fun copyFor(
-        action: CleanXProtectedAction,
-        missingPermission: AppPermission? = null,
-    ): CleanXPermissionCopy {
-        if (missingPermission?.key == CommonPermission.Overlay.key) {
-            return overlayCopy()
-        }
-        if (missingPermission?.key == CommonPermission.PostNotifications.key) {
-            return postNotificationsCopy()
-        }
-        val titleRes = R.string.permission_title_required
-        val noPersonalRes = R.string.permission_hint_no_personal
-        return when (action) {
-            CleanXProtectedAction.JunkStartScan,
-            CleanXProtectedAction.JunkCleanSelected,
-            -> CleanXPermissionCopy(
-                titleRes = titleRes,
-                descriptionRes = R.string.permission_storage_desc,
-                hint1Res = R.string.permission_hint_junk_deleted,
-                hint2Res = noPersonalRes,
-            )
-            CleanXProtectedAction.VirusDeepScanStart -> CleanXPermissionCopy(
-                titleRes = titleRes,
-                descriptionRes = R.string.permission_virus_storage_desc,
-                hint1Res = R.string.permission_hint_threat_files,
-                hint2Res = noPersonalRes,
-            )
-            CleanXProtectedAction.WhatsAppStartScan,
-            CleanXProtectedAction.WhatsAppCleanSelected,
-            -> CleanXPermissionCopy(
-                titleRes = titleRes,
-                descriptionRes = R.string.permission_whatsapp_storage_desc,
-                hint1Res = R.string.permission_hint_whatsapp_files,
-                hint2Res = noPersonalRes,
-            )
-            CleanXProtectedAction.NetworkUsageLoadStats -> CleanXPermissionCopy(
-                titleRes = titleRes,
-                descriptionRes = R.string.permission_network_usage_desc,
-                hint1Res = R.string.permission_hint_usage_read,
-                hint2Res = noPersonalRes,
-            )
-            CleanXProtectedAction.AppLockOpenProtectedArea,
-            CleanXProtectedAction.AppLockEnableMonitoring,
-            -> CleanXPermissionCopy(
-                titleRes = titleRes,
-                descriptionRes = R.string.permission_app_lock_usage_desc,
-                hint1Res = R.string.permission_hint_usage_read,
-                hint2Res = noPersonalRes,
-            )
-            else -> copyFor(itemForAction(action), missingPermission)
-        }
-    }
 
     fun itemForAction(action: CleanXProtectedAction): CleanXPermissionItem =
         when (action) {
@@ -242,22 +125,6 @@ object CleanXPermissionRegistry {
             CleanXProtectedAction.AppLockRequestOverlay -> CleanXPermissionItem.Overlay
             CleanXProtectedAction.PostNotificationsEnable -> CleanXPermissionItem.PostNotifications
         }
-
-    private fun overlayCopy(): CleanXPermissionCopy =
-        CleanXPermissionCopy(
-            titleRes = R.string.permission_title_required,
-            descriptionRes = R.string.permission_overlay_desc,
-            hint1Res = R.string.permission_hint_overlay,
-            hint2Res = R.string.permission_hint_no_personal,
-        )
-
-    private fun postNotificationsCopy(): CleanXPermissionCopy =
-        CleanXPermissionCopy(
-            titleRes = R.string.permission_title_required,
-            descriptionRes = R.string.permission_post_notifications_desc,
-            hint1Res = R.string.permission_hint_app_notifications,
-            hint2Res = R.string.permission_hint_no_personal,
-        )
 }
 
 class CleanXRuntimePermissionDenialStore(

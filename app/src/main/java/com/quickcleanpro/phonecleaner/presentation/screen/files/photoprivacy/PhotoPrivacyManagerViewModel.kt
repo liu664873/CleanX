@@ -1,7 +1,9 @@
 package com.quickcleanpro.phonecleaner.presentation.screen.files.photoprivacy
 
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.FeatureKey
 import com.quickcleanpro.phonecleaner.domain.repository.FileRepository
+import com.quickcleanpro.phonecleaner.operation.OperationAction
 import com.quickcleanpro.phonecleaner.presentation.common.fileRepositoryOrPreview
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.BaseFileManagerViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FILE_DELETE_ANIMATION_MIN_MILLIS
@@ -25,7 +27,7 @@ internal class PhotoPrivacyManagerViewModel(
     private val scanDelayMillis: Long = 900L,
     private val removeDelayMillis: Long = FILE_DELETE_ANIMATION_MIN_MILLIS,
     private val completeDelayMillis: Long = 700L
-) : BaseFileManagerViewModel(ioDispatcher, testLoader) {
+) : BaseFileManagerViewModel(FeatureKey.PHOTO_PRIVACY, ioDispatcher, testLoader) {
 
     private val _uiState = MutableStateFlow(PhotoPrivacyManagerUiState())
     val uiState: StateFlow<PhotoPrivacyManagerUiState> = _uiState.asStateFlow()
@@ -36,11 +38,13 @@ internal class PhotoPrivacyManagerViewModel(
     }
 
     fun refresh() {
+        trackScanStarted()
         _uiState.value = PhotoPrivacyManagerUiState(phase = FileOperationPhase.Scanning)
         operationRunner.launch {
             runCatching { mapPrivacyPhotos(repository.loadPrivacyImages()) }
                 .onSuccess { items ->
                     operationRunner.delayIfNeeded(scanDelayMillis)
+                    trackScanFinished(hasResult = items.isNotEmpty())
                     _uiState.value = PhotoPrivacyManagerUiState(
                         phase = if (items.isEmpty()) FileOperationPhase.NoResults else FileOperationPhase.Browsing,
                         items = items,
@@ -49,6 +53,7 @@ internal class PhotoPrivacyManagerViewModel(
                 }
                 .onFailure { error ->
                     if (error is CancellationException) throw error
+                    trackScanFinished(hasResult = false)
                     _uiState.update { it.copy(phase = FileOperationPhase.NoResults, errorMessage = error.message ?: fileScanFailedMessage()) }
                 }
         }
@@ -65,7 +70,14 @@ internal class PhotoPrivacyManagerViewModel(
     }
 
     fun requestRemoveLocation() {
-        _uiState.update { if (it.selectedIds.isNotEmpty()) it.copy(phase = FileOperationPhase.ConfirmDelete) else it }
+        _uiState.update {
+            if (it.selectedIds.isNotEmpty()) {
+                trackActionRequested(OperationAction.REMOVE_LOCATION)
+                it.copy(phase = FileOperationPhase.ConfirmDelete)
+            } else {
+                it
+            }
+        }
     }
 
     fun cancelRemoveLocation() {
@@ -88,33 +100,32 @@ internal class PhotoPrivacyManagerViewModel(
 
     fun removeLocationData() {
         val selectedFiles = _uiState.value.selectedFiles
-        if (selectedFiles.isEmpty()) {
-            _uiState.update { it.copy(phase = FileOperationPhase.Browsing) }
-            return
-        }
-        _uiState.update { it.copy(phase = FileOperationPhase.Deleting) }
-        operationRunner.launch {
-            runCatching {
-                val removed = repository.removeLocationData(selectedFiles)
-                operationRunner.delayIfNeeded(removeDelayMillis)
+        runFileOperation(
+            selectedFiles = selectedFiles,
+            action = OperationAction.REMOVE_LOCATION,
+            onEmptySelection = { _uiState.update { it.copy(phase = FileOperationPhase.Browsing) } },
+            onStart = { _uiState.update { it.copy(phase = FileOperationPhase.Deleting) } },
+            operationDelayMillis = removeDelayMillis,
+            completeDelayMillis = completeDelayMillis,
+            operation = { FileOperationOutcome(changedCount = repository.removeLocationData(selectedFiles)) },
+            onCompleteAnimation = { outcome ->
                 val rebuilt = mapPrivacyPhotos(repository.loadPrivacyImages())
                 _uiState.update {
                     it.copy(
                         phase = FileOperationPhase.CompleteAnimation,
                         items = rebuilt,
                         selectedIds = emptySet(),
-                        removedLocationCount = removed
+                        removedLocationCount = outcome.changedCount,
                     )
                 }
-                operationRunner.delayIfNeeded(completeDelayMillis)
-                _uiState.update { it.copy(phase = FileOperationPhase.Result) }
-            }.onFailure { error ->
-                if (error is CancellationException) throw error
+            },
+            onResult = { _uiState.update { it.copy(phase = FileOperationPhase.Result) } },
+            onFailure = { error ->
                 _uiState.update {
                     it.copy(phase = FileOperationPhase.Browsing, errorMessage = error.message ?: appString(R.string.deletion_failed))
                 }
-            }
-        }
+            },
+        )
     }
 
     fun continueManaging() {

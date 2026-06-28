@@ -32,7 +32,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.VariantConfigs
+import com.quickcleanpro.phonecleaner.config.VariantFeature
+import com.quickcleanpro.phonecleaner.config.iconRes
+import com.quickcleanpro.phonecleaner.config.screenOrNull
+import com.quickcleanpro.phonecleaner.config.titleRes
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.theme.LocalVariantTheme
@@ -50,18 +54,10 @@ private val LabelWordSeparator = Regex("\\s+")
 @Composable
 fun FilesManagerTabContent(onFeatureClick: () -> Unit = {}) {
     val router = LocalRouter.current
+    val profile = VariantConfigs.current
     val items =
-        listOf(
-            FileManagerItem(R.drawable.ic_photos, R.string.nav_photos, Screen.PhotosManager),
-            FileManagerItem(R.drawable.ic_similar_photos, R.string.nav_similar_photos, Screen.SimilarPhotosManager),
-            FileManagerItem(R.drawable.ic_photo_privacy, R.string.nav_photo_privacy, Screen.PhotoPrivacyManager),
-            FileManagerItem(R.drawable.ic_screenshots, R.string.nav_screenshots, Screen.ScreenshotsManager),
-            FileManagerItem(R.drawable.ic_videos, R.string.nav_videos, Screen.VideosManager),
-            FileManagerItem(R.drawable.ic_audios, R.string.nav_audios, Screen.AudiosManager),
-            FileManagerItem(R.drawable.ic_large_files, R.string.nav_large_files, Screen.LargeFilesManager),
-            FileManagerItem(R.drawable.ic_file_yellow, R.string.nav_duplicate_files, Screen.DuplicateFilesManager),
-            FileManagerItem(R.drawable.ic_documents, R.string.nav_documents, Screen.DocumentsManager),
-        )
+        profile.orderedFileFeatures()
+            .mapNotNull(VariantFeature::toFileManagerItem)
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
@@ -83,6 +79,15 @@ fun FilesManagerTabContent(onFeatureClick: () -> Unit = {}) {
             )
         }
     }
+}
+
+private fun VariantFeature.toFileManagerItem(): FileManagerItem? {
+    val screen = screenOrNull() ?: return null
+    return FileManagerItem(
+        iconRes = iconRes(),
+        labelRes = titleRes(),
+        screen = screen,
+    )
 }
 
 @Composable

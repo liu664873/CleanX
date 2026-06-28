@@ -1,5 +1,7 @@
 package com.quickcleanpro.phonecleaner.presentation.common.route
 
+import com.quickcleanpro.phonecleaner.navigation.AppRoute
+
 sealed interface AppNavigationEvent {
     data object Back : AppNavigationEvent
 
@@ -27,3 +29,6 @@ sealed interface AppNavigationEvent {
         val placement: String,
     ) : AppNavigationEvent
 }
+
+fun AppNavigationEvent.Destination.finalRoute(): String =
+    AppRoute(route).withArgs(args)

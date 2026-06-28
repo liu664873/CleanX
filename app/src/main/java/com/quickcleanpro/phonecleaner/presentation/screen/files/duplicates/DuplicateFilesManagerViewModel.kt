@@ -2,14 +2,15 @@ package com.quickcleanpro.phonecleaner.presentation.screen.files.duplicates
 
 import android.net.Uri
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.FeatureKey
 import com.quickcleanpro.phonecleaner.domain.model.file.ManagedFileItem
 import com.quickcleanpro.phonecleaner.domain.repository.FileRepository
+import com.quickcleanpro.phonecleaner.operation.OperationAction
 import com.quickcleanpro.phonecleaner.presentation.common.fileRepositoryOrPreview
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.BaseFileManagerViewModel
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FILE_DELETE_ANIMATION_MIN_MILLIS
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileOperationPhase
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.appString
-import com.quickcleanpro.phonecleaner.presentation.screen.files.common.deletionFailedMessage
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.duplicateScanFailedMessage
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.toggleId
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.toggleIds
@@ -57,7 +58,7 @@ internal class DuplicateFilesManagerViewModel(
     private val scanDelayMillis: Long = 900L,
     private val deleteDelayMillis: Long = FILE_DELETE_ANIMATION_MIN_MILLIS,
     private val completeDelayMillis: Long = 700L
-) : BaseFileManagerViewModel(ioDispatcher, testLoader) {
+) : BaseFileManagerViewModel(FeatureKey.DUPLICATE_FILES, ioDispatcher, testLoader) {
 
     constructor(
         repository: FileRepository,
@@ -80,11 +81,13 @@ internal class DuplicateFilesManagerViewModel(
     }
 
     fun refresh() {
+        trackScanStarted()
         _uiState.value = DuplicateFilesManagerUiState(phase = FileOperationPhase.Scanning)
         operationRunner.launch {
             runCatching { mapDuplicateGroups(repository.loadDuplicateFiles()) }
                 .onSuccess { groups ->
                     operationRunner.delayIfNeeded(scanDelayMillis)
+                    trackScanFinished(hasResult = groups.isNotEmpty())
                     _uiState.value = DuplicateFilesManagerUiState(
                         phase = if (groups.isEmpty()) FileOperationPhase.NoResults else FileOperationPhase.Browsing,
                         groups = groups,
@@ -93,6 +96,7 @@ internal class DuplicateFilesManagerViewModel(
                 }
                 .onFailure { error ->
                     if (error is CancellationException) throw error
+                    trackScanFinished(hasResult = false)
                     _uiState.update {
                         it.copy(
                             phase = FileOperationPhase.NoResults,
@@ -151,6 +155,7 @@ internal class DuplicateFilesManagerViewModel(
 
     fun requestDelete() {
         if (_uiState.value.filesToDelete.isNotEmpty()) {
+            trackActionRequested(OperationAction.DELETE)
             _uiState.update { it.copy(phase = FileOperationPhase.ConfirmDelete) }
         }
     }
@@ -179,19 +184,16 @@ internal class DuplicateFilesManagerViewModel(
 
     fun deleteSelectedFiles() {
         val selectedFiles = _uiState.value.filesToDelete
-        if (selectedFiles.isEmpty()) {
-            _uiState.update { it.copy(phase = FileOperationPhase.Browsing) }
-            return
-        }
-
-        _uiState.update { it.copy(phase = FileOperationPhase.Deleting, selectedGroupId = null) }
-        operationRunner.launch {
-            runCatching {
-                val freedBytes = repository.deleteFiles(selectedFiles)
-                if (freedBytes <= 0L) {
-                    error(deletionFailedMessage())
-                }
-                operationRunner.delayIfNeeded(deleteDelayMillis)
+        runFileOperation(
+            selectedFiles = selectedFiles,
+            action = OperationAction.DELETE,
+            onEmptySelection = { _uiState.update { it.copy(phase = FileOperationPhase.Browsing) } },
+            onStart = { _uiState.update { it.copy(phase = FileOperationPhase.Deleting, selectedGroupId = null) } },
+            operationDelayMillis = deleteDelayMillis,
+            completeDelayMillis = completeDelayMillis,
+            operation = { FileOperationOutcome(freedBytes = repository.deleteFiles(selectedFiles)) },
+            isSuccessful = { it.freedBytes > 0L },
+            onCompleteAnimation = { outcome ->
                 val groups = mapDuplicateGroups(repository.loadDuplicateFiles())
                 _uiState.update {
                     it.copy(
@@ -199,21 +201,20 @@ internal class DuplicateFilesManagerViewModel(
                         groups = groups,
                         selectedGroupId = null,
                         selectedFileKeys = emptySet(),
-                        deletedBytes = freedBytes
+                        deletedBytes = outcome.freedBytes,
                     )
                 }
-                operationRunner.delayIfNeeded(completeDelayMillis)
-                _uiState.update { it.copy(phase = FileOperationPhase.Result) }
-            }.onFailure { error ->
-                if (error is CancellationException) throw error
+            },
+            onResult = { _uiState.update { it.copy(phase = FileOperationPhase.Result) } },
+            onFailure = { error ->
                 _uiState.update {
                     it.copy(
                         phase = FileOperationPhase.Browsing,
                         errorMessage = error.message ?: appString(R.string.deletion_failed)
                     )
                 }
-            }
-        }
+            },
+        )
     }
 
     fun continueManaging() {
