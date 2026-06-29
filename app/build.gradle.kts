@@ -38,6 +38,7 @@ android {
             manifestPlaceholders["roundLauncherIcon"] = configValue("STORAGECLEANER_ROUND_LAUNCHER_ICON", "@mipmap/ic_launcher_round")
             manifestPlaceholders["appTheme"] = configValue("STORAGECLEANER_APP_THEME", "@style/Theme.QuickCleanPRO")
             manifestPlaceholders["trustlookApiKey"] = storagecleanerTrustlookApiKey
+            buildConfigField("String", "TRUSTLOOK_API_KEY", "\"$storagecleanerTrustlookApiKey\"")
             manifestPlaceholders["admobAppId"] = configValue("ADMOB_STORAGECLEANER_APP_ID", admobTestAppId)
             manifestPlaceholders["advAdmobAppId"] = configValue("ADV_STORAGECLEANER_ADMOB_APP_ID", configValue("ADMOB_STORAGECLEANER_APP_ID", admobTestAppId))
             manifestPlaceholders["advFacebookAppId"] = configValue("ADV_STORAGECLEANER_FACEBOOK_APP_ID", "")
@@ -89,7 +90,9 @@ ktlint {
 }
 
 dependencies {
-    implementation(project(":advertise"))
+    implementation("com.pdffox:advertise:1.0.2") {
+        exclude(group = "com.google.ads.mediation", module = "pangle")
+    }
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.ui.graphics)

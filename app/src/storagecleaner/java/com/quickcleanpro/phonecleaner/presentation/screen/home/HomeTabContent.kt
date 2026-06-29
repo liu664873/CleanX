@@ -35,8 +35,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quickcleanpro.phonecleaner.R
-import com.quickcleanpro.phonecleaner.config.VariantConfigs
-import com.quickcleanpro.phonecleaner.config.VariantFeature
 import com.quickcleanpro.phonecleaner.presentation.common.components.RoundedProgressBar
 import com.quickcleanpro.phonecleaner.presentation.common.components.styles.CleanXBlue
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
@@ -63,7 +61,6 @@ fun HomeTabContent(
     onFeatureClick: () -> Unit = {},
 ) {
     val router = LocalRouter.current
-    val profile = VariantConfigs.current
     val storageInfo = summaryState.storageInfo
     val usedStorageText =
         if (summaryState.isLoading && storageInfo.totalBytes <= 0L) {
@@ -141,29 +138,27 @@ fun HomeTabContent(
                     fillColor = Color.White,
                 )
                 Spacer(modifier = Modifier.height(27.dp))
-                if (profile.isEnabled(VariantFeature.JUNK_CLEAN)) {
-                    Button(
-                        onClick = {
-                            onFeatureClick()
-                            router.navigate(Screen.Scan)
-                        },
-                        shape = RoundedCornerShape(28.dp),
-                        colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = storageCardColor,
-                            ),
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.home_remove_junk),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
+                Button(
+                    onClick = {
+                        onFeatureClick()
+                        router.navigate(Screen.Scan)
+                    },
+                    shape = RoundedCornerShape(28.dp),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = storageCardColor,
+                        ),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.home_remove_junk),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
                 }
             }
 
@@ -179,39 +174,35 @@ fun HomeTabContent(
             )
         }
 
-        if (profile.isEnabled(VariantFeature.ANTI_VIRUS)) {
-            Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-            EntryCard(
-                gradient = VirusCardBlue,
-                imageRes = R.drawable.virus_shield,
-                imageWidth = 98.dp,
-                imageHeight = 81.dp,
-                title = stringResource(R.string.home_virus_title),
-                description = stringResource(R.string.home_virus_desc),
-                onClick = {
-                    onFeatureClick()
-                    router.navigate(Screen.AntiVirus)
-                },
-            )
-        }
+        EntryCard(
+            gradient = VirusCardBlue,
+            imageRes = R.drawable.virus_shield,
+            imageWidth = 98.dp,
+            imageHeight = 81.dp,
+            title = stringResource(R.string.home_virus_title),
+            description = stringResource(R.string.home_virus_desc),
+            onClick = {
+                onFeatureClick()
+                router.navigate(Screen.AntiVirus)
+            },
+        )
 
-        if (profile.isEnabled(VariantFeature.APP_LOCK)) {
-            Spacer(modifier = Modifier.height(15.dp))
+        Spacer(modifier = Modifier.height(15.dp))
 
-            EntryCard(
-                gradient = AppLockCardBlue,
-                imageRes = R.drawable.app_lock,
-                imageWidth = 81.dp,
-                imageHeight = 81.dp,
-                title = stringResource(R.string.home_app_lock_title),
-                description = stringResource(R.string.home_app_lock_desc),
-                onClick = {
-                    onFeatureClick()
-                    router.navigate(Screen.AppLock)
-                },
-            )
-        }
+        EntryCard(
+            gradient = AppLockCardBlue,
+            imageRes = R.drawable.app_lock,
+            imageWidth = 81.dp,
+            imageHeight = 81.dp,
+            title = stringResource(R.string.home_app_lock_title),
+            description = stringResource(R.string.home_app_lock_desc),
+            onClick = {
+                onFeatureClick()
+                router.navigate(Screen.AppLock)
+            },
+        )
 
         Spacer(modifier = Modifier.height(100.dp))
     }

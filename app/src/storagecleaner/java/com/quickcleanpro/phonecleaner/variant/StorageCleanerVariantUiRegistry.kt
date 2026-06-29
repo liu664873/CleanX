@@ -2,11 +2,8 @@ package com.quickcleanpro.phonecleaner.variant
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
-import com.quickcleanpro.phonecleaner.config.FeatureGroup
-import com.quickcleanpro.phonecleaner.config.FeatureKey
 import com.quickcleanpro.phonecleaner.config.VariantProfile
 import com.quickcleanpro.phonecleaner.presentation.app.AppLaunchCoordinator
-import com.quickcleanpro.phonecleaner.presentation.common.route.FeatureRegistry
 import com.quickcleanpro.phonecleaner.presentation.common.route.registerAntiVirusRoutes
 import com.quickcleanpro.phonecleaner.presentation.common.route.registerAppLockRoutes
 import com.quickcleanpro.phonecleaner.presentation.common.route.registerCleanRoutes
@@ -53,23 +50,12 @@ object StorageCleanerVariantUiRegistry : VariantUiRegistry {
         builder: NavGraphBuilder,
         profile: VariantProfile,
     ) {
-        val registry = FeatureRegistry(profile)
         with(builder) {
-            if (registry.isEnabled(FeatureKey.JUNK_CLEAN)) {
-                registerCleanRoutes()
-            }
-            if (registry.isEnabled(FeatureKey.ANTI_VIRUS)) {
-                registerAntiVirusRoutes()
-            }
-            if (registry.isEnabled(FeatureKey.APP_LOCK)) {
-                registerAppLockRoutes()
-            }
-            if (registry.hasEnabledFeatureIn(FeatureGroup.TOOLBOX)) {
-                registerToolboxRoutes(registry)
-            }
-            if (registry.hasEnabledFeatureIn(FeatureGroup.FILES)) {
-                registerFileManagerRoutes(registry)
-            }
+            registerCleanRoutes()
+            registerAntiVirusRoutes()
+            registerAppLockRoutes()
+            registerToolboxRoutes()
+            registerFileManagerRoutes()
         }
     }
 

@@ -32,7 +32,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.quickcleanpro.phonecleaner.config.VariantConfigs
 import com.quickcleanpro.phonecleaner.config.VariantFeature
 import com.quickcleanpro.phonecleaner.config.iconRes
 import com.quickcleanpro.phonecleaner.config.screenOrNull
@@ -50,13 +49,24 @@ private data class FileManagerItem(
 
 private val OnboardingNavy: Color @Composable @ReadOnlyComposable get() = LocalVariantTheme.current.colors.navy
 private val LabelWordSeparator = Regex("\\s+")
+private val StorageCleanerFileFeatures =
+    listOf(
+        VariantFeature.PHOTOS,
+        VariantFeature.SIMILAR_PHOTOS,
+        VariantFeature.PHOTO_PRIVACY,
+        VariantFeature.SCREENSHOTS,
+        VariantFeature.VIDEOS,
+        VariantFeature.AUDIOS,
+        VariantFeature.LARGE_FILES,
+        VariantFeature.DUPLICATE_FILES,
+        VariantFeature.DOCUMENTS,
+    )
 
 @Composable
 fun FilesManagerTabContent(onFeatureClick: () -> Unit = {}) {
     val router = LocalRouter.current
-    val profile = VariantConfigs.current
     val items =
-        profile.orderedFileFeatures()
+        StorageCleanerFileFeatures
             .mapNotNull(VariantFeature::toFileManagerItem)
 
     LazyVerticalGrid(

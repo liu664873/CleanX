@@ -3,67 +3,21 @@ package com.quickcleanpro.phonecleaner.config
 import com.quickcleanpro.phonecleaner.advertise.AdAreaKeys
 import com.quickcleanpro.phonecleaner.navigation.AppRoute
 import com.quickcleanpro.phonecleaner.navigation.RouteAdPolicy
-import com.quickcleanpro.phonecleaner.presentation.common.route.FeatureRegistry
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class VariantProfileTest {
     @Test
-    fun orderedFeaturesOnlyReturnEnabledFeatures() {
-        val profile =
-            testProfile(
-                enabled =
-                    setOf(
-                        VariantFeature.JUNK_CLEAN,
-                        VariantFeature.PHOTOS,
-                        VariantFeature.BATTERY_INFO,
-                    ),
-                homeFeatureOrder = listOf(VariantFeature.JUNK_CLEAN, VariantFeature.ANTI_VIRUS),
-                fileFeatureOrder = listOf(VariantFeature.PHOTOS, VariantFeature.VIDEOS),
-                toolboxFeatureOrder = listOf(VariantFeature.BATTERY_INFO, VariantFeature.APP_USAGE),
-            )
-
-        assertEquals(listOf(VariantFeature.JUNK_CLEAN), profile.orderedHomeFeatures())
-        assertEquals(listOf(VariantFeature.PHOTOS), profile.orderedFileFeatures())
-        assertEquals(listOf(VariantFeature.BATTERY_INFO), profile.orderedToolboxFeatures())
-    }
-
-    @Test
-    fun routeAvailabilityComesFromEnabledFeatures() {
-        val profile =
-            testProfile(
-                enabled =
-                    setOf(
-                        VariantFeature.JUNK_CLEAN,
-                        VariantFeature.PHOTOS,
-                    ),
-            )
-
-        assertTrue(profile.isRouteEnabled(Screen.Home.route))
-        assertTrue(profile.isRouteEnabled(Screen.PhotosManager.route))
-        assertFalse(profile.isRouteEnabled(Screen.VideosManager.route))
-        assertFalse(profile.isRouteEnabled(Screen.NetworkScanDevices.route))
-    }
-
-    @Test
-    fun defaultAdPlacementsOnlyIncludeEnabledFeatureRoutes() {
-        val placements =
-            defaultAdPlacements(
-                setOf(
-                    VariantFeature.JUNK_CLEAN,
-                    VariantFeature.PHOTOS,
-                    VariantFeature.DEVICE_INFO,
-                ),
-            )
+    fun defaultAdPlacementsComeFromFeatureCatalog() {
+        val placements = defaultAdPlacements()
 
         assertEquals(AdAreaKeys.Interstitial.ENTER_JUNK_CLEAN, placements.entryFor(Screen.Scan.route))
         assertEquals(AdAreaKeys.Interstitial.ENTER_FILE_MANAGE, placements.entryFor(Screen.PhotosManager.route))
         assertEquals(AdAreaKeys.Interstitial.ENTER_DEVICE_INFO, placements.entryFor(Screen.DeviceInfo.route))
-        assertNull(placements.entryFor(Screen.WhatsAppCleaner.route))
+        assertEquals(AdAreaKeys.Interstitial.ENTER_WHATSAPP_CLEANER, placements.entryFor(Screen.WhatsAppCleaner.route))
 
         assertEquals(AdAreaKeys.Interstitial.JUNK_CLEAN_FINISH, placements.completionFor(Screen.Scan.route))
         assertEquals(AdAreaKeys.Interstitial.FILE_MANAGE_FINISH, placements.completionFor(Screen.PhotosManager.route))
@@ -71,39 +25,18 @@ class VariantProfileTest {
     }
 
     @Test
-    fun featureRegistryFiltersEntryAdsForDisabledRoutes() {
-        val profile =
-            testProfile(
-                enabled =
-                    setOf(
-                        VariantFeature.JUNK_CLEAN,
-                        VariantFeature.PHOTOS,
-                    ),
-            )
-
-        val registry = FeatureRegistry(profile)
-
-        assertTrue(Screen.Scan.route in registry.featureEntryAdPlacements)
-        assertTrue(Screen.PhotosManager.route in registry.featureEntryAdPlacements)
-        assertFalse(Screen.VideosManager.route in registry.featureEntryAdPlacements)
-    }
-
-    @Test
-    fun routeAdPolicyFiltersEntryAdsForDisabledRoutes() {
-        val profile =
-            testProfile(
-                enabled =
-                    setOf(
-                        VariantFeature.JUNK_CLEAN,
-                        VariantFeature.PHOTOS,
-                    ),
-            )
-
-        val policy = RouteAdPolicy(profile)
+    fun routeAdPolicyReturnsConfiguredPlacementsWithoutFeatureFiltering() {
+        val policy = RouteAdPolicy(testProfile())
 
         assertEquals(AdAreaKeys.Interstitial.ENTER_JUNK_CLEAN, policy.entryPlacement(Screen.Scan.route))
         assertEquals(AdAreaKeys.Interstitial.ENTER_FILE_MANAGE, policy.entryPlacement(Screen.PhotosManager.route))
-        assertNull(policy.entryPlacement(Screen.VideosManager.route))
+        assertEquals(AdAreaKeys.Interstitial.ENTER_WHATSAPP_CLEANER, policy.entryPlacement(Screen.WhatsAppCleaner.route))
+    }
+
+    @Test
+    fun featureCatalogStillMapsNestedRoutesToOwningFeature() {
+        assertEquals(FeatureKey.ANTI_VIRUS, FeatureCatalog.featureForRoute(AppRoute.VirusQuickScan.value))
+        assertEquals(FeatureKey.NETWORK_SCAN, FeatureCatalog.featureForRoute(AppRoute.NetworkScanDevices.value))
     }
 
     @Test
@@ -113,21 +46,23 @@ class VariantProfileTest {
         assertEquals("detail?name=a+b%26c&path=%2Fa%2Fb", route)
     }
 
-    private fun testProfile(
-        enabled: Set<VariantFeature>,
-        homeFeatureOrder: List<VariantFeature> = VariantFeature.entries.toList(),
-        fileFeatureOrder: List<VariantFeature> = fileFeatures.toList(),
-        toolboxFeatureOrder: List<VariantFeature> = toolboxFeatures.toList(),
-    ): VariantProfile =
+    @Test
+    fun variantProfileKeepsOnlyNonUiVariantConfiguration() {
+        val profile = testProfile()
+
+        assertEquals("storagecleaner", profile.variantKey)
+        assertEquals("storage_cleaner", profile.themeKey)
+        assertEquals("https://terms.example", profile.termsOfServiceUrl)
+        assertEquals("https://privacy.example", profile.privacyPolicyUrl)
+        assertEquals("trustlook-key", profile.trustlookApiKey)
+        assertTrue(profile.notificationProfile.enabledToolRoutes.contains(AppRoute.BatteryInfo.value))
+    }
+
+    private fun testProfile(): VariantProfile =
         VariantProfile(
-            variantKey = "test",
-            appName = "Test",
-            themeKey = "test",
-            primaryFeature = VariantFeature.JUNK_CLEAN,
-            enabledFeatures = enabled,
-            homeFeatureOrder = homeFeatureOrder,
-            fileFeatureOrder = fileFeatureOrder,
-            toolboxFeatureOrder = toolboxFeatureOrder,
+            variantKey = "storagecleaner",
+            appName = "Storage Cleaner",
+            themeKey = "storage_cleaner",
             adProfile =
                 VariantAdProfile(
                     unitIds =
@@ -138,14 +73,14 @@ class VariantProfileTest {
                             banner = "",
                             native = "",
                         ),
-                    placements = defaultAdPlacements(enabled),
+                    placements = defaultAdPlacements(),
                 ),
             legalProfile =
                 LegalProfile(
-                    termsOfServiceUrl = "",
-                    privacyPolicyUrl = "",
+                    termsOfServiceUrl = "https://terms.example",
+                    privacyPolicyUrl = "https://privacy.example",
                 ),
-            notificationProfile = NotificationProfile(),
-            serviceProfile = VariantServiceProfile(trustlookApiKey = ""),
+            notificationProfile = storageCleanerNotificationProfile(),
+            serviceProfile = VariantServiceProfile(trustlookApiKey = "trustlook-key"),
         )
 }

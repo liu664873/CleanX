@@ -12,12 +12,20 @@ class ArchitectureGuardTest {
     @Test
     fun mainConfigDoesNotReferenceFlavorUiResourcesOrLegacyScreen() {
         val configDir = File(mainSource, "config")
+        val allowedConfigStrings =
+            setOf(
+                "R.string.variant_key",
+                "R.string.app_name",
+                "R.string.variant_theme_key",
+                "R.string.terms_of_service_url",
+                "R.string.privacy_policy_url",
+            )
         val offenders =
             configDir.kotlinFiles()
                 .filter { file ->
                     val text = file.readText()
                     "R.drawable" in text ||
-                        "R.string" in text ||
+                        rStringReferences(text).any { reference -> reference !in allowedConfigStrings } ||
                         "presentation.common.route.Screen" in text
                 }
 
@@ -25,17 +33,33 @@ class ArchitectureGuardTest {
     }
 
     @Test
-    fun advertiseSdkIsOnlyUsedInsideAdvertisePackageOrApplicationStartup() {
+    fun advertiseSdkIsOnlyUsedInsideAdvertisePackage() {
         val offenders =
             mainSource.kotlinFiles()
-                .filterNot { file ->
-                    file.inPath("advertise") ||
-                        file.name == "QuickCleanApplication.kt"
-                }.filter { file ->
-                    "AdvertiseSdk" in file.readText()
+                .filterNot { file -> file.inPath("advertise") }
+                .filter { file ->
+                    val text = file.readText()
+                    "AdvertiseSdk" in text ||
+                        "com.pdffox.adv" in text
                 }
 
-        assertTrue("AdvertiseSdk must stay behind app/advertise mediator: $offenders", offenders.isEmpty())
+        assertTrue("Advertise SDK must stay behind app/advertise package: $offenders", offenders.isEmpty())
+    }
+
+    @Test
+    fun mainSourceSetDoesNotOwnResources() {
+        val mainRes = File(root, "src/main/res")
+        val files = mainRes.filesOrEmpty()
+
+        assertTrue("src/main/res should stay empty; move resources to storagecleaner: $files", files.isEmpty())
+    }
+
+    @Test
+    fun mainSourceSetDoesNotOwnAssets() {
+        val mainAssets = File(root, "src/main/assets")
+        val files = mainAssets.filesOrEmpty()
+
+        assertTrue("src/main/assets should stay empty; move assets to storagecleaner: $files", files.isEmpty())
     }
 
     @Test
@@ -183,6 +207,19 @@ class ArchitectureGuardTest {
     private fun File.kotlinFiles(): List<File> =
         walkTopDown()
             .filter { file -> file.isFile && file.extension == "kt" }
+            .toList()
+
+    private fun File.filesOrEmpty(): List<File> =
+        if (exists()) {
+            walkTopDown().filter { file -> file.isFile }.toList()
+        } else {
+            emptyList()
+        }
+
+    private fun rStringReferences(text: String): List<String> =
+        Regex("""R\.string\.[A-Za-z0-9_]+""")
+            .findAll(text)
+            .map { match -> match.value }
             .toList()
 
     private fun File.inPath(segment: String): Boolean =

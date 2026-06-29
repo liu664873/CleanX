@@ -28,8 +28,7 @@ object ToolNotificationDataSource {
         val profile = VariantConfigs.current
         ToolNotificationSpecs
             .filter { item ->
-                item.route in profile.notificationProfile.enabledToolRoutes &&
-                    profile.isRouteEnabled(item.route)
+                item.route in profile.notificationProfile.enabledToolRoutes
             }.forEachIndexed { index, item ->
             runCatching { manager.cancel(TOOL_NOTIFICATION_BASE_ID + index) }
             val notification = buildToolNotification(appContext, item, index)

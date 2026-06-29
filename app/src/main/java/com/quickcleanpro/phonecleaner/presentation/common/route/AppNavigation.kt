@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.quickcleanpro.phonecleaner.advertise.AdvertiseRuntimeCapabilities
 import com.quickcleanpro.phonecleaner.config.VariantConfigs
 import com.quickcleanpro.phonecleaner.navigation.AppRoute
 import com.quickcleanpro.phonecleaner.navigation.RouteAdPolicy
@@ -31,7 +32,9 @@ fun AppNavGraph(
     val routeManager =
         remember {
             RouteManager(navController, adManager = adManager).apply {
-                addInterceptor(AdInterceptor(routeAdPolicy.featureEntryAdPlacements))
+                if (AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+                    addInterceptor(AdInterceptor(routeAdPolicy.featureEntryAdPlacements))
+                }
                 interceptors.forEach { addInterceptor(it) }
             }
         }

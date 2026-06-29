@@ -56,19 +56,10 @@ object ToolNotificationIntentFactory {
             ToolNotificationSpecs
                 .map { spec -> spec.route }
                 .filter { route -> route in profile.notificationProfile.enabledToolRoutes }
-                .filter(profile::isRouteEnabled)
                 .forEach(::add)
-            if (profile.isRouteEnabled(AppRoute.NotificationCleaner.value)) {
-                add(AppRoute.NotificationCleaner.value)
-            }
-            if (profile.isRouteEnabled(AppRoute.NotificationBar.value)) {
-                add(AppRoute.NotificationBar.value)
-            }
-            if (profile.hasAnyEnabledFileFeature()) {
-                add(ROUTE_HOME_FILE_MANAGER)
-            }
-            if (profile.hasAnyEnabledToolboxFeature()) {
-                add(ROUTE_HOME_TOOLBOX)
-            }
+            add(AppRoute.NotificationCleaner.value)
+            add(AppRoute.NotificationBar.value)
+            add(ROUTE_HOME_FILE_MANAGER)
+            add(ROUTE_HOME_TOOLBOX)
         }
 }

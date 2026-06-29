@@ -1,6 +1,7 @@
 package com.quickcleanpro.phonecleaner.advertise
 
 object AdvertiseRuntimeCapabilities {
+    const val ADVERTISE_SDK_ENABLED = false
     const val SERVER_ENABLED = false
     const val FIREBASE_ANALYTICS_ENABLED = false
     const val FIREBASE_MESSAGING_ENABLED = false

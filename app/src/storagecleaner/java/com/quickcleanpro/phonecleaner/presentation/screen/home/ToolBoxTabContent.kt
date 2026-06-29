@@ -50,7 +50,6 @@ import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.theme.LocalVariantTheme
 import androidx.compose.runtime.ReadOnlyComposable
-import com.quickcleanpro.phonecleaner.config.VariantConfigs
 import com.quickcleanpro.phonecleaner.config.VariantFeature
 import com.quickcleanpro.phonecleaner.config.iconRes
 import com.quickcleanpro.phonecleaner.config.screenOrNull
@@ -68,6 +67,15 @@ private val DeviceInfoDarkGradient =
     Brush.linearGradient(
         colors = listOf(Color(0xFF90FB9C), Color(0xFF8AFB88)),
     )
+private val StorageCleanerToolboxGridFeatures =
+    listOf(
+        VariantFeature.APP_USAGE,
+        VariantFeature.NOTIFICATION_BAR,
+        VariantFeature.WHATSAPP_CLEANER,
+        VariantFeature.NETWORK_USAGE,
+        VariantFeature.NETWORK_SCAN,
+        VariantFeature.NETWORK_SPEED,
+    )
 
 @Composable
 fun ToolBoxTabContent(
@@ -76,7 +84,6 @@ fun ToolBoxTabContent(
 ) {
     val router = LocalRouter.current
     val context = LocalContext.current
-    val profile = VariantConfigs.current
     var showWhatsAppNotFoundDialog by remember { mutableStateOf(false) }
     val batteryCapacity =
         summaryState.batteryInfo.levelPercent
@@ -93,36 +100,29 @@ fun ToolBoxTabContent(
                 .padding(horizontal = 16.dp)
                 .padding(top = 32.dp),
     ) {
-        if (profile.isEnabled(VariantFeature.DEVICE_INFO)) {
-            DeviceInfoCard(
-                model = summaryState.deviceModel,
-                androidVersion = summaryState.androidVersion,
-                onClick = {
-                    onFeatureClick()
-                    router.navigate(Screen.DeviceInfo)
-                },
-            )
+        DeviceInfoCard(
+            model = summaryState.deviceModel,
+            androidVersion = summaryState.androidVersion,
+            onClick = {
+                onFeatureClick()
+                router.navigate(Screen.DeviceInfo)
+            },
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        Spacer(modifier = Modifier.height(16.dp))
 
-        if (profile.isEnabled(VariantFeature.BATTERY_INFO)) {
-            BatteryInfoCard(
-                status = batteryStatus,
-                capacity = batteryCapacity,
-                onClick = {
-                    onFeatureClick()
-                    router.navigate(Screen.BatteryInfo)
-                },
-            )
+        BatteryInfoCard(
+            status = batteryStatus,
+            capacity = batteryCapacity,
+            onClick = {
+                onFeatureClick()
+                router.navigate(Screen.BatteryInfo)
+            },
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        Spacer(modifier = Modifier.height(16.dp))
 
-        val gridFeatures =
-            profile.orderedToolboxFeatures()
-                .filterNot { feature -> feature == VariantFeature.DEVICE_INFO || feature == VariantFeature.BATTERY_INFO }
-
+        val gridFeatures = StorageCleanerToolboxGridFeatures
         if (gridFeatures.isNotEmpty()) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),

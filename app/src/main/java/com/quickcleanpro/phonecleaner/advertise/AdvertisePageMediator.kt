@@ -22,12 +22,16 @@ object AdvertisePageMediator : AdvertiseMediator {
         activity: Activity?,
         onContinue: () -> Unit,
     ) {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            onContinue()
+            return
+        }
         if (activity == null || activity.isUnavailable()) {
             onContinue()
             return
         }
         runCatching {
-            AdvertiseSdk.showSplashConsent(activity) {
+            AdvertiseSdkBridge.showSplashConsent(activity) {
                 showLaunchOpenAd(activity, onContinue)
             }
         }.onFailure { throwable ->
@@ -40,12 +44,16 @@ object AdvertisePageMediator : AdvertiseMediator {
         activity: Activity?,
         onComplete: (Boolean) -> Unit,
     ) {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            onComplete(false)
+            return
+        }
         if (activity == null || activity.isUnavailable()) {
             onComplete(false)
             return
         }
         runCatching {
-            val hasCachedConsentState = AdvertiseSdk.initConsent(activity) { success ->
+            val hasCachedConsentState = AdvertiseSdkBridge.initConsent(activity) { success ->
                 onComplete(success)
             }
             if (hasCachedConsentState) {
@@ -61,12 +69,16 @@ object AdvertisePageMediator : AdvertiseMediator {
         activity: Activity?,
         onComplete: () -> Unit,
     ) {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            onComplete()
+            return
+        }
         if (activity == null || activity.isUnavailable()) {
             onComplete()
             return
         }
         runCatching {
-            AdvertiseSdk.showSplashConsent(activity) {
+            AdvertiseSdkBridge.showSplashConsent(activity) {
                 onComplete()
             }
         }.onFailure { throwable ->
@@ -129,6 +141,10 @@ object AdvertisePageMediator : AdvertiseMediator {
         areaKey: String?,
         onClosed: () -> Unit,
     ) {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            onClosed()
+            return
+        }
         if (activity == null || activity.isUnavailable()) {
             AdEventLogger.showSkipped("activity unavailable")
             onClosed()
@@ -152,7 +168,7 @@ object AdvertisePageMediator : AdvertiseMediator {
         }
 
         runCatching {
-            AdvertiseSdk.showInterstitialAd(activity, areaKey) {
+            AdvertiseSdkBridge.showInterstitial(activity, areaKey) {
                 continueOnce()
             }
         }.onFailure { throwable ->
@@ -165,12 +181,16 @@ object AdvertisePageMediator : AdvertiseMediator {
     fun getBannerAd(
         context: Context,
         areaKey: String,
-    ): ViewGroup? =
-        runCatching {
-            AdvertiseSdk.getBannerAd(context, areaKey)
+    ): ViewGroup? {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            return null
+        }
+        return runCatching {
+            AdvertiseSdkBridge.getBannerAd(context, areaKey)
         }.onFailure { throwable ->
             Log.w(TAG, "getBannerAd failed", throwable)
         }.getOrNull()
+    }
 
     @SuppressLint("MissingPermission")
     fun bindBanner(
@@ -197,92 +217,63 @@ object AdvertisePageMediator : AdvertiseMediator {
 
     fun clearBanner(container: FrameLayout) {
         for (index in 0 until container.childCount) {
-            (container.getChildAt(index) as? ViewGroup)?.let(AdvertiseSdk::destroyBannerAd)
+            if (AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+                (container.getChildAt(index) as? ViewGroup)?.let(AdvertiseSdkBridge::destroyBannerAd)
+            }
         }
         container.removeAllViews()
         container.visibility = View.GONE
     }
 
     fun preloadLaunchAds(context: Context) {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            return
+        }
         runCatching {
-            if (AdvertiseSdk.canPreloadOpen(AdvertiseSdk.LOAD_TIME_OPEN_APP)) {
-                AdvertiseSdk.preloadOpen(context)
-            }
-            if (AdvertiseSdk.canPreloadInterstitial(AdvertiseSdk.LOAD_TIME_OPEN_APP)) {
-                AdvertiseSdk.preloadInterstitial(context)
-            }
-            if (AdvertiseSdk.canPreloadNative(AdvertiseSdk.LOAD_TIME_OPEN_APP)) {
-                AdvertiseSdk.preloadNative(context)
-            }
+            AdvertiseSdkBridge.preloadLaunchAds(context)
         }.onFailure { throwable ->
             Log.w(TAG, "preloadLaunchAds failed", throwable)
         }
     }
 
     fun preloadLaunchOpenAd(context: Context) {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            return
+        }
         runCatching {
-            AdvertiseSdk.preloadOpen(context)
+            AdvertiseSdkBridge.preloadOpen(context)
         }.onFailure { throwable ->
             Log.w(TAG, "preloadLaunchOpenAd failed", throwable)
         }
     }
 
-    fun hasCachedLaunchOpenAd(): Boolean =
-        runCatching {
-            AdvertiseSdk.hasCachedOpenAd()
-        }.getOrElse { throwable ->
-            Log.w(TAG, "hasCachedLaunchOpenAd failed", throwable)
-            false
-        }
+    fun hasCachedLaunchOpenAd(): Boolean = false
 
     fun showCachedLaunchOpenAd(
         activity: Activity?,
         onContinue: () -> Unit,
     ): Boolean {
-        if (activity == null || activity.isUnavailable()) {
-            onContinue()
-            return false
-        }
-        var callbackHandled = false
-        fun continueOnce() {
-            if (callbackHandled) return
-            callbackHandled = true
-            if (!activity.isUnavailable()) {
-                onContinue()
-            }
-        }
-        return runCatching {
-            AdvertiseSdk.showCachedOpenAd(
-                activity = activity,
-                areaKey = AdAreaKeys.Open.OPEN_PAGE,
-                onCloseListener = AdvertiseSdk.OpenAdCloseListener {
-                    continueOnce()
-                },
-                onLoadedListener = AdvertiseSdk.OpenAdLoadedListener { },
-                onPaidListener = AdvertiseSdk.OpenAdPaidListener { _ -> },
-            )
-        }.onFailure { throwable ->
-            Log.w(TAG, "showCachedLaunchOpenAd failed", throwable)
-            continueOnce()
-        }.getOrDefault(false)
+        onContinue()
+        return false
     }
 
     fun preloadMainPageAds(context: Context) {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            return
+        }
         runCatching {
-            if (AdvertiseSdk.canPreloadInterstitial(AdvertiseSdk.LOAD_TIME_ENTER_FEATURE)) {
-                AdvertiseSdk.preloadInterstitial(context)
-            }
-            if (AdvertiseSdk.canPreloadNative(AdvertiseSdk.LOAD_TIME_ENTER_FEATURE)) {
-                AdvertiseSdk.preloadNative(context)
-            }
+            AdvertiseSdkBridge.preloadMainPageAds(context)
         }.onFailure { throwable ->
             Log.w(TAG, "preloadMainPageAds failed", throwable)
         }
     }
 
     override fun suppressNextAppOpenAd() {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            return
+        }
         runCatching {
-            AdvertiseSdk.suppressNextAppOpenAd = true
+            AdvertiseSdkBridge.suppressNextAppOpenAd()
         }.onFailure { throwable ->
             Log.w(TAG, "suppressNextAppOpenAd failed", throwable)
         }
@@ -292,6 +283,10 @@ object AdvertisePageMediator : AdvertiseMediator {
         activity: Activity,
         onContinue: () -> Unit,
     ) {
+        if (!AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+            onContinue()
+            return
+        }
         if (activity.isUnavailable()) {
             onContinue()
             return
@@ -317,17 +312,16 @@ object AdvertisePageMediator : AdvertiseMediator {
         }, APP_OPEN_TIMEOUT_MS)
 
         runCatching {
-            AdvertiseSdk.showOpenAd(
+            AdvertiseSdkBridge.showOpenAd(
                 activity = activity,
                 areaKey = AdAreaKeys.Open.OPEN_PAGE,
-                onCloseListener = AdvertiseSdk.OpenAdCloseListener {
+                onClosed = {
                     continueOnce()
                 },
-                onLoadedListener = AdvertiseSdk.OpenAdLoadedListener {
+                onLoaded = {
                     openAdLoaded = true
                     handler.removeCallbacksAndMessages(null)
                 },
-                onPaidListener = AdvertiseSdk.OpenAdPaidListener { _ -> },
             )
         }.onFailure { throwable ->
             Log.w(TAG, "showOpenAd failed; continuing flow", throwable)
@@ -336,4 +330,79 @@ object AdvertisePageMediator : AdvertiseMediator {
     }
 
     private fun Activity.isUnavailable(): Boolean = isFinishing || isDestroyed
+}
+
+private object AdvertiseSdkBridge {
+    fun showSplashConsent(
+        activity: Activity,
+        onComplete: () -> Unit,
+    ) {
+        AdvertiseSdk.showSplashConsent(activity, onComplete)
+    }
+
+    fun initConsent(
+        activity: Activity,
+        onComplete: (Boolean) -> Unit,
+    ): Boolean = AdvertiseSdk.initConsent(activity, onComplete)
+
+    fun showInterstitial(
+        activity: Activity,
+        areaKey: String,
+        onClosed: () -> Unit,
+    ) {
+        AdvertiseSdk.showInterstitialAd(activity, areaKey, onClosed)
+    }
+
+    fun getBannerAd(
+        context: Context,
+        areaKey: String,
+    ): ViewGroup? = AdvertiseSdk.getBannerAd(context, areaKey)
+
+    fun destroyBannerAd(adView: ViewGroup) {
+        AdvertiseSdk.destroyBannerAd(adView)
+    }
+
+    fun preloadLaunchAds(context: Context) {
+        if (AdvertiseSdk.canPreloadOpen(AdvertiseSdk.LOAD_TIME_OPEN_APP)) {
+            AdvertiseSdk.preloadOpen(context)
+        }
+        if (AdvertiseSdk.canPreloadInterstitial(AdvertiseSdk.LOAD_TIME_OPEN_APP)) {
+            AdvertiseSdk.preloadInterstitial(context)
+        }
+        if (AdvertiseSdk.canPreloadNative(AdvertiseSdk.LOAD_TIME_OPEN_APP)) {
+            AdvertiseSdk.preloadNative(context)
+        }
+    }
+
+    fun preloadOpen(context: Context) {
+        AdvertiseSdk.preloadOpen(context)
+    }
+
+    fun preloadMainPageAds(context: Context) {
+        if (AdvertiseSdk.canPreloadInterstitial(AdvertiseSdk.LOAD_TIME_ENTER_FEATURE)) {
+            AdvertiseSdk.preloadInterstitial(context)
+        }
+        if (AdvertiseSdk.canPreloadNative(AdvertiseSdk.LOAD_TIME_ENTER_FEATURE)) {
+            AdvertiseSdk.preloadNative(context)
+        }
+    }
+
+    fun suppressNextAppOpenAd() {
+        AdvertiseSdk.suppressNextAppOpenAd = true
+    }
+
+    fun showOpenAd(
+        activity: Activity,
+        areaKey: String,
+        onClosed: () -> Unit,
+        onLoaded: () -> Unit,
+    ) {
+        AdvertiseSdk.showOpenAd(
+            activity = activity,
+            areaKey = areaKey,
+            onCloseListener = AdvertiseSdk.OpenAdCloseListener(onClosed),
+            onLoadedListener = AdvertiseSdk.OpenAdLoadedListener(onLoaded),
+            onPaidListener = AdvertiseSdk.OpenAdPaidListener { _ -> },
+        )
+    }
 }

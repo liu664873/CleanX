@@ -22,13 +22,16 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.quickcleanpro.phonecleaner.advertise.AdvertisePageMediator
 import com.quickcleanpro.phonecleaner.advertise.AdvertiseRouteAdManager
+import com.quickcleanpro.phonecleaner.advertise.AdvertiseRuntimeCapabilities
 import com.quickcleanpro.phonecleaner.core.permission.appSettingsIntent
 import com.quickcleanpro.phonecleaner.data.source.notification.ToolNotificationIntentFactory
 import com.quickcleanpro.phonecleaner.domain.repository.SettingsRepository
 import com.quickcleanpro.phonecleaner.operation.DefaultFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.operation.LocalFeatureOperationTracker
+import com.quickcleanpro.phonecleaner.operation.NoOpFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXPermissionCoordinatorProvider
 import com.quickcleanpro.phonecleaner.presentation.common.route.AppNavGraph
+import com.quickcleanpro.phonecleaner.presentation.common.route.NoOpAdManager
 import com.quickcleanpro.phonecleaner.presentation.common.route.Screen
 import com.quickcleanpro.phonecleaner.presentation.screen.splash.SplashScreen
 import org.koin.androidx.compose.koinViewModel
@@ -44,10 +47,21 @@ fun CleanXAppRoot(
     val notificationPermissionSessionViewModel: NotificationPermissionSessionViewModel = koinViewModel()
     val navController = rememberNavController()
     val activity = context.findActivity()
-    val adManager = remember(activity) { AdvertiseRouteAdManager(activity) }
+    val adManager =
+        remember(activity) {
+            if (AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+                AdvertiseRouteAdManager(activity)
+            } else {
+                NoOpAdManager
+            }
+        }
     val operationTracker =
         remember(activity) {
-            DefaultFeatureOperationTracker(activityProvider = { activity })
+            if (AdvertiseRuntimeCapabilities.ADVERTISE_SDK_ENABLED) {
+                DefaultFeatureOperationTracker(activityProvider = { activity })
+            } else {
+                NoOpFeatureOperationTracker
+            }
         }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route

@@ -10,7 +10,6 @@ class OperationAdPolicy(
     private val profile: VariantProfile,
 ) {
     fun adKeyFor(event: FeatureOperationEvent): String? {
-        if (!profile.isEnabled(event.feature)) return null
         return when (event) {
             is FeatureOperationEvent.OperationFinished ->
                 if (event.success) finishAdFor(event.feature) else null

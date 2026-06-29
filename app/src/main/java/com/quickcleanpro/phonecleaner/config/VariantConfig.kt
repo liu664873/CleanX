@@ -53,11 +53,6 @@ data class VariantProfile(
     val variantKey: String,
     val appName: String,
     val themeKey: String,
-    val primaryFeature: FeatureKey,
-    val enabledFeatures: Set<FeatureKey>,
-    val homeFeatureOrder: List<FeatureKey>,
-    val fileFeatureOrder: List<FeatureKey>,
-    val toolboxFeatureOrder: List<FeatureKey>,
     val adProfile: VariantAdProfile,
     val legalProfile: LegalProfile,
     val notificationProfile: NotificationProfile,
@@ -68,26 +63,6 @@ data class VariantProfile(
     val adPlacements: VariantAdPlacements get() = adProfile.placements
     val termsOfServiceUrl: String get() = legalProfile.termsOfServiceUrl
     val privacyPolicyUrl: String get() = legalProfile.privacyPolicyUrl
-
-    fun isEnabled(feature: FeatureKey): Boolean = feature in enabledFeatures
-
-    fun isRouteEnabled(route: String): Boolean =
-        featureForRoute(route)?.let(::isEnabled) ?: true
-
-    fun hasAnyEnabledFileFeature(): Boolean =
-        fileFeatures.any(::isEnabled)
-
-    fun hasAnyEnabledToolboxFeature(): Boolean =
-        toolboxFeatures.any(::isEnabled)
-
-    fun orderedHomeFeatures(): List<FeatureKey> =
-        homeFeatureOrder.filter(::isEnabled)
-
-    fun orderedFileFeatures(): List<FeatureKey> =
-        fileFeatureOrder.filter(::isEnabled)
-
-    fun orderedToolboxFeatures(): List<FeatureKey> =
-        toolboxFeatureOrder.filter(::isEnabled)
 }
 
 typealias VariantConfig = VariantProfile
@@ -96,9 +71,12 @@ object VariantConfigs {
     lateinit var current: VariantProfile
         private set
 
-    fun initialize(context: android.content.Context) {
+    fun initialize(
+        context: android.content.Context,
+        loadAds: Boolean = true,
+    ) {
         if (::current.isInitialized) return
-        current = ConfigLoader.load(context)
+        current = ConfigLoader.load(context, loadAds = loadAds)
     }
 }
 
@@ -140,19 +118,14 @@ fun storageCleanerNotificationProfile(): NotificationProfile =
             ),
     )
 
-fun defaultAdPlacements(enabledFeatures: Set<FeatureKey>): VariantAdPlacements {
-    fun enabled(feature: FeatureKey): Boolean = feature in enabledFeatures
-
-    val enabledSpecs =
-        FeatureCatalog.specs.filter { spec -> enabled(spec.key) }
-
+fun defaultAdPlacements(): VariantAdPlacements {
     val featureEntry =
-        enabledSpecs
+        FeatureCatalog.specs
             .mapNotNull { spec -> spec.entryAdKey?.let { spec.route.value to it } }
             .toMap()
 
     val featureCompletion =
-        enabledSpecs
+        FeatureCatalog.specs
             .mapNotNull { spec -> spec.finishAdKey?.let { spec.route.value to it } }
             .toMap()
 

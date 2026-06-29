@@ -1,46 +1,28 @@
 package com.quickcleanpro.phonecleaner.config
 
 import android.content.Context
-import org.json.JSONArray
+import com.quickcleanpro.phonecleaner.BuildConfig
+import com.quickcleanpro.phonecleaner.R
 import org.json.JSONObject
 
-// Loads variant and ad configurations from assets/config/*.json at startup,
-// replacing the 30+ BuildConfig fields previously injected via Gradle.
 object ConfigLoader {
 
-    fun load(context: Context): VariantProfile {
-        val variantJson = loadObject(context, "config/variant.json")
-        val adsJson = loadObject(context, "config/ads.json")
-
-        val enabledFeatures = parseFeatures(variantJson.optJSONArray("enabledFeatures")).toSet()
-
+    fun load(
+        context: Context,
+        loadAds: Boolean = true,
+    ): VariantProfile {
         return VariantProfile(
-            variantKey = variantJson.optString("variantKey", "storagecleaner"),
-            appName = variantJson.optString("appName", "Storage Cleaner"),
-            themeKey = variantJson.optString("themeKey", "storage_cleaner"),
-            primaryFeature = parseFeature(variantJson.optString("primaryFeature", "JUNK_CLEAN"))
-                ?: FeatureKey.JUNK_CLEAN,
-            enabledFeatures = enabledFeatures,
-            homeFeatureOrder = parseFeatures(variantJson.optJSONArray("homeFeatureOrder")),
-            fileFeatureOrder = parseFeatures(variantJson.optJSONArray("fileFeatureOrder")),
-            toolboxFeatureOrder = parseFeatures(variantJson.optJSONArray("toolboxFeatureOrder")),
-            adProfile = VariantAdProfile(
-                unitIds = VariantAdUnitIds(
-                    appId = adsJson.optString("appId"),
-                    appOpen = adsJson.optString("appOpen"),
-                    interstitial = adsJson.optString("interstitial"),
-                    banner = adsJson.optString("banner"),
-                    native = adsJson.optString("native"),
-                ),
-                placements = defaultAdPlacements(enabledFeatures),
-            ),
+            variantKey = context.getString(R.string.variant_key),
+            appName = context.getString(R.string.app_name),
+            themeKey = context.getString(R.string.variant_theme_key),
+            adProfile = if (loadAds) loadAdProfile(context) else emptyAdProfile(),
             legalProfile = LegalProfile(
-                termsOfServiceUrl = variantJson.optString("termsOfServiceUrl"),
-                privacyPolicyUrl = variantJson.optString("privacyPolicyUrl"),
+                termsOfServiceUrl = context.getString(R.string.terms_of_service_url),
+                privacyPolicyUrl = context.getString(R.string.privacy_policy_url),
             ),
             notificationProfile = storageCleanerNotificationProfile(),
             serviceProfile = VariantServiceProfile(
-                trustlookApiKey = variantJson.optString("trustlookApiKey"),
+                trustlookApiKey = BuildConfig.TRUSTLOOK_API_KEY,
             ),
         )
     }
@@ -105,19 +87,35 @@ object ConfigLoader {
             JSONObject(reader.readText())
         }
 
-    private fun parseFeatures(array: JSONArray?): List<FeatureKey> {
-        if (array == null) return emptyList()
-        val result = mutableListOf<FeatureKey>()
-        for (i in 0 until array.length()) {
-            parseFeature(array.optString(i))?.let { result.add(it) }
-        }
-        return result.distinct()
+    private fun loadAdProfile(context: Context): VariantAdProfile {
+        val adsJson = loadObject(context, "config/ads.json")
+
+        return VariantAdProfile(
+            unitIds = VariantAdUnitIds(
+                appId = adsJson.optString("appId"),
+                appOpen = adsJson.optString("appOpen"),
+                interstitial = adsJson.optString("interstitial"),
+                banner = adsJson.optString("banner"),
+                native = adsJson.optString("native"),
+            ),
+            placements = defaultAdPlacements(),
+        )
     }
 
-    private fun parseFeature(raw: String): FeatureKey? =
-        raw.trim().takeIf { it.isNotEmpty() }?.let { key ->
-            runCatching { FeatureKey.valueOf(key) }.getOrNull()
-        }
+    private fun emptyAdProfile(): VariantAdProfile =
+        VariantAdProfile(
+            unitIds = VariantAdUnitIds(
+                appId = "",
+                appOpen = "",
+                interstitial = "",
+                banner = "",
+                native = "",
+            ),
+            placements = VariantAdPlacements(
+                featureEntry = emptyMap(),
+                featureCompletion = emptyMap(),
+            ),
+        )
 }
 
 data class AdvSdkConfig(

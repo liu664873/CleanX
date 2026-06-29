@@ -561,4 +561,9 @@
     <string name="agree_and_continue">同意并继续</string>
     <string name="not_now">暂不</string>
     <string name="notification_intercepted_appear_here">已拦截的通知会显示在这里</string>
+    <string name="permission_installed_apps_desc">为了扫描已安装应用的安全风险，请在系统设置中允许访问已安装应用列表。</string>
+    <string name="network_speed_testing">测速中...</string>
+    <string name="network_speed_testing_latency">正在测试延迟...</string>
+    <string name="network_speed_testing_download">正在测试下载...</string>
+    <string name="network_speed_testing_upload">正在测试上传...</string>
 </resources>

@@ -26,6 +26,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("http://192.168.10.128:8081/repository/maven-public/")
+            isAllowInsecureProtocol = true
+        }
         maven { url = uri("https://www.jitpack.io") }
         maven { url = uri("https://repository.liferay.com/nexus/content/repositories/public/") }
         maven { url = uri("https://maven.singular.net/") }
@@ -42,4 +46,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "cleanx"
 include(":app")
-include(":advertise")

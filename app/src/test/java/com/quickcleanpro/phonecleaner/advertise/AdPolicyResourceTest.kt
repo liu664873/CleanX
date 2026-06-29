@@ -1,7 +1,6 @@
 package com.quickcleanpro.phonecleaner.advertise
 
 import com.quickcleanpro.phonecleaner.config.FeatureCatalog
-import com.quickcleanpro.phonecleaner.config.FeatureKey
 import com.quickcleanpro.phonecleaner.config.defaultAdPlacements
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -9,12 +8,12 @@ import java.io.File
 
 class AdPolicyResourceTest {
     private val root = File(requireNotNull(System.getProperty("user.dir")))
-    private val rawDir = File(root, "src/main/res/raw")
+    private val rawDir = File(root, "src/storagecleaner/res/raw")
 
     @Test
     fun featureInterstitialAreaKeysExistInAdPolicy() {
         val policyKeys = areaKeysFrom(File(rawDir, "ad_policy.json"))
-        val placements = defaultAdPlacements(FeatureKey.entries.toSet())
+        val placements = defaultAdPlacements()
         val requiredKeys =
             FeatureCatalog.specs
                 .flatMap { spec -> listOfNotNull(spec.entryAdKey, spec.finishAdKey) }
@@ -36,7 +35,7 @@ class AdPolicyResourceTest {
     @Test
     fun nativeAreaKeysExistInNativeAdPolicy() {
         val policyKeys = areaKeysFrom(File(rawDir, "native_ad_policy.json"))
-        val placements = defaultAdPlacements(FeatureKey.entries.toSet())
+        val placements = defaultAdPlacements()
         val requiredKeys =
             placements.native.values.toSet() +
                 setOf(
