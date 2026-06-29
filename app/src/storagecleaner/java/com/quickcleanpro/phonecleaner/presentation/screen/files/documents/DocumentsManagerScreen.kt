@@ -23,11 +23,14 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.FeatureKey
+import com.quickcleanpro.phonecleaner.operation.LocalFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerErrorToastEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerNoResultsDialog
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerOperationEventsEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerScaffold
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStartEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStopOperationDialog
@@ -45,18 +48,17 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.det
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import org.koin.androidx.compose.koinViewModel
 
+private val FEATURE = FeatureKey.DOCUMENTS
+
 @Composable
 fun DocumentsManagerScreen() {
-    DocumentsManagerScreenState(
-        viewModel = koinViewModel(),
-    )
+    DocumentsManagerScreenState(viewModel = koinViewModel())
 }
 
 @Composable
-private fun DocumentsManagerScreenState(
-    viewModel: DocumentsManagerViewModel,
-) {
+private fun DocumentsManagerScreenState(viewModel: DocumentsManagerViewModel) {
     val router = LocalRouter.current
+    val tracker = LocalFeatureOperationTracker.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionState = rememberFileManagerPermissionState()
@@ -68,8 +70,7 @@ private fun DocumentsManagerScreenState(
     val latestShowStopDialog by rememberUpdatedState(showStopDialog)
     val latestLeavingPage by rememberUpdatedState(permissionState.leavingPage)
     val scrollStates = remember { mutableMapOf<Int, ScrollState>() }
-    fun scrollStateForTab(index: Int): ScrollState =
-        scrollStates.getOrPut(index) { ScrollState(0) }
+    fun scrollStateForTab(index: Int): ScrollState = scrollStates.getOrPut(index) { ScrollState(0) }
     val isDetailMode = displayState.detailStartIndex != null
     val visibleItems = displayState.visibleDisplayItems
     val showDetail = displayState.phase == FileOperationPhase.Browsing ||
@@ -79,18 +80,10 @@ private fun DocumentsManagerScreenState(
         var skipInitialResume = true
         val observer = LifecycleEventObserver { _, event ->
             if (event != Lifecycle.Event.ON_RESUME) return@LifecycleEventObserver
-            if (skipInitialResume) {
-                skipInitialResume = false
-                return@LifecycleEventObserver
-            }
-            val canRefresh =
-                    latestPermissionGranted &&
-                    !latestLeavingPage &&
-                    !latestShowStopDialog &&
-                    latestDisplayState.phase == FileOperationPhase.Browsing
-            if (canRefresh) {
-                viewModel.refresh()
-            }
+            if (skipInitialResume) { skipInitialResume = false; return@LifecycleEventObserver }
+            val canRefresh = latestPermissionGranted && !latestLeavingPage &&
+                !latestShowStopDialog && latestDisplayState.phase == FileOperationPhase.Browsing
+            if (canRefresh) viewModel.refresh()
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -99,30 +92,21 @@ private fun DocumentsManagerScreenState(
     fun handleBack() {
         when {
             isDetailMode -> viewModel.closeDetail()
-            !permissionState.granted -> {
-                permissionState.leaveBack(router)
-            }
+            !permissionState.granted -> permissionState.leaveBack(router)
             displayState.phase == FileOperationPhase.Deleting -> {
-                viewModel.cancelDeletingAndReturnToBrowsing()
-                showStopDialog = true
+                viewModel.cancelDeletingAndReturnToBrowsing(); showStopDialog = true
             }
             displayState.phase == FileOperationPhase.Scanning -> {
-                blockedPhase = displayState.phase
-                showStopDialog = true
+                blockedPhase = displayState.phase; showStopDialog = true
             }
             displayState.phase == FileOperationPhase.ConfirmDelete -> viewModel.cancelDelete()
             else -> permissionState.leaveHome(router)
         }
     }
 
-    FileManagerErrorToastEffect(
-        errorMessage = uiState.errorMessage,
-        onConsumed = viewModel::clearError
-    )
-
-    FileManagerStartEffect(permissionState, viewModel::startIfNeeded) {
-        permissionState.leaveHome(router)
-    }
+    FileManagerOperationEventsEffect(viewModel, tracker)
+    FileManagerErrorToastEffect(uiState.errorMessage, viewModel::clearError)
+    FileManagerStartEffect(FEATURE, permissionState, viewModel::startIfNeeded) { permissionState.leaveHome(router) }
 
     BackHandler(enabled = permissionState.granted) { handleBack() }
 
@@ -142,9 +126,7 @@ private fun DocumentsManagerScreenState(
                     enabled = displayState.selectedIds.isNotEmpty(),
                     text = if (displayState.selectedSizeBytes > 0L) {
                         stringResource(R.string.file_delete_size, FileSizeFormatter.format(displayState.selectedSizeBytes).replace(" ", ""))
-                    } else {
-                        stringResource(R.string.file_delete)
-                    },
+                    } else stringResource(R.string.file_delete),
                     onClick = viewModel::requestDelete,
                     backgroundColor = Color.Transparent,
                     buttonModifier = Modifier.height(52.dp),
@@ -161,25 +143,15 @@ private fun DocumentsManagerScreenState(
             onTabSelected = viewModel::selectTab,
             onToggleAll = viewModel::toggleVisibleItems,
             onSelect = viewModel::toggleSelection,
-            onOpenDetail = { item ->
-                viewModel.openDetail(visibleItems.indexOfFirst { it.id == item.id })
-            },
-            onContinue = { permissionState.leaveHomeAfterComplete(router) },
+            onOpenDetail = { item -> viewModel.openDetail(visibleItems.indexOfFirst { it.id == item.id }) },
+            onContinue = { permissionState.leaveHomeAfterComplete(router, tracker, FEATURE) },
         )
     }
 
     FileManagerStopOperationDialog(
-        visible = showStopDialog,
-        permissionGranted = permissionState.granted,
-        onQuit = {
-            showStopDialog = false
-            viewModel.cancelActiveOperation()
-            permissionState.leaveBack(router)
-        },
-        onResume = {
-            showStopDialog = false
-            blockedPhase = null
-        },
+        visible = showStopDialog, permissionGranted = permissionState.granted,
+        onQuit = { showStopDialog = false; viewModel.cancelActiveOperation(); permissionState.leaveBack(router) },
+        onResume = { showStopDialog = false; blockedPhase = null },
     )
 
     FileManagerDeleteConfirmDialog(

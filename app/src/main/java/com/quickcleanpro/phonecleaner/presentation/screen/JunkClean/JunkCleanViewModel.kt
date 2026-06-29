@@ -22,7 +22,10 @@ import com.quickcleanpro.phonecleaner.domain.state.CleanupSummary
 import com.quickcleanpro.phonecleaner.domain.state.PendingDeleteAuthorization
 import com.quickcleanpro.phonecleaner.domain.state.SharedScanState
 import com.quickcleanpro.phonecleaner.domain.usecase.MemoryCleanUseCase
+import com.quickcleanpro.phonecleaner.config.FeatureKey
 import com.quickcleanpro.phonecleaner.domain.usecase.ScanJunkUseCase
+import com.quickcleanpro.phonecleaner.operation.FeatureOperationEvent
+import com.quickcleanpro.phonecleaner.operation.OperationAction
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -126,6 +129,13 @@ class JunkCleanViewModel(
     private val eventsChannel = Channel<JunkCleanEvent>(Channel.BUFFERED)
     val events = eventsChannel.receiveAsFlow()
 
+    private val operationEventsChannel = Channel<FeatureOperationEvent>(Channel.BUFFERED)
+    val operationEvents = operationEventsChannel.receiveAsFlow()
+
+    private fun trackOperationEvent(event: FeatureOperationEvent) {
+        operationEventsChannel.trySend(event)
+    }
+
     private var progressJob: Job? = null
     private var scanJob: Job? = null
     private var cleaningJob: Job? = null
@@ -208,6 +218,8 @@ class JunkCleanViewModel(
             return
         }
 
+        trackOperationEvent(FeatureOperationEvent.ActionRequested(FeatureKey.JUNK_CLEAN, OperationAction.CLEAN))
+        trackOperationEvent(FeatureOperationEvent.OperationStarted(FeatureKey.JUNK_CLEAN, OperationAction.CLEAN))
         _uiState.value =
             state.copy(
                 phase = JunkCleanPhase.Cleaning,
@@ -265,6 +277,7 @@ class JunkCleanViewModel(
                 } catch (error: CancellationException) {
                     throw error
                 } catch (error: Exception) {
+                    trackOperationEvent(FeatureOperationEvent.OperationFinished(FeatureKey.JUNK_CLEAN, OperationAction.CLEAN, success = false))
                     _uiState.value =
                         _uiState.value.copy(
                             phase = JunkCleanPhase.Error,
@@ -311,6 +324,7 @@ class JunkCleanViewModel(
                 } catch (error: CancellationException) {
                     throw error
                 } catch (error: Exception) {
+                    trackOperationEvent(FeatureOperationEvent.OperationFinished(FeatureKey.JUNK_CLEAN, OperationAction.CLEAN, success = false))
                     _uiState.value =
                         _uiState.value.copy(
                             phase = JunkCleanPhase.Error,
@@ -326,6 +340,10 @@ class JunkCleanViewModel(
         _uiState.value = _uiState.value.copy(cleanResult = JunkCleanResultUiState())
     }
 
+    fun markResultShown() {
+        trackOperationEvent(FeatureOperationEvent.ResultShown(FeatureKey.JUNK_CLEAN))
+    }
+
     private fun startScanInternal(resetSession: Boolean) {
         if (_uiState.value.scanState == JunkCleanScanState.Scanning) return
         hasStarted = true
@@ -335,6 +353,7 @@ class JunkCleanViewModel(
         }
         val scanStartedAt = System.currentTimeMillis()
         observeProgress()
+        trackOperationEvent(FeatureOperationEvent.ScanStarted(FeatureKey.JUNK_CLEAN))
         _uiState.value =
             JunkCleanUiState(
                 phase = JunkCleanPhase.Scanning,
@@ -447,6 +466,8 @@ class JunkCleanViewModel(
                     groups.firstOrNull { it.category == category }?.items?.isEmpty() ?: true
                 }
                 .toSet()
+        val hasGroups = groups.any { it.items.isNotEmpty() }
+        trackOperationEvent(FeatureOperationEvent.ScanFinished(FeatureKey.JUNK_CLEAN, hasGroups))
         val summary =
             SelectionSummary(
                 checkedCount = groups.sumOf { it.checkedCount },
@@ -511,6 +532,7 @@ class JunkCleanViewModel(
         sharedState.setCleanupSummary(summary)
 
         cleaningExecutionState = CleaningExecutionState()
+        trackOperationEvent(FeatureOperationEvent.OperationFinished(FeatureKey.JUNK_CLEAN, OperationAction.CLEAN, success = true))
         _uiState.value = _uiState.value.copy(
             phase = JunkCleanPhase.Complete,
             cleanResult = summary.toCleanResultUiState(),

@@ -18,12 +18,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.FeatureKey
+import com.quickcleanpro.phonecleaner.operation.LocalFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileImageGroupDisplayItem
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerErrorToastEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerNoResultsDialog
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerOperationEventsEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerScaffold
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStartEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStopOperationDialog
@@ -40,18 +43,17 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.det
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.list.FileManagerSimilarPhotosView
 import org.koin.androidx.compose.koinViewModel
 
+private val FEATURE = FeatureKey.SIMILAR_PHOTOS
+
 @Composable
 fun SimilarPhotosManagerScreen() {
-    SimilarPhotosManagerScreenState(
-        viewModel = koinViewModel(),
-    )
+    SimilarPhotosManagerScreenState(viewModel = koinViewModel())
 }
 
 @Composable
-private fun SimilarPhotosManagerScreenState(
-    viewModel: SimilarPhotosManagerViewModel,
-) {
+private fun SimilarPhotosManagerScreenState(viewModel: SimilarPhotosManagerViewModel) {
     val router = LocalRouter.current
+    val tracker = LocalFeatureOperationTracker.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionState = rememberFileManagerPermissionState()
     var showStopDialog by remember { mutableStateOf(false) }
@@ -62,33 +64,26 @@ private fun SimilarPhotosManagerScreenState(
     val displayItems = displayState.displayItems
     val showDetail = (displayState.phase == FileOperationPhase.Browsing ||
         displayState.phase == FileOperationPhase.ConfirmDelete) &&
-        isDetailMode &&
-        displayItems.isNotEmpty()
+        isDetailMode && displayItems.isNotEmpty()
 
     fun handleBack() {
         when {
             isDetailMode -> viewModel.closeDetail()
-            !permissionState.granted -> {
-                permissionState.leaveBack(router)
-            }
+            !permissionState.granted -> permissionState.leaveBack(router)
             displayState.phase == FileOperationPhase.Deleting -> {
-                viewModel.cancelDeletingAndReturnToBrowsing()
-                showStopDialog = true
+                viewModel.cancelDeletingAndReturnToBrowsing(); showStopDialog = true
             }
             displayState.phase == FileOperationPhase.Scanning -> {
-                blockedPhase = displayState.phase
-                showStopDialog = true
+                blockedPhase = displayState.phase; showStopDialog = true
             }
             displayState.phase == FileOperationPhase.ConfirmDelete -> viewModel.cancelDelete()
             else -> permissionState.leaveHome(router)
         }
     }
 
+    FileManagerOperationEventsEffect(viewModel, tracker)
     FileManagerErrorToastEffect(uiState.errorMessage, viewModel::clearError)
-
-    FileManagerStartEffect(permissionState, viewModel::startIfNeeded) {
-        permissionState.leaveHome(router)
-    }
+    FileManagerStartEffect(FEATURE, permissionState, viewModel::startIfNeeded) { permissionState.leaveHome(router) }
 
     BackHandler(enabled = permissionState.granted) { handleBack() }
 
@@ -122,25 +117,15 @@ private fun SimilarPhotosManagerScreenState(
             scrollState = scrollState,
             onToggleGroup = { group -> viewModel.toggleGroup(group.items.map { it.id }.toSet()) },
             onSelect = viewModel::toggleSelection,
-            onOpenDetail = { item ->
-                viewModel.openDetail(displayItems.indexOfFirst { it.id == item.id })
-            },
-            onContinue = { permissionState.leaveHomeAfterComplete(router) },
+            onOpenDetail = { item -> viewModel.openDetail(displayItems.indexOfFirst { it.id == item.id }) },
+            onContinue = { permissionState.leaveHomeAfterComplete(router, tracker, FEATURE) },
         )
     }
 
     FileManagerStopOperationDialog(
-        visible = showStopDialog,
-        permissionGranted = permissionState.granted,
-        onQuit = {
-            showStopDialog = false
-            viewModel.cancelActiveOperation()
-            permissionState.leaveBack(router)
-        },
-        onResume = {
-            showStopDialog = false
-            blockedPhase = null
-        },
+        visible = showStopDialog, permissionGranted = permissionState.granted,
+        onQuit = { showStopDialog = false; viewModel.cancelActiveOperation(); permissionState.leaveBack(router) },
+        onResume = { showStopDialog = false; blockedPhase = null },
     )
 
     FileManagerDeleteConfirmDialog(

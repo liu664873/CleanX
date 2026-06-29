@@ -18,11 +18,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.FeatureKey
+import com.quickcleanpro.phonecleaner.operation.LocalFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerErrorToastEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerNoResultsDialog
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerOperationEventsEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerScaffold
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStartEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStopOperationDialog
@@ -39,18 +42,17 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.Fil
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.detail.FileManagerDetailView
 import org.koin.androidx.compose.koinViewModel
 
+private val FEATURE = FeatureKey.AUDIOS
+
 @Composable
 fun AudiosManagerScreen() {
-    AudiosManagerScreenState(
-        viewModel = koinViewModel(),
-    )
+    AudiosManagerScreenState(viewModel = koinViewModel())
 }
 
 @Composable
-private fun AudiosManagerScreenState(
-    viewModel: AudiosManagerViewModel,
-) {
+private fun AudiosManagerScreenState(viewModel: AudiosManagerViewModel) {
     val router = LocalRouter.current
+    val tracker = LocalFeatureOperationTracker.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionState = rememberFileManagerPermissionState()
     var showStopDialog by remember { mutableStateOf(false) }
@@ -62,15 +64,12 @@ private fun AudiosManagerScreenState(
     val visibleItems = displayState.visibleDisplayItems
     val showDetail = (displayState.phase == FileOperationPhase.Browsing ||
         displayState.phase == FileOperationPhase.ConfirmDelete) &&
-        isDetailMode &&
-        visibleItems.isNotEmpty()
+        isDetailMode && visibleItems.isNotEmpty()
 
     fun handleBack() {
         when {
             isDetailMode -> viewModel.closeDetail()
-            !permissionState.granted -> {
-                permissionState.leaveBack(router)
-            }
+            !permissionState.granted -> permissionState.leaveBack(router)
             displayState.phase == FileOperationPhase.Deleting -> {
                 viewModel.cancelDeletingAndReturnToBrowsing()
                 showStopDialog = true
@@ -84,11 +83,9 @@ private fun AudiosManagerScreenState(
         }
     }
 
+    FileManagerOperationEventsEffect(viewModel, tracker)
     FileManagerErrorToastEffect(uiState.errorMessage, viewModel::clearError)
-
-    FileManagerStartEffect(permissionState, viewModel::startIfNeeded) {
-        permissionState.leaveHome(router)
-    }
+    FileManagerStartEffect(FEATURE, permissionState, viewModel::startIfNeeded) { permissionState.leaveHome(router) }
 
     BackHandler(enabled = permissionState.granted) { handleBack() }
 
@@ -123,10 +120,8 @@ private fun AudiosManagerScreenState(
             onTabSelected = viewModel::selectTab,
             onToggleVisible = viewModel::toggleVisibleItems,
             onSelect = viewModel::toggleSelection,
-            onOpenDetail = { item ->
-                viewModel.openDetail(visibleItems.indexOfFirst { it.id == item.id })
-            },
-            onContinue = { permissionState.leaveHomeAfterComplete(router) },
+            onOpenDetail = { item -> viewModel.openDetail(visibleItems.indexOfFirst { it.id == item.id }) },
+            onContinue = { permissionState.leaveHomeAfterComplete(router, tracker, FEATURE) },
         )
     }
 
@@ -202,13 +197,13 @@ private fun AudiosManagerContent(
             FileManagerAudioListView(
                 tabs = uiState.displayTabs,
                 items = uiState.displayItems,
-                selectedIds = uiState.selectedIds,
-                scrollState = scrollState,
-                onToggleVisibleItems = onToggleVisible,
-                onSelect = onSelect,
-                onOpenDetail = onOpenDetail,
                 selectedTabIndex = uiState.selectedTabIndex,
                 onTabSelected = onTabSelected,
+                scrollState = scrollState,
+                selectedIds = uiState.selectedIds,
+                onSelect = onSelect,
+                onToggleVisibleItems = onToggleVisible,
+                onOpenDetail = onOpenDetail,
             )
         }
     }

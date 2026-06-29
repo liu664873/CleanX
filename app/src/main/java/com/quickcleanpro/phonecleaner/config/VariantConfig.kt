@@ -1,6 +1,5 @@
 package com.quickcleanpro.phonecleaner.config
 
-import com.quickcleanpro.phonecleaner.BuildConfig
 import com.quickcleanpro.phonecleaner.advertise.AdAreaKeys
 import com.quickcleanpro.phonecleaner.navigation.AppRoute
 
@@ -94,59 +93,13 @@ data class VariantProfile(
 typealias VariantConfig = VariantProfile
 
 object VariantConfigs {
-    val current: VariantProfile =
-        VariantProfile(
-            variantKey = BuildConfig.VARIANT_KEY,
-            appName = appNameFor(BuildConfig.VARIANT_KEY),
-            themeKey = BuildConfig.THEME_KEY,
-            primaryFeature = parseFeature(BuildConfig.PRIMARY_FEATURE) ?: FeatureKey.JUNK_CLEAN,
-            enabledFeatures = parseFeatures(BuildConfig.ENABLED_FEATURES).toSet(),
-            homeFeatureOrder = parseFeatures(BuildConfig.HOME_FEATURE_ORDER),
-            fileFeatureOrder = parseFeatures(BuildConfig.FILE_FEATURE_ORDER),
-            toolboxFeatureOrder = parseFeatures(BuildConfig.TOOLBOX_FEATURE_ORDER),
-            adProfile =
-                VariantAdProfile(
-                    unitIds =
-                        VariantAdUnitIds(
-                            appId = BuildConfig.ADMOB_APP_ID,
-                            appOpen = BuildConfig.ADMOB_APP_OPEN_UNIT_ID,
-                            interstitial = BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID,
-                            banner = BuildConfig.ADMOB_BANNER_UNIT_ID,
-                            native = BuildConfig.ADMOB_NATIVE_UNIT_ID,
-                        ),
-                    placements = defaultAdPlacements(parseFeatures(BuildConfig.ENABLED_FEATURES).toSet()),
-                ),
-            legalProfile =
-                LegalProfile(
-                    termsOfServiceUrl = BuildConfig.TERMS_OF_SERVICE_URL,
-                    privacyPolicyUrl = BuildConfig.PRIVACY_POLICY_URL,
-                ),
-            notificationProfile = storageCleanerNotificationProfile(),
-            serviceProfile =
-                VariantServiceProfile(
-                    trustlookApiKey = BuildConfig.TRUSTLOOK_API_KEY,
-                ),
-        )
+    lateinit var current: VariantProfile
+        private set
 
-    private fun parseFeatures(raw: String): List<FeatureKey> =
-        raw.split(',')
-            .mapNotNull { parseFeature(it) }
-            .distinct()
-
-    private fun parseFeature(raw: String): FeatureKey? =
-        raw.trim()
-            .takeIf { it.isNotEmpty() }
-            ?.let { key ->
-                runCatching { FeatureKey.valueOf(key) }.getOrNull()
-            }
-
-    private fun appNameFor(variantKey: String): String =
-        when (variantKey) {
-            "storagecleaner" -> "Storage Cleaner"
-            "cleanmaster" -> "Clean Master"
-            "securityguard" -> "Security Guard"
-            else -> "Quick Clean PRO"
-        }
+    fun initialize(context: android.content.Context) {
+        if (::current.isInitialized) return
+        current = ConfigLoader.load(context)
+    }
 }
 
 fun storageCleanerNotificationProfile(): NotificationProfile =

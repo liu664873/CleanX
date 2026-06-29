@@ -17,11 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.FeatureKey
+import com.quickcleanpro.phonecleaner.operation.LocalFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.DeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerErrorToastEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerNoResultsDialog
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerOperationEventsEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerScaffold
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStartEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStopOperationDialog
@@ -35,18 +38,17 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.Fil
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.list.FileManagerPhotoPrivacyView
 import org.koin.androidx.compose.koinViewModel
 
+private val FEATURE = FeatureKey.PHOTO_PRIVACY
+
 @Composable
 fun PhotoPrivacyManagerScreen() {
-    PhotoPrivacyManagerScreenState(
-        viewModel = koinViewModel(),
-    )
+    PhotoPrivacyManagerScreenState(viewModel = koinViewModel())
 }
 
 @Composable
-private fun PhotoPrivacyManagerScreenState(
-    viewModel: PhotoPrivacyManagerViewModel,
-) {
+private fun PhotoPrivacyManagerScreenState(viewModel: PhotoPrivacyManagerViewModel) {
     val router = LocalRouter.current
+    val tracker = LocalFeatureOperationTracker.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionState = rememberFileManagerPermissionState()
     var showStopDialog by remember { mutableStateOf(false) }
@@ -55,27 +57,21 @@ private fun PhotoPrivacyManagerScreenState(
 
     fun handleBack() {
         when {
-            !permissionState.granted -> {
-                permissionState.leaveBack(router)
-            }
+            !permissionState.granted -> permissionState.leaveBack(router)
             displayState.phase == FileOperationPhase.Deleting -> {
-                viewModel.cancelDeletingAndReturnToBrowsing()
-                showStopDialog = true
+                viewModel.cancelDeletingAndReturnToBrowsing(); showStopDialog = true
             }
             displayState.phase == FileOperationPhase.Scanning -> {
-                blockedPhase = displayState.phase
-                showStopDialog = true
+                blockedPhase = displayState.phase; showStopDialog = true
             }
             displayState.phase == FileOperationPhase.ConfirmDelete -> viewModel.cancelRemoveLocation()
             else -> permissionState.leaveHome(router)
         }
     }
 
+    FileManagerOperationEventsEffect(viewModel, tracker)
     FileManagerErrorToastEffect(uiState.errorMessage, viewModel::clearError)
-
-    FileManagerStartEffect(permissionState, viewModel::startIfNeeded) {
-        permissionState.leaveHome(router)
-    }
+    FileManagerStartEffect(FEATURE, permissionState, viewModel::startIfNeeded) { permissionState.leaveHome(router) }
 
     BackHandler(enabled = permissionState.granted) { handleBack() }
 
@@ -100,22 +96,14 @@ private fun PhotoPrivacyManagerScreenState(
             uiState = displayState,
             onToggleAll = viewModel::toggleVisibleItems,
             onSelect = viewModel::toggleSelection,
-            onContinue = { permissionState.leaveHomeAfterComplete(router) },
+            onContinue = { permissionState.leaveHomeAfterComplete(router, tracker, FEATURE) },
         )
     }
 
     FileManagerStopOperationDialog(
-        visible = showStopDialog,
-        permissionGranted = permissionState.granted,
-        onQuit = {
-            showStopDialog = false
-            viewModel.cancelActiveOperation()
-            permissionState.leaveBack(router)
-        },
-        onResume = {
-            showStopDialog = false
-            blockedPhase = null
-        },
+        visible = showStopDialog, permissionGranted = permissionState.granted,
+        onQuit = { showStopDialog = false; viewModel.cancelActiveOperation(); permissionState.leaveBack(router) },
+        onResume = { showStopDialog = false; blockedPhase = null },
     )
 
     if (permissionState.granted && displayState.phase == FileOperationPhase.ConfirmDelete) {

@@ -6,15 +6,16 @@ import com.pdffox.adv.AdvertiseSdkConfigs
 import com.pdffox.adv.NotificationFeatureConfig
 import com.quickcleanpro.phonecleaner.BuildConfig
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.AdvSdkConfig
 
 object AdvertiseConfigFactory {
-    fun create(context: Application): AdvertiseSdkConfig =
+    fun create(context: Application, config: AdvSdkConfig): AdvertiseSdkConfig =
         AdvertiseSdkConfigs.create(context, BuildConfig.DEBUG) {
             legal(
-                privacyUrl = BuildConfig.ADV_PRIVACY_URL,
-                termsUrl = BuildConfig.ADV_TERMS_URL,
+                privacyUrl = config.privacyUrl,
+                termsUrl = config.termsUrl,
             )
-            defaultTopic(BuildConfig.ADV_DEFAULT_TOPIC)
+            defaultTopic(config.defaultTopic)
             resources(
                 adPolicyRawResId = R.raw.ad_policy,
                 adLoadConfigRawResId = R.raw.adload_config,
@@ -25,9 +26,9 @@ object AdvertiseConfigFactory {
             )
             server(
                 enabled = AdvertiseRuntimeCapabilities.SERVER_ENABLED,
-                releaseHost = BuildConfig.ADV_SERVER_RELEASE_HOST,
-                testHost = BuildConfig.ADV_SERVER_TEST_HOST,
-                parseTokenKey = BuildConfig.ADV_PLAY_INTEGRITY_PARSE_TOKEN_KEY,
+                releaseHost = config.server.releaseHost,
+                testHost = config.server.testHost,
+                parseTokenKey = config.playIntegrity.parseTokenKey,
             )
             firebase(
                 analyticsEnabled = AdvertiseRuntimeCapabilities.FIREBASE_ANALYTICS_ENABLED,
@@ -37,37 +38,37 @@ object AdvertiseConfigFactory {
             remoteConfig(enabled = AdvertiseRuntimeCapabilities.REMOTE_CONFIG_ENABLED)
             thinking(
                 enabled = AdvertiseRuntimeCapabilities.THINKING_ENABLED,
-                appKey = BuildConfig.ADV_THINKING_APP_KEY,
-                serverUrl = BuildConfig.ADV_THINKING_SERVER_URL,
+                appKey = config.thinking.appKey,
+                serverUrl = config.thinking.serverUrl,
             )
             singular(
                 enabled = AdvertiseRuntimeCapabilities.SINGULAR_ENABLED,
-                apiKey = BuildConfig.ADV_SINGULAR_API_KEY,
-                secret = BuildConfig.ADV_SINGULAR_SECRET,
+                apiKey = config.singular.apiKey,
+                secret = config.singular.secret,
             )
             adMob(
                 enabled = AdvertiseRuntimeCapabilities.ADMOB_ENABLED,
-                appId = BuildConfig.ADV_ADMOB_APP_ID,
-                bannerId = BuildConfig.ADV_ADMOB_BANNER_ID,
-                interstitialId = BuildConfig.ADV_ADMOB_INTERSTITIAL_ID,
-                nativeId = BuildConfig.ADV_ADMOB_NATIVE_ID,
-                openId = BuildConfig.ADV_ADMOB_OPEN_ID,
-                nativeIdsJson = BuildConfig.ADV_ADMOB_NATIVE_IDS_JSON,
+                appId = config.admob.appId,
+                bannerId = config.admob.bannerId,
+                interstitialId = config.admob.interstitialId,
+                nativeId = config.admob.nativeId,
+                openId = config.admob.openId,
+                nativeIdsJson = config.admob.nativeIdsJson,
             )
             facebook(
                 enabled = AdvertiseRuntimeCapabilities.FACEBOOK_ENABLED,
-                appId = BuildConfig.ADV_FACEBOOK_APP_ID,
-                clientToken = BuildConfig.ADV_FACEBOOK_CLIENT_TOKEN,
+                appId = config.facebook.appId,
+                clientToken = config.facebook.clientToken,
             )
             tiktok(
                 enabled = AdvertiseRuntimeCapabilities.TIKTOK_ENABLED,
-                accessToken = BuildConfig.ADV_TIKTOK_ACCESS_TOKEN,
-                ttAppId = BuildConfig.ADV_TIKTOK_TT_APP_ID,
-                appId = BuildConfig.ADV_TIKTOK_APP_ID,
+                accessToken = config.tiktok.accessToken,
+                ttAppId = config.tiktok.ttAppId,
+                appId = config.tiktok.appId,
             )
             safe(
                 enabled = AdvertiseRuntimeCapabilities.SAFE_ENABLED,
-                expectedSignatures = BuildConfig.ADV_SAFE_EXPECTED_SIGNATURES,
+                expectedSignatures = config.safe.expectedSignatures,
                 expectedPackageName = BuildConfig.APPLICATION_ID,
                 rejectDebuggableBuilds = AdvertiseRuntimeCapabilities.SAFE_REJECT_DEBUGGABLE_BUILDS,
                 rejectDebuggerAttached = AdvertiseRuntimeCapabilities.SAFE_REJECT_DEBUGGER_ATTACHED,
@@ -86,7 +87,7 @@ object AdvertiseConfigFactory {
             notifications(NotificationFeatureConfig(enabled = AdvertiseRuntimeCapabilities.NOTIFICATIONS_ENABLED))
             playIntegrity(
                 enabled = AdvertiseRuntimeCapabilities.PLAY_INTEGRITY_ENABLED,
-                cloudProjectNumber = BuildConfig.ADV_PLAY_INTEGRITY_CLOUD_PROJECT_NUMBER,
+                cloudProjectNumber = config.playIntegrity.cloudProjectNumber,
             )
         }
 }

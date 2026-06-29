@@ -46,7 +46,7 @@ private fun darkSchemeFor(colors: VariantColors) =
     )
 
 private fun selectedVariantTheme(): VariantTheme =
-    when (BuildConfig.THEME_KEY) {
+    when (com.quickcleanpro.phonecleaner.config.VariantConfigs.current.themeKey) {
         "storage_cleaner" -> StorageCleanerTheme
         else -> DefaultVariantTheme
     }

@@ -14,9 +14,7 @@ internal fun NavGraphBuilder.registerCleanRoutes() {
             viewModel = viewModel,
             onNavigateBack = { router.goBack() },
             onNavigateHome = { router.goHome() },
-            onNavigateHomeAfterComplete = {
-                router.navigate(AppNavigationEvent.AdDestination(Screen.Home.route, AdPlacements.JUNK_CLEAN_FINISH))
-            },
+            onNavigateHomeAfterComplete = { router.goHome() },
         )
     }
 }

@@ -19,6 +19,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.FeatureKey
+import com.quickcleanpro.phonecleaner.operation.FeatureOperationEvent
+import com.quickcleanpro.phonecleaner.operation.LocalFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXScaffoldPage
 import com.quickcleanpro.phonecleaner.presentation.common.components.popups.StopScanDialog
 import com.quickcleanpro.phonecleaner.presentation.common.permission.CleanXProtectedAction
@@ -36,6 +39,7 @@ fun JunkCleanScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionCoordinator = LocalCleanXPermissionCoordinator.current
+    val tracker = LocalFeatureOperationTracker.current
     var showStopDialog by remember { mutableStateOf(false) }
 
     val deleteAuthorizationLauncher =
@@ -52,10 +56,18 @@ fun JunkCleanScreen(
                 viewModel.startScanIfNeeded()
             },
             onRejected = {
-                viewModel.clearResult()
-                onNavigateHome()
+                tracker.trackWithAd(FeatureOperationEvent.PermissionRejected(FeatureKey.JUNK_CLEAN)) {
+                    viewModel.clearResult()
+                    onNavigateHome()
+                }
             },
         )
+    }
+
+    LaunchedEffect(viewModel, tracker) {
+        viewModel.operationEvents.collect { event ->
+            tracker.trackWithAd(event) {}
+        }
     }
 
     LaunchedEffect(viewModel) {
@@ -71,11 +83,20 @@ fun JunkCleanScreen(
     }
 
     fun exitToHome(showCompletionAd: Boolean = false) {
-        viewModel.clearResult()
         if (showCompletionAd) {
-            onNavigateHomeAfterComplete()
+            tracker.trackWithAd(FeatureOperationEvent.ReturnHome(FeatureKey.JUNK_CLEAN)) {
+                viewModel.clearResult()
+                onNavigateHomeAfterComplete()
+            }
         } else {
+            viewModel.clearResult()
             onNavigateHome()
+        }
+    }
+
+    LaunchedEffect(uiState.phase) {
+        if (uiState.phase == JunkCleanPhase.Complete) {
+            viewModel.markResultShown()
         }
     }
 

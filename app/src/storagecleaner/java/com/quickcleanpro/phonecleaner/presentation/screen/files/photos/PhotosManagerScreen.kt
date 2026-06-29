@@ -18,11 +18,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quickcleanpro.phonecleaner.R
+import com.quickcleanpro.phonecleaner.config.FeatureKey
+import com.quickcleanpro.phonecleaner.operation.LocalFeatureOperationTracker
 import com.quickcleanpro.phonecleaner.presentation.common.components.CleanXBottomActionBar
 import com.quickcleanpro.phonecleaner.presentation.common.route.LocalRouter
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerDeleteConfirmDialog
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerErrorToastEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerNoResultsDialog
+import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerOperationEventsEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerScaffold
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStartEffect
 import com.quickcleanpro.phonecleaner.presentation.screen.files.common.FileManagerStopOperationDialog
@@ -40,39 +43,34 @@ import com.quickcleanpro.phonecleaner.presentation.screen.files.common.views.lis
 import com.quickcleanpro.phonecleaner.utils.FileSizeFormatter
 import org.koin.androidx.compose.koinViewModel
 
+private val FEATURE = FeatureKey.PHOTOS
+
 @Composable
 fun PhotosManagerScreen() {
-    PhotosManagerScreenState(
-        viewModel = koinViewModel(),
-    )
+    PhotosManagerScreenState(viewModel = koinViewModel())
 }
 
 @Composable
-private fun PhotosManagerScreenState(
-    viewModel: PhotosManagerViewModel,
-) {
+private fun PhotosManagerScreenState(viewModel: PhotosManagerViewModel) {
     val router = LocalRouter.current
+    val tracker = LocalFeatureOperationTracker.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val permissionState = rememberFileManagerPermissionState()
     var showStopDialog by remember { mutableStateOf(false) }
     var blockedPhase by remember { mutableStateOf<FileOperationPhase?>(null) }
     val displayState = blockedPhase?.let { uiState.copy(phase = it) } ?: uiState
     val scrollStates = remember { mutableMapOf<Int, ScrollState>() }
-    fun scrollStateForTab(index: Int): ScrollState =
-        scrollStates.getOrPut(index) { ScrollState(0) }
+    fun scrollStateForTab(index: Int): ScrollState = scrollStates.getOrPut(index) { ScrollState(0) }
     val isDetailMode = displayState.detailStartIndex != null
     val currentItems = displayState.currentDisplayItems
     val showDetail = (displayState.phase == FileOperationPhase.Browsing ||
         displayState.phase == FileOperationPhase.ConfirmDelete) &&
-        isDetailMode &&
-        currentItems.isNotEmpty()
+        isDetailMode && currentItems.isNotEmpty()
 
     fun handleBack() {
         when {
             isDetailMode -> viewModel.closeDetail()
-            !permissionState.granted -> {
-                permissionState.leaveBack(router)
-            }
+            !permissionState.granted -> permissionState.leaveBack(router)
             displayState.phase == FileOperationPhase.Deleting -> {
                 viewModel.cancelDeletingAndReturnToBrowsing()
                 showStopDialog = true
@@ -86,14 +84,9 @@ private fun PhotosManagerScreenState(
         }
     }
 
-    FileManagerErrorToastEffect(
-        errorMessage = uiState.errorMessage,
-        onConsumed = viewModel::clearError
-    )
-
-    FileManagerStartEffect(permissionState, viewModel::startIfNeeded) {
-        permissionState.leaveHome(router)
-    }
+    FileManagerOperationEventsEffect(viewModel, tracker)
+    FileManagerErrorToastEffect(uiState.errorMessage, viewModel::clearError)
+    FileManagerStartEffect(FEATURE, permissionState, viewModel::startIfNeeded) { permissionState.leaveHome(router) }
 
     BackHandler(enabled = permissionState.granted) { handleBack() }
 
@@ -103,20 +96,15 @@ private fun PhotosManagerScreenState(
         actions = {
             val actionText = when {
                 showDetail -> stringResource(R.string.file_delete_count, displayState.selectedIds.size)
-                displayState.phase == FileOperationPhase.Browsing || displayState.phase == FileOperationPhase.ConfirmDelete -> {
+                displayState.phase == FileOperationPhase.Browsing || displayState.phase == FileOperationPhase.ConfirmDelete ->
                     stringResource(if (displayState.allSelected) R.string.file_unselect_all else R.string.file_select_all)
-                }
                 else -> null
             }
             FileManagerTopAction(
                 actionText = actionText,
                 actionEnabled = !showDetail || displayState.selectedIds.isNotEmpty(),
                 onAction = {
-                    if (showDetail) {
-                        viewModel.requestDelete()
-                    } else {
-                        viewModel.toggleVisibleItems()
-                    }
+                    if (showDetail) viewModel.requestDelete() else viewModel.toggleVisibleItems()
                 },
             )
         },
@@ -145,10 +133,8 @@ private fun PhotosManagerScreenState(
             onTabSelected = viewModel::selectTab,
             onSelect = viewModel::toggleSelection,
             onSelectAll = viewModel::toggleVisibleItems,
-            onOpenDetail = { item ->
-                viewModel.openDetail(currentItems.indexOfFirst { it.id == item.id })
-            },
-            onContinue = { permissionState.leaveHomeAfterComplete(router) },
+            onOpenDetail = { item -> viewModel.openDetail(currentItems.indexOfFirst { it.id == item.id }) },
+            onContinue = { permissionState.leaveHomeAfterComplete(router, tracker, FEATURE) },
         )
     }
 
@@ -215,7 +201,7 @@ private fun PhotosManagerContent(
         FileOperationPhaseContent(
             phase = uiState.phase,
             scanningText = stringResource(R.string.file_scanning_photos),
-            deletingText = stringResource(R.string.file_deleting_photos),
+            deletingText = stringResource(R.string.file_cleanup_completed),
             resultAmount = result.first,
             resultUnit = result.second,
             resultCaption = stringResource(R.string.file_deleted_in_cleanup),
@@ -224,10 +210,10 @@ private fun PhotosManagerContent(
             FileManagerGalleryBrowserView(
                 tabs = uiState.displayTabs,
                 selectedTabIndex = uiState.selectedTabIndex,
+                onTabSelected = onTabSelected,
+                scrollState = scrollState,
                 items = currentItems,
                 selectedIds = uiState.selectedIds,
-                scrollState = scrollState,
-                onTabSelected = onTabSelected,
                 onSelect = onSelect,
                 onSelectAll = onSelectAll,
                 onOpenDetail = onOpenDetail,

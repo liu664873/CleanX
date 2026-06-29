@@ -6,6 +6,8 @@ import com.pdffox.adv.AdvertiseSdk
 import com.quickcleanpro.phonecleaner.advertise.AdEventLogger
 import com.quickcleanpro.phonecleaner.advertise.AdvertiseConfigFactory
 import com.quickcleanpro.phonecleaner.advertise.AdvertiseConfigValidator
+import com.quickcleanpro.phonecleaner.config.ConfigLoader
+import com.quickcleanpro.phonecleaner.config.VariantConfigs
 import com.quickcleanpro.phonecleaner.di.currentVariantModules
 import com.quickcleanpro.phonecleaner.di.dataModule
 import com.quickcleanpro.phonecleaner.di.presentationModule
@@ -26,6 +28,7 @@ class QuickCleanApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        VariantConfigs.initialize(this)
         SharedPreferencesUtils.init(this)
         startKoin {
             androidLogger()
@@ -38,11 +41,12 @@ class QuickCleanApplication : Application() {
     private fun initAdvertiseSdk() {
         runCatching {
             runBlocking {
-                AdvertiseConfigValidator.validate(this@QuickCleanApplication)
+                val advSdkConfig = ConfigLoader.loadAdvSdkConfig(this@QuickCleanApplication)
+                AdvertiseConfigValidator.validate(this@QuickCleanApplication, advSdkConfig)
                 AdvertiseSdk.init(
                     context = this@QuickCleanApplication,
                     isTest = BuildConfig.DEBUG,
-                    sdkConfig = AdvertiseConfigFactory.create(this@QuickCleanApplication),
+                    sdkConfig = AdvertiseConfigFactory.create(this@QuickCleanApplication, advSdkConfig),
                 )
                 AdEventLogger.initialized()
             }

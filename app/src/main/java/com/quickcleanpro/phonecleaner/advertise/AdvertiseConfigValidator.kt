@@ -3,6 +3,7 @@ package com.quickcleanpro.phonecleaner.advertise
 import android.app.Application
 import android.content.pm.PackageManager
 import com.quickcleanpro.phonecleaner.BuildConfig
+import com.quickcleanpro.phonecleaner.config.AdvSdkConfig
 import com.quickcleanpro.phonecleaner.config.VariantConfigs
 
 object AdvertiseConfigValidator {
@@ -18,13 +19,13 @@ object AdvertiseConfigValidator {
             AdAreaKeys.Interstitial.FILE_ACCESS_CANCEL,
         )
 
-    fun validate(context: Application) {
-        validateAdMobAppId(context)
+    fun validate(context: Application, advSdkConfig: AdvSdkConfig) {
+        validateAdMobAppId(context, advSdkConfig)
         validateAreaKeys()
-        validateTestIds()
+        validateTestIds(advSdkConfig)
     }
 
-    private fun validateAdMobAppId(context: Application) {
+    private fun validateAdMobAppId(context: Application, config: AdvSdkConfig) {
         val manifestAppId =
             runCatching {
                 val appInfo =
@@ -37,8 +38,8 @@ object AdvertiseConfigValidator {
         when {
             manifestAppId.isBlank() ->
                 AdEventLogger.validationWarning("Manifest AdMob App ID is blank.")
-            manifestAppId != BuildConfig.ADV_ADMOB_APP_ID ->
-                AdEventLogger.validationWarning("Manifest AdMob App ID does not match ADV_ADMOB_APP_ID.")
+            manifestAppId != config.admob.appId ->
+                AdEventLogger.validationWarning("Manifest AdMob App ID does not match adv_sdk.json admob.appId.")
         }
     }
 
@@ -61,8 +62,8 @@ object AdvertiseConfigValidator {
         }
     }
 
-    private fun validateTestIds() {
-        if (!BuildConfig.DEBUG && BuildConfig.ADV_ADMOB_APP_ID.contains("3940256099942544")) {
+    private fun validateTestIds(config: AdvSdkConfig) {
+        if (!BuildConfig.DEBUG && config.admob.appId.contains("3940256099942544")) {
             AdEventLogger.validationWarning("Release build is using Google test AdMob App ID.")
         }
     }
