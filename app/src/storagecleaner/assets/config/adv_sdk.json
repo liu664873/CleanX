@@ -1,0 +1,41 @@
+{
+  "privacyUrl": "https://sites.google.com/view/phone-cleanup-storage-cleaner/home",
+  "termsUrl": "https://sites.google.com/view/phonecleanupstoragecleaner/home",
+  "defaultTopic": "storage-cleaner-debug",
+  "admob": {
+    "appId": "ca-app-pub-3940256099942544~3347511713",
+    "bannerId": "ca-app-pub-3940256099942544/6300978111",
+    "interstitialId": "ca-app-pub-3940256099942544/1033173712",
+    "nativeId": "ca-app-pub-3940256099942544/2247696110",
+    "openId": "ca-app-pub-3940256099942544/9257395921",
+    "nativeIdsJson": "[{\"highPriceID\":\"ca-app-pub-3940256099942544/2247696110\",\"midPriceID\":\"ca-app-pub-3940256099942544/2247696110\",\"lowPriceID\":\"ca-app-pub-3940256099942544/2247696110\"}]"
+  },
+  "thinking": {
+    "appKey": "",
+    "serverUrl": ""
+  },
+  "singular": {
+    "apiKey": "",
+    "secret": ""
+  },
+  "facebook": {
+    "appId": "",
+    "clientToken": ""
+  },
+  "tiktok": {
+    "accessToken": "",
+    "ttAppId": "",
+    "appId": ""
+  },
+  "server": {
+    "releaseHost": "",
+    "testHost": ""
+  },
+  "playIntegrity": {
+    "parseTokenKey": "",
+    "cloudProjectNumber": 0
+  },
+  "safe": {
+    "expectedSignatures": ""
+  }
+}

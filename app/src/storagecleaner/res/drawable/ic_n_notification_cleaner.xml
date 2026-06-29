@@ -1,0 +1,42 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:aapt="http://schemas.android.com/aapt" xmlns:android="http://schemas.android.com/apk/res/android" android:autoMirrored="true" android:height="44dp" android:viewportHeight="44" android:viewportWidth="44" android:width="44dp">
+      
+    <path android:pathData="M8.8,0L35.2,0A8.8,8.8 0,0 1,44 8.8L44,35.2A8.8,8.8 0,0 1,35.2 44L8.8,44A8.8,8.8 0,0 1,0 35.2L0,8.8A8.8,8.8 0,0 1,8.8 0z">
+            
+        <aapt:attr name="android:fillColor">
+                  
+            <gradient android:endX="22" android:endY="44" android:startX="22" android:startY="0" android:type="linear">
+                        
+                <item android:color="#FFB845FF" android:offset="0"/>
+                        
+                <item android:color="#FF8215FE" android:offset="1"/>
+                      
+            </gradient>
+                
+        </aapt:attr>
+          
+    </path>
+      
+    <group>
+            
+        <clip-path android:pathData="M4,4h36v36h-36z"/>
+            
+        <path android:fillColor="#ffffff" android:pathData="M22.001,7C19.216,7 16.545,8.106 14.576,10.075C12.607,12.045 11.501,14.715 11.501,17.5V22.792C11.501,23.025 11.447,23.254 11.344,23.462L8.768,28.612C8.642,28.864 8.583,29.143 8.595,29.424C8.608,29.705 8.692,29.978 8.84,30.218C8.988,30.457 9.195,30.654 9.44,30.791C9.686,30.928 9.963,31 10.244,31H33.758C34.039,31 34.316,30.928 34.562,30.791C34.807,30.654 35.014,30.457 35.162,30.218C35.31,29.978 35.394,29.705 35.407,29.424C35.419,29.143 35.36,28.864 35.234,28.612L32.66,23.462C32.556,23.254 32.501,23.025 32.501,22.792V17.5C32.501,14.715 31.395,12.045 29.426,10.075C27.456,8.106 24.786,7 22.001,7ZM22.001,35.5C21.07,35.5 20.162,35.212 19.402,34.675C18.642,34.137 18.066,33.378 17.756,32.5H26.246C25.935,33.378 25.361,34.137 24.6,34.675C23.84,35.212 22.932,35.5 22.001,35.5Z"/>
+          
+    </group>
+    
+</vector>

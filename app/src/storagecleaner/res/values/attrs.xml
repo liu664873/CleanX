@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RotatingRingView">
+        <attr name="ringWidth" format="dimension" />
+        <attr name="ringColor" format="color" />
+        <attr name="backgroundColor" format="color" />
+        <attr name="animationDuration" format="integer" />
+        <attr name="arcLength" format="float" />
+    </declare-styleable>
+    <declare-styleable name="CircleImageView">
+        <attr name="circle" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="ProgressTrackView">
+        <attr name="trackDefaultColor" format="color" />
+        <attr name="trackFillColor" format="color" />
+        <attr name="trackAnimDuration" format="integer" />
+        <attr name="trackProgress" format="integer" />
+        <attr name="circleCount" format="integer" />
+    </declare-styleable>
+</resources>

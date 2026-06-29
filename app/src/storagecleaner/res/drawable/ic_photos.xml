@@ -1,0 +1,50 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="52dp"
+    android:height="52dp"
+    android:viewportWidth="52"
+    android:viewportHeight="52">
+  <path
+      android:pathData="M26,3L26,3A22,22 0,0 1,48 25L48,25A22,22 0,0 1,26 47L26,47A22,22 0,0 1,4 25L4,25A22,22 0,0 1,26 3z">
+    <aapt:attr name="android:fillColor">
+      <gradient
+          android:startX="8.424"
+          android:startY="7.835"
+          android:endX="44.076"
+          android:endY="40.943"
+          android:type="linear">
+        <item android:offset="0" android:color="#FFFA6A16"/>
+        <item android:offset="1" android:color="#FFFC300C"/>
+      </gradient>
+    </aapt:attr>
+  </path>
+  <group>
+    <clip-path
+        android:pathData="M26,3L26,3A22,22 0,0 1,48 25L48,25A22,22 0,0 1,26 47L26,47A22,22 0,0 1,4 25L4,25A22,22 0,0 1,26 3z"/>
+    <path
+        android:pathData="M40.369,53.866m-22.533,0a22.533,22.533 0,1 1,45.067 0a22.533,22.533 0,1 1,-45.067 0"
+        android:fillColor="#ffffff"
+        android:fillAlpha="0.25"/>
+    <path
+        android:pathData="M5.697,45.2m-22.533,0a22.533,22.533 0,1 1,45.067 0a22.533,22.533 0,1 1,-45.067 0"
+        android:fillColor="#FD8462"/>
+  </group>
+  <path
+      android:pathData="M33,18m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0"
+      android:fillColor="#ffffff"/>
+</vector>
