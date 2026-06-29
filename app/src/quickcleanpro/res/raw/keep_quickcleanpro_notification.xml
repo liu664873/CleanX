@@ -1,0 +1,2 @@
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@layout/notification_persistent_shortcuts,@layout/notification_persistent_shortcuts_compact,@drawable/ic_persistent_clean,@drawable/ic_persistent_file,@drawable/ic_persistent_tools,@drawable/ic_persistent_battery" />

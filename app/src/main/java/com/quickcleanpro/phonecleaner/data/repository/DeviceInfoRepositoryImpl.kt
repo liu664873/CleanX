@@ -185,20 +185,39 @@ class DeviceInfoRepositoryImpl(
     }
 
     private fun readCpuTemperatureC(): Float? {
-        val thermalZones =
-            File(THERMAL_PATH)
-                .listFiles { file -> file.isDirectory && file.name.startsWith(THERMAL_ZONE_PREFIX) }
-                .orEmpty()
+        val thermalZones = thermalZoneDirectories()
         val candidates =
             thermalZones
                 .mapNotNull { zone ->
                     val type = File(zone, THERMAL_TYPE_FILE).readTrimmedText().lowercase(Locale.US)
-                    val temperature = File(zone, THERMAL_TEMP_FILE).readNormalizedTemperatureC() ?: return@mapNotNull null
+                    val temperature =
+                        File(zone, THERMAL_TEMP_FILE)
+                            .readNormalizedTemperatureC()
+                            ?.takeIf { it > MIN_REASONABLE_ACTIVE_TEMPERATURE_C }
+                            ?: return@mapNotNull null
                     ThermalTemperature(type = type, temperatureC = temperature)
-                }.filter { candidate ->
-                    CPU_THERMAL_KEYWORDS.any { keyword -> candidate.type.contains(keyword) }
                 }
-        return candidates.maxByOrNull { it.temperatureC }?.temperatureC
+        return candidates
+            .filter { it.isCpuThermal() }
+            .highestTemperatureC()
+            ?: candidates
+                .filter { it.isCpuFallbackThermal() }
+                .highestTemperatureC()
+    }
+
+    private fun thermalZoneDirectories(): List<File> {
+        val thermalRoot = File(THERMAL_PATH)
+        val listedZones =
+            thermalRoot
+                .listFiles { file -> file.name.startsWith(THERMAL_ZONE_PREFIX) }
+                .orEmpty()
+                .sortedBy { zone ->
+                    zone.name.removePrefix(THERMAL_ZONE_PREFIX).toIntOrNull() ?: Int.MAX_VALUE
+                }
+        if (listedZones.isNotEmpty()) return listedZones
+
+        return (0..MAX_THERMAL_ZONE_INDEX)
+            .map { index -> File(thermalRoot, "$THERMAL_ZONE_PREFIX$index") }
     }
 
     private data class ThermalTemperature(
@@ -206,12 +225,24 @@ class DeviceInfoRepositoryImpl(
         val temperatureC: Float,
     )
 
+    private fun ThermalTemperature.isCpuThermal(): Boolean =
+        CPU_THERMAL_KEYWORDS.any { keyword -> type.contains(keyword) } &&
+            CPU_THERMAL_EXCLUDED_KEYWORDS.none { keyword -> type.contains(keyword) }
+
+    private fun ThermalTemperature.isCpuFallbackThermal(): Boolean =
+        CPU_THERMAL_FALLBACK_KEYWORDS.any { keyword -> type.contains(keyword) } &&
+            CPU_THERMAL_EXCLUDED_KEYWORDS.none { keyword -> type.contains(keyword) }
+
+    private fun List<ThermalTemperature>.highestTemperatureC(): Float? =
+        maxByOrNull { it.temperatureC }?.temperatureC
+
     private companion object {
         private const val UNKNOWN = "Unknown"
         private const val THERMAL_PATH = "/sys/class/thermal"
         private const val THERMAL_ZONE_PREFIX = "thermal_zone"
         private const val THERMAL_TYPE_FILE = "type"
         private const val THERMAL_TEMP_FILE = "temp"
+        private const val MAX_THERMAL_ZONE_INDEX = 128
 
         // CPU 最大频率的可能 sysfs 路径
         private val CPU_FREQUENCY_PATHS =
@@ -220,7 +251,11 @@ class DeviceInfoRepositoryImpl(
                 "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq",
             )
         private val CPU_THERMAL_KEYWORDS =
-            listOf("cpu", "soc", "ap", "core", "cluster", "big", "little", "tsens")
+            listOf("cpu", "cpuss", "soc", "ap", "core", "cluster", "big", "little", "tsens", "mtktscpu")
+        private val CPU_THERMAL_FALLBACK_KEYWORDS =
+            listOf("aoss", "sys-therm", "tz_shell", "xo-therm", "tsens")
+        private val CPU_THERMAL_EXCLUDED_KEYWORDS =
+            listOf("battery", "bat", "vbat", "usb", "charger", "chg", "skin", "gpu", "camera", "video", "modem", "wifi", "ddr")
     }
 }
 
@@ -240,6 +275,7 @@ private fun File.readNormalizedTemperatureC(): Float? {
 
 private const val MIN_REASONABLE_CPU_TEMPERATURE_C = -20f
 private const val MAX_REASONABLE_CPU_TEMPERATURE_C = 125f
+private const val MIN_REASONABLE_ACTIVE_TEMPERATURE_C = 1f
 
 /**
  * 将 Android 电池状态码转换为可读文本。

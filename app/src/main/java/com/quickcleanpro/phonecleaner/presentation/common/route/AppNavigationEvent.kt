@@ -26,7 +26,7 @@ sealed interface AppNavigationEvent {
     /** Play an ad for [placement], then navigate to [route] when complete. */
     data class AdDestination(
         val route: String,
-        val placement: String,
+        val placement: String = AdPlacements.NAVIGATION_TOOL,
     ) : AppNavigationEvent
 }
 

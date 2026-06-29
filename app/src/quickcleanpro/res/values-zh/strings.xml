@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="utf-8"?><resources>
+    <string name="app_name">Quick Clean PRO</string>
+
+    <!-- Common -->
+    <string name="back">返回</string>
+    <string name="cancel">取消</string>
+    <string name="allow">允许</string>
+    <string name="ok">确定</string>
+    <string name="confirm">确认</string>
+    <string name="submit">提交</string>
+    <string name="grant">授权</string>
+    <string name="delete">删除</string>
+    <string name="remove">移除</string>
+    <string name="retry">重试</string>
+    <string name="error">错误</string>
+    
+    <string name="unknown">未知</string>
+    <string name="settings">设置</string>
+    <string name="view_now">立即查看</string>
+    <string name="check_now">立即检查</string>
+    <string name="clean_now">立即清理</string>
+    <string name="clean_upper">清理</string>
+    <string name="scan_now">立即扫描</string>
+    <string name="test_now">立即测速</string>
+    <string name="open">打开</string>
+    <string name="remove_size">清理 %1$s</string>
+    
+    <string name="unnamed_file">未命名文件</string>
+    <string name="authorization_required">需要授权</string>
+    <string name="cleaning_selected_files">正在清理已选文件...</string>
+    
+    <string name="scan_loading_fallback">扫描中...</string>
+    <string name="delete_loading_fallback">删除中...</string>
+    <string name="device_info_load_failed">无法加载设备信息。</string>
+    <string name="file_scan_failed">文件扫描失败。</string>
+    <string name="duplicate_scan_failed">重复文件扫描失败。</string>
+    <string name="notification_status_load_failed">无法加载通知状态。</string>
+    <string name="notification_app_selection_update_failed">无法更新通知应用选择。</string>
+
+    <!-- Navigation titles -->
+    <string name="nav_splash">启动页</string>
+    <string name="nav_onboarding_scan">引导扫描</string>
+    <string name="nav_home">首页</string>
+    <string name="nav_scan">扫描</string>
+    <string name="nav_result">扫描结果</string>
+    <string name="nav_clean_result">清理结果</string>
+    <string name="nav_settings">设置</string>
+    <string name="nav_manage_permissions">管理权限</string>
+    <string name="nav_anti_virus">杀毒</string>
+    <string name="nav_virus_quick_scan">快速扫描</string>
+    <string name="nav_virus_deep_scan">深度扫描</string>
+    <string name="nav_virus_result">病毒结果</string>
+    <string name="nav_no_virus_result">无病毒结果</string>
+    <string name="nav_device_info">设备信息</string>
+    <string name="nav_battery_info">电池信息</string>
+    <string name="nav_app_usage">应用使用详情</string>
+    <string name="nav_network_usage">网络用量</string>
+    <string name="nav_network_scan">网络扫描</string>
+    <string name="nav_network_scan_devices">网络扫描设备</string>
+    <string name="nav_network_speed">网络测速</string>
+    <string name="nav_whatsapp_cleaner">WhatsApp 清理</string>
+    <string name="nav_notification_cleaner">通知清理</string>
+    <string name="nav_notification_bar">通知栏</string>
+    <string name="nav_photos">照片</string>
+    <string name="nav_similar_photos">相似照片</string>
+    <string name="nav_photo_privacy">照片隐私</string>
+    <string name="nav_screenshots">截图</string>
+    <string name="nav_videos">视频</string>
+    <string name="nav_audios">音频</string>
+    <string name="nav_large_files">大文件</string>
+    <string name="nav_duplicate_files">重复文件</string>
+    <string name="nav_documents">文档</string>
+
+    <!-- Home -->
+    
+    <string name="home_tab_home">首页</string>
+    <string name="home_tab_file_manager">文件管理</string>
+    <string name="home_tab_toolbox">工具箱</string>
+    <string name="home_storage_label">存储：</string>
+    <string name="home_remove_junk">清理垃圾</string>
+    <string name="home_virus_title">病毒</string>
+    <string name="home_virus_desc">深度扫描病毒、\n恶意应用和风险文件</string>
+    
+    <string name="home_locked_apps_desc">应用锁保护隐私安全</string>
+    <string name="home_toolbox_title">工具箱</string>
+    <string name="home_device_model">设备型号</string>
+    <string name="home_system_version">系统版本</string>
+    <string name="home_battery_status">电池状态</string>
+    <string name="home_health">健康状态</string>
+    <string name="whatsapp_not_found_title">未找到 WhatsApp</string>
+    <string name="whatsapp_not_found_message">请先安装 WhatsApp，然后再尝试使用 WhatsApp 清理。</string>
+
+    <!-- Junk categories -->
+    <string name="category_cache">缓存文件</string>
+    
+    <string name="category_temp">临时文件</string>
+    
+    <string name="category_residual">残留文件</string>
+    
+    <string name="category_apk">APK 文件</string>
+    
+    <string name="category_duplicate">重复文件</string>
+    
+    <string name="category_large">大文件</string>
+    
+    <string name="junk_group_system_cache">系统缓存</string>
+    <string name="junk_group_ad_junk_files">广告垃圾文件</string>
+    <string name="junk_group_residual_junks">残留垃圾</string>
+    <string name="junk_group_obsolete_apks">过期 APK</string>
+    <string name="junk_group_other_junk_files">其他垃圾文件</string>
+
+    <!-- Scan / junk removal -->
+    <string name="junk_removal">垃圾清理</string>
+    
+    
+    
+    <string name="scan_scanning_category">正在扫描%1$s...</string>
+    
+    
+    <string name="scan_failed">扫描失败</string>
+    
+    
+
+    <!-- Result / cleaning -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <string name="result_loading">数据加载中...</string>
+    <string name="result_no_data">未找到扫描数据，请重新扫描</string>
+    <string name="result_select_at_least_one">请至少选择一个文件进行清理</string>
+    <string name="result_select_items_button">请选择要清理的项目</string>
+    <string name="result_zero_byte_category_hint">这里当前为 0 B，仍可选择或取消选择该分类。</string>
+    <string name="result_zero_byte_selection_button">没有可清理文件</string>
+    <string name="result_zero_byte_selection_hint">已选分类为 0 B，暂无需要清理的内容。</string>
+    <string name="result_clean_error">清理过程中发生错误</string>
+    <string name="result_clean_error_after_authorization">删除授权后发生错误</string>
+    <string name="result_confirm_system_deletion">确认系统删除以移除 %1$d 个受保护文件。</string>
+    
+    <string name="clean_result_done">清理完成！</string>
+    
+    
+    
+    
+    <string name="clean_result_junk_removed">垃圾文件已清理</string>
+    <string name="clean_result_junk_removed_with_failed">垃圾文件已清理（%1$d 个失败）</string>
+    <string name="clean_result_files_failed">%1$d 个文件无法清理。部分文件夹需要系统文件访问权限。</string>
+
+    <!-- Common result toolbox entries -->
+    <string name="common_tool_device_desc">查看手机详细规格</string>
+    <string name="common_tool_battery_desc">检查电池状态和健康度</string>
+    <string name="common_tool_app_usage_desc">查看手机应用活动</string>
+    <string name="common_tool_notification_bar_desc">管理通知栏工具</string>
+    <string name="common_tool_whatsapp_desc">清理 WhatsApp 媒体文件</string>
+    <string name="common_tool_network_usage_desc">查看移动数据和 Wi-Fi 用量</string>
+    <string name="common_tool_network_scan_desc">扫描网络中的设备</string>
+    <string name="common_tool_network_speed_desc">测试下载和上传速度</string>
+    <string name="common_tool_notification_cleaner_desc">查找不需要的通知</string>
+
+    <!-- Permission dialog -->
+    <string name="permission_is_required">需要权限</string>
+    <string name="permission_title_required">需要权限</string>
+    <string name="permission_storage_desc">为了扫描和清理垃圾文件，请授予手机文件和媒体访问权限。</string>
+    <string name="permission_storage_files_desc">为了扫描和管理文件，请授予手机文件和媒体访问权限。</string>
+    <string name="permission_virus_storage_desc">为了扫描文件风险，请授予手机文件和媒体访问权限。</string>
+    <string name="permission_whatsapp_storage_desc">为了扫描并清理 WhatsApp 文件，请授予手机文件和媒体访问权限。</string>
+    <string name="permission_media_images_desc">为了扫描和管理照片，请授予图片和媒体访问权限。</string>
+    <string name="permission_media_video_desc">为了扫描和管理视频，请授予视频媒体访问权限。</string>
+    <string name="permission_media_audio_desc">为了扫描和管理音频文件，请授予音频媒体访问权限。</string>
+    <string name="permission_location_desc">为了扫描 Wi-Fi 网络中的设备，请授予位置权限。</string>
+    <string name="permission_usage_desc">为了显示应用使用详情，请在使用情况访问设置中允许 Quick Clean PRO。</string>
+    <string name="permission_network_usage_desc">为了显示网络用量详情，请在使用情况访问设置中允许 Quick Clean PRO。</string>
+    <string name="permission_notification_desc">为了自动整理通知，请在通知访问设置中允许 Quick Clean PRO。</string>
+    <string name="permission_hint_junk_deleted">只会删除垃圾文件。</string>
+    <string name="permission_hint_files_safe">只会管理你选择的文件。</string>
+    <string name="permission_hint_threat_files">只会处理你选择的风险文件。</string>
+    <string name="permission_hint_whatsapp_files">只会管理 WhatsApp 清理文件。</string>
+    <string name="permission_hint_network_scan">只会扫描附近的网络设备。</string>
+    <string name="permission_hint_usage_read">只会读取使用情况统计。</string>
+    <string name="permission_hint_notifications">只会拦截你选择的应用通知。</string>
+    <string name="permission_hint_no_personal">不会收集个人信息。</string>
+    <string name="permission_hint_no_share_private">不会分享隐私数据。</string>
+    <string name="permission_hint_no_collect_private">不会收集隐私数据。</string>
+    <string name="storage_permission_dialog_content">为了扫描和清理垃圾文件，请授予手机文件和媒体访问权限。</string>
+    <string name="storage_permission_dialog_hint1">只会删除垃圾文件。</string>
+    <string name="storage_permission_dialog_hint2">不会收集个人信息。</string>
+
+    <!-- Settings -->
+    <string name="settings_manage_permissions">管理权限</string>
+    <string name="settings_temperature_unit">温度单位</string>
+    <string name="settings_terms_of_service">服务条款</string>
+    <string name="settings_privacy_policy">隐私政策</string>
+    <string name="settings_rate_us">给我们评分</string>
+    <string name="settings_storage_permission">存储</string>
+    <string name="settings_usage_data_permission">使用数据</string>
+    <string name="settings_location_permission">位置</string>
+    <string name="settings_notification_permission">通知</string>
+    
+
+    <!-- Rating -->
+    <string name="rate_title">喜欢 Quick Clean PRO 吗？</string>
+    <string name="rate_feedback_title">感谢你的反馈</string>
+    <string name="rate_feedback_message">感谢你的反馈，我们会继续改进 Quick Clean PRO。</string>
+    
+    
+
+    <!-- Antivirus -->
+    <string name="anti_virus">杀毒</string>
+    <string name="engine_is_ready">引擎已准备就绪</string>
+    <string name="virus">病毒</string>
+    <string name="malware">恶意软件</string>
+    <string name="privacy">隐私</string>
+    <string name="deep_scan">深度扫描</string>
+    <string name="quick_scan">快速扫描</string>
+    <string name="virus_app_list_permission_title">杀毒如何使用你的数据</string>
+    <string name="virus_app_list_permission_message">使用杀毒功能时，Quick Clean PRO 会收集并发送你设备上已安装应用的信息，包括应用名称、包名和版本号，用于 Trustlook Security 进行恶意软件扫描和风险应用检测。</string>
+    <string name="virus_app_list_permission_agree">同意并继续</string>
+    <string name="virus_app_list_permission_not_now">暂不</string>
+    <string name="scan_virus_failed">病毒扫描失败，请稍后再试。</string>
+    <string name="scan_virus_network_failed">网络错误，请检查网络！</string>
+    <string name="threat_file">风险文件</string>
+    <string name="powered_by_trustlook">由 TRUSTLOOK 提供支持</string>
+    <string name="in_danger">存在风险</string>
+    <string name="no_threats_found">未发现威胁</string>
+    <string name="medium_risk">中风险</string>
+    <string name="high_risk">高风险</string>
+    <string name="solve">解决</string>
+    <string name="disable_usb">请关闭 USB 调试</string>
+    <string name="usb_debugging_enabled">USB 调试已开启</string>
+    <string name="threats_found">个威胁</string>
+    <string name="deletion_failed">删除失败。</string>
+    <string name="delete_this_file">确认删除此文件？</string>
+    <string name="adb_hint">关闭 USB 调试可防止恶意设备访问你的隐私数据。</string>
+
+    <!-- File manager -->
+    <string name="file_select_all">全选</string>
+    <string name="file_select">选择</string>
+    <string name="file_unselect_all">取消全选</string>
+    
+    <string name="file_delete">删除</string>
+    <string name="file_delete_count">删除（%1$d）</string>
+    <string name="file_delete_size">删除（%1$s）</string>
+    <string name="file_clean_up_size">清理 %1$s</string>
+    <string name="file_remove_location_data">移除位置信息</string>
+    <string name="file_remove_location_title">移除位置信息？</string>
+    <string name="file_remove_location_message">将从所选照片中移除位置信息。</string>
+    <string name="file_continue_managing">继续管理文件</string>
+    
+    
+    <string name="file_scan_completed_no_results">扫描完成，未发现结果。</string>
+    <string name="file_back_to_main_page">返回主页</string>
+    <string name="file_deleted_in_cleanup">本次清理已删除</string>
+    <string name="file_location_data_removed">位置信息已移除</string>
+    <string name="file_stop_scan_title">确定要\n停止吗？</string>
+    <string name="file_resume">继续</string>
+    <string name="file_quit">退出</string>
+    <string name="file_delete_permanently_title">永久删除？</string>
+    <string name="file_delete_permanently_message">删除后的文件无法访问或\n恢复，请谨慎操作。</string>
+    <string name="file_items">项</string>
+    
+    
+    <string name="file_all">全部</string>
+    <string name="file_photo">照片</string>
+    <string name="file_photos">照片</string>
+    <string name="file_pictures">图片</string>
+    <string name="file_download">下载</string>
+    <string name="file_other">其他</string>
+    <string name="file_similar">相似</string>
+    <string name="file_best_photo">最佳照片</string>
+    <string name="file_selected_size">已选择（%1$s）</string>
+    <string name="file_path_label">路径：%1$s</string>
+    <string name="file_auto_select">自动选择</string>
+    <string name="file_got_it">知道了</string>
+    <string name="file_duplicate_warning">文件删除会优先选择较旧文件。\n请确认不会删除你需要的文件。</string>
+    <string name="file_removal_not_recommended">不建议移除</string>
+    <string name="file_photo_privacy_desc">下列照片包含位置信息。移除位置信息后，\n你仍然可以正常查看这些照片。</string>
+    <string name="file_suggestion_junk_desc">检查是否存在垃圾文件</string>
+    <string name="file_suggestion_battery_desc">查看手机电池信息</string>
+    <string name="file_scanning_photos">正在扫描照片...</string>
+    <string name="file_scanning_screenshots">正在扫描截图...</string>
+    <string name="file_scanning_videos">正在扫描视频...</string>
+    <string name="file_scanning_audios">正在扫描音频...</string>
+    <string name="file_scanning_similar_photos">正在扫描相似照片...</string>
+    <string name="file_scanning_photo_privacy">正在扫描照片隐私...</string>
+    <string name="file_scanning_large_files">正在扫描大文件...</string>
+    <string name="file_scanning_documents">正在扫描文档...</string>
+    <string name="file_scanning_duplicate_files">正在扫描重复文件...</string>
+    
+    <string name="file_deleting_photos">正在删除照片...</string>
+    <string name="file_deleting_files">正在删除文件...</string>
+    <string name="file_deleting_duplicate_files">正在删除重复文件...</string>
+    <string name="file_removing_location_data_progress">正在移除位置信息...</string>
+    <string name="file_cleanup_completed">清理完成...</string>
+    
+
+    <!-- Device info -->
+    <string name="device_info">设备信息</string>
+    <string name="device_model">设备型号</string>
+    <string name="battery_info">电池信息</string>
+    
+    
+    
+    
+    
+    <string name="device_state_info">状态信息</string>
+    <string name="device_screen">屏幕</string>
+    <string name="device_screen_size">屏幕尺寸</string>
+    <string name="device_screen_density">屏幕密度</string>
+    <string name="device_screen_multi_touch">屏幕多点触控支持</string>
+    <string name="device_sensors">传感器</string>
+    <string name="device_accelerometer_sensor">加速度传感器</string>
+    <string name="device_magnetic_field_sensor">磁场传感器</string>
+    <string name="device_orientation_sensor">方向传感器</string>
+    <string name="device_gyroscope_sensor">陀螺仪传感器</string>
+    <string name="device_light_sensor">光线传感器</string>
+    <string name="device_distance_sensor">距离传感器</string>
+    <string name="device_temperature_sensor">温度传感器</string>
+    <string name="device_cpu_hardware">CPU 硬件</string>
+    <string name="device_cpu_model">CPU 型号</string>
+    <string name="device_cpu_cores">CPU 核心数</string>
+    <string name="device_cpu_frequency">CPU 频率</string>
+    <string name="device_cpu_temperature">CPU 温度</string>
+    <string name="device_supported">支持</string>
+    <string name="device_not_supported">不支持</string>
+    <string name="device_unknown">未知</string>
+    <string name="battery_health_good">良好</string>
+    <string name="battery_health_cold">温度过低</string>
+    <string name="battery_health_dead">失效</string>
+    <string name="battery_health_overheat">过热</string>
+    <string name="battery_health_overvoltage">过压</string>
+    <string name="battery_health_failure">故障</string>
+    
+    <string name="battery_health">健康状态</string>
+    <string name="battery_temperature">温度</string>
+    <string name="battery_voltage">电压</string>
+    <string name="battery_technology">电池技术</string>
+    <string name="battery_life">续航</string>
+    <string name="battery_temperature_title">电池温度</string>
+    <string name="battery_realtime_temperature">实时温度</string>
+    <string name="battery_average_temperature">平均温度</string>
+    <string name="battery_electric_current">电流</string>
+    <string name="battery_realtime_current">实时电流</string>
+    <string name="battery_average_current">平均电流</string>
+    <string name="battery_status">电池状态</string>
+    <string name="battery_capacity">电量</string>
+    <string name="battery_health_status">健康状态</string>
+    <string name="battery_current_capacity">当前容量</string>
+    <string name="battery_total_capacity">总容量</string>
+    <string name="battery_charging_status">充电状态</string>
+    <string name="battery_available_time">可用时间</string>
+    <string name="battery_charging">正在充电</string>
+    <string name="battery_discharging">正在放电</string>
+    <string name="battery_full">已充满</string>
+    <string name="battery_not_charging">未充电</string>
+    <string name="battery_range_1_min">1分钟</string>
+    <string name="battery_range_1_hour">1小时</string>
+    <string name="battery_range_24_hours">24小时</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_generating_cleanup_plan">正在生成清理方案</string>
+    <string name="onboarding_done">完成</string>
+    <string name="onboarding_skip">跳过</string>
+    <string name="onboarding_get_started">开始使用</string>
+    <string name="onboarding_checking_device_info">正在检查设备\n信息...</string>
+    <string name="splash_accept_prefix">继续即表示你接受我们的</string>
+
+    <!-- Toolbox -->
+    <string name="app_usage">应用使用详情</string>
+    <string name="network_usage">网络用量</string>
+    <string name="network_scan">网络扫描</string>
+    <string name="network_speed">网络测速</string>
+    <string name="whatsapp_cleaner">WhatsApp 清理</string>
+    <string name="notification_cleaner">通知清理</string>
+    <string name="notification_bar">通知栏</string>
+    <string name="today">今天</string>
+    <string name="yesterday">昨天</string>
+    <string name="last_7_days">最近 7 天</string>
+    <string name="last_30_days">最近 30 天</string>
+    
+    
+    <string name="hours_spent">使用时长</string>
+    <string name="times_opened">打开次数</string>
+    <string name="app_usage_permission_title">使用数据权限</string>
+    <string name="app_usage_permission_desc">允许使用情况访问权限，以显示真实的应用打开次数和使用时长。</string>
+    <string name="app_usage_legend_storage_clean">存储清理</string>
+    <string name="app_usage_legend_one_ui_home">One UI 首页</string>
+    <string name="app_usage_legend_feishu">飞书</string>
+    <string name="duration_hours_minutes">%1$d小时%2$d分钟</string>
+    <string name="duration_hours">%1$d小时</string>
+    <string name="duration_minutes">%1$d分钟</string>
+    <string name="stop">停止</string>
+    
+    <string name="run_speed_test">开始测速</string>
+    <string name="speed_test_complete">测速完成</string>
+    <string name="download">下载</string>
+    <string name="upload">上传</string>
+    
+    <string name="mbps">Mbps</string>
+    <string name="wifi">Wi-Fi</string>
+    
+    
+    <string name="cellular_today">今日移动数据</string>
+    <string name="wifi_today">今日 Wi-Fi</string>
+    <string name="network_type">网络类型</string>
+    <string name="network_type_cellular">蜂窝网络</string>
+    <string name="network_type_ethernet">以太网</string>
+    <string name="unknown_ssid">未知 SSID</string>
+    <string name="wifi_name">Wi-Fi 名称</string>
+    <string name="ip">IP</string>
+    
+    <string name="scan_again">重新扫描</string>
+    <string name="scan_wifi">扫描 Wi-Fi</string>
+    <string name="switch_wifi">切换 Wi-Fi</string>
+    <string name="devices">设备</string>
+    <string name="devices_count">设备（%1$d）</string>
+    
+    
+    
+    <string name="mac_address">MAC 地址</string>
+    
+    <string name="no_network_connection">无网络连接</string>
+    <string name="network_speed_no_connection_desc">请连接 Wi-Fi 或移动数据后再运行测速。</string>
+    <string name="wifi_not_connected">Wi-Fi 未连接</string>
+    <string name="network_scan_no_wifi_desc">请连接 Wi-Fi 后再扫描本地网络设备。</string>
+    <string name="wifi_scan_result">Wi-Fi 扫描结果</string>
+    <string name="last_scan">上次扫描</string>
+    <string name="details">详情</string>
+    <string name="wifi_auth">Wi-Fi 认证</string>
+    <string name="arp_spoofing">ARP 欺骗</string>
+    <string name="ssl_stripping">SSL 剥离</string>
+    <string name="ssl_splitting">SSL 拆分</string>
+    <string name="dns_spoofing">DNS 欺骗</string>
+    <string name="no_device_found">未发现设备</string>
+    <string name="no_devices_on_wifi">此 Wi-Fi 网络中未发现其他设备。</string>
+    <string name="scanning_devices">正在扫描设备...</string>
+    <string name="vendor">厂商</string>
+    <string name="name">名称</string>
+    <string name="total_usage_today">今日\n总用量</string>
+    <string name="total_usage_since_boot">开机以来\n总用量</string>
+    <string name="downloads_today">今日\n下载</string>
+    <string name="downloads_since_boot">开机以来\n下载</string>
+    <string name="uploads_today">今日\n上传</string>
+    <string name="uploads_since_boot">开机以来\n上传</string>
+    <string name="no_usage_data_available">暂无使用数据</string>
+    <string name="system_unknown_traffic">系统和未知流量</string>
+    <string name="occupying">占用</string>
+    <string name="cache">缓存</string>
+    <string name="file">文件</string>
+    <string name="images">图片</string>
+    <string name="videos">视频</string>
+    <string name="other">其他</string>
+    <string name="scanning_whatsapp_files">正在扫描 WhatsApp 文件...</string>
+    <string name="cleaning_whatsapp_files">正在清理 WhatsApp 文件...</string>
+    
+    <string name="whatsapp_clean_unavailable">暂时无法清理 WhatsApp 文件。</string>
+    <string name="all_junk_files_removed">所有垃圾文件已清理</string>
+    <string name="removed_files_size">已清理 %1$d 个文件 / %2$s</string>
+
+    <!-- Notification -->
+    <string name="notification_enable_title">如何启用通知权限？</string>
+    
+    
+    <string name="notification_enable_step_find">1. 找到 Quick Clean PRO</string>
+    <string name="notification_enable_step_find_prefix">1. 找到\u0020</string>
+    <string name="notification_enable_step_find_suffix"></string>
+    <string name="notification_enable_step_allow">2. 点击“允许”</string>
+    
+    <string name="notification_blocking_off_message">通知拦截功能已关闭。</string>
+    <string name="notification_blocking_off_detail">在重新开启前，已选应用将不再被拦截。</string>
+    <string name="notification_one_tap_tidy_up">一键整理</string>
+    
+    
+    
+    <string name="notification_overload_title">通知太多？\n找不到重点！</string>
+    <string name="notification_tidy_one_tap">一键整理你的通知栏！</string>
+    <string name="notification_tidy_complete">终于清爽了\n重要消息不错过！</string>
+    <string name="notification_collected_suffix">已被收集</string>
+    <string name="notification_status_enabled">通知拦截已开启</string>
+    <string name="notification_status_disabled">通知拦截已关闭</string>
+    <string name="notification_showing_limit">最多显示 100 条已拦截消息</string>
+    <string name="notification_blocked_notifications">拦截通知</string>
+    <string name="notification_block_settings_desc">拦截所选应用在通知栏中的通知</string>
+    <string name="notification_loading_animation">动画加载中...</string>
+    <string name="notification_channel_tools">Quick Clean 工具</string>
+    <string name="notification_channel_tools_desc">Quick Clean 工具建议</string>
+    <string name="notification_tool_junk_desc">检查是否存在垃圾文件</string>
+    <string name="notification_tool_network_scan_desc">网络扫描</string>
+    <string name="notification_tool_network_usage_desc">查看你的数据用量</string>
+    <string name="notification_tool_cleaner_desc">检查是否有不需要的通知</string>
+    <!-- App Lock -->
+    <string name="app_lock">应用锁</string>
+    <string name="nav_app_lock">应用锁</string>
+    <string name="setting">设置</string>
+    <string name="enable">开启</string>
+    <string name="haptic_feedback">触感反馈</string>
+    <string name="lock_selected_apps">锁定已选应用</string>
+    <string name="create_your_pin">创建 PIN</string>
+    <string name="enter_pin_to_use">输入 PIN 以使用</string>
+    <string name="re_enter_pin_to_proceed">再次输入 PIN 以继续</string>
+    <string name="pin_no_match">PIN 不匹配，请重试。</string>
+    <string name="change_pin">更改 PIN</string>
+    <string name="enter_current_pin_to_verify">输入当前 PIN 进行验证</string>
+    <string name="enter_your_new_pin">输入新的 PIN</string>
+    <string name="pin_updated_successfully">PIN 已更新</string>
+    <string name="app_lock_no_apps">暂无可用应用</string>
+    <string name="app_lock_no_search_results">没有匹配的应用</string>
+    <string name="lock_all_apps">锁定所有应用</string>
+    <string name="locked_apps">已锁定应用</string>
+    <string name="my_apps">我的应用</string>
+    <string name="search_app">搜索应用</string>
+    <string name="please_enter_app_name">请输入应用名称</string>
+    <string name="turn_on_auto_lock">开启自动锁定</string>
+    <string name="turn_on_auto_lock_hint">安装新应用后自动锁定。</string>
+    <string name="app_lock_usage_permission_title">需要使用数据权限</string>
+    <string name="app_lock_usage_permission_desc">找到 Quick Clean PRO 并开启权限。</string>
+    <string name="app_lock_usage_permission_grant">授予使用数据访问权限</string>
+    <string name="app_lock_overlay_permission_message">请授予所需权限以使用此功能。</string>
+    <string name="app_lock_overlay_permission_title">需要悬浮窗权限</string>
+    <string name="app_lock_overlay_permission_desc">找到 Quick Clean PRO 并开启权限。</string>
+    <string name="app_lock_overlay_permission_grant">允许在其他应用上层显示</string>
+    <string name="manage_permission">管理权限</string>
+    <string name="allow_now">立即允许</string>
+    <string name="permission_app_lock_usage_desc">为了检测受保护应用是否打开，请在使用情况访问权限中允许 Quick Clean PRO。</string>
+    <!-- Home exit prompts -->
+    <string name="exit">退出</string>
+    <string name="close">关闭</string>
+    <string name="enable_now">立即开启</string>
+    <string name="exit_prompt_device_info">更了解你的设备！\n查看全部设备规格。</string>
+    <string name="exit_prompt_junk_removal">快速扫描，一键释放存储空间。</string>
+    <string name="exit_prompt_battery_info">检查电池健康和电量状态。</string>
+    <string name="exit_prompt_network_scan">查看网络中的所有设备。</string>
+    <string name="exit_prompt_network_usage">追踪移动数据和 Wi-Fi 用量。</string>
+    <string name="exit_prompt_notification_title">用智能通知过滤\n保持专注</string>
+    <string name="exit_prompt_notification_tip_block">拦截不需要的通知</string>
+    <string name="exit_prompt_notification_tip_matters">只看重要内容</string>
+    <string name="exit_prompt_notification_tip_focus">保持专注，减少打扰</string>
+    <string name="permission_post_notifications_desc">为了保持清理工具可用，请允许 Quick Clean PRO 发送通知。</string>
+    <string name="permission_hint_app_notifications">只会发送应用状态和清理通知。</string>
+    <string name="notification_permission_custom_message">开启通知，及时接收手机检查和垃圾清理提醒！</string>
+    <string name="notification_permission_turn_on">开启通知</string>
+</resources>

@@ -16,6 +16,8 @@ sealed class Screen(
     data object Settings : Screen(AppRoute.Settings.value)
     data object ManagePermissions : Screen(AppRoute.ManagePermissions.value)
     data object Scan : Screen(AppRoute.JunkClean.value)
+    data object Result : Screen(AppRoute.Result.value)
+    data object CleanResult : Screen(AppRoute.CleanResult.value)
     data object AntiVirus : Screen(AppRoute.AntiVirus.value)
     data object VirusQuickScan : Screen(AppRoute.VirusQuickScan.value)
     data object VirusDeepScan : Screen(AppRoute.VirusDeepScan.value)

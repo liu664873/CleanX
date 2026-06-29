@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="locked_apps_count">
+        <item quantity="other">ล็อกแล้ว %1$d แอป</item>
+    </plurals>
+</resources>

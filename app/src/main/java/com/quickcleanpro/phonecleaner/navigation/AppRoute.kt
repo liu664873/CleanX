@@ -26,6 +26,8 @@ value class AppRoute(val value: String) {
         val Settings = AppRoute("settings")
         val ManagePermissions = AppRoute("manage_permissions")
         val JunkClean = AppRoute("scan")
+        val Result = AppRoute("result")
+        val CleanResult = AppRoute("clean_result")
         val AntiVirus = AppRoute("anti_virus")
         val VirusQuickScan = AppRoute("virus_quick_scan")
         val VirusDeepScan = AppRoute("virus_deep_scan")

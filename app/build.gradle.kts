@@ -16,6 +16,12 @@ val storagecleanerTrustlookApiKey =
         "6ae4e8ff542e4d91d0d0332be544740a1aabaef54fd8ceae98c9aa76"
     )
 
+val quickcleanproTrustlookApiKey =
+    configValue(
+        "TRUSTLOOK_QUICKCLEANPRO_API_KEY",
+        "42ce0e3abcd20e2e9e28af8318c95dd5dde8b60223fa16721ed7b542"
+    )
+
 val admobTestAppId = "ca-app-pub-3940256099942544~3347511713"
 
 android {
@@ -47,6 +53,22 @@ android {
                 "Keeps Storage Cleaner tools available in notifications, samples local battery history for Battery Info charts, and monitors user-selected protected apps for App Lock."
         }
 
+        create("quickcleanpro") {
+            dimension = "variant"
+            applicationId = "com.quickcleanpro.phonecleaner"
+
+            manifestPlaceholders["launcherIcon"] = configValue("QUICKCLEANPRO_LAUNCHER_ICON", "@mipmap/ic_launcher")
+            manifestPlaceholders["roundLauncherIcon"] = configValue("QUICKCLEANPRO_ROUND_LAUNCHER_ICON", "@mipmap/ic_launcher_round")
+            manifestPlaceholders["appTheme"] = configValue("QUICKCLEANPRO_APP_THEME", "@style/Theme.QuickCleanPRO")
+            manifestPlaceholders["trustlookApiKey"] = quickcleanproTrustlookApiKey
+            buildConfigField("String", "TRUSTLOOK_API_KEY", "\"$quickcleanproTrustlookApiKey\"")
+            manifestPlaceholders["admobAppId"] = configValue("ADMOB_QUICKCLEANPRO_APP_ID", admobTestAppId)
+            manifestPlaceholders["advAdmobAppId"] = configValue("ADV_QUICKCLEANPRO_ADMOB_APP_ID", configValue("ADMOB_QUICKCLEANPRO_APP_ID", admobTestAppId))
+            manifestPlaceholders["advFacebookAppId"] = configValue("ADV_QUICKCLEANPRO_FACEBOOK_APP_ID", "")
+            manifestPlaceholders["advFacebookClientToken"] = configValue("ADV_QUICKCLEANPRO_FACEBOOK_CLIENT_TOKEN", "")
+            manifestPlaceholders["persistentNotificationSpecialUseSubtype"] =
+                "Keeps Quick Clean PRO tools available in notifications, samples local battery history for Battery Info charts, and monitors user-selected protected apps for App Lock."
+        }
     }
 
     defaultConfig {
@@ -66,6 +88,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
